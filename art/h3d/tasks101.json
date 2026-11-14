@@ -1,0 +1,102 @@
+{
+ "tpose": {
+  "apollo": "01a1c92d-3f77-7025-9f9b-e45956bfaae1",
+  "borey": "01a1c92d-43f4-719c-adc7-4e11bea1df6e",
+  "demeter": "01a1c92d-4755-73ea-a038-ffe231f7c49c",
+  "hecate": "01a1c92d-4ae4-7641-84ac-0c8c683a2e51",
+  "medusa": "01a1c92d-4e61-77ba-90be-a36c099ebe62",
+  "nika": "01a1c92d-51e7-73a2-942c-d8f94585381d",
+  "zeus": "01a1c92d-5565-7189-8533-85b6a3fda9ce"
+ },
+ "weapon_img": {
+  "apollo": "01a1c92d-6758-70ea-bb9f-c82521c7b456",
+  "borey": "01a1c92d-6e41-7338-ab64-77205ff46302",
+  "demeter": "01a1c92d-75a1-72b1-a866-4102a178fb90",
+  "hecate": "01a1c92d-7c9a-7006-bc9d-e273fdc822bd",
+  "medusa": "01a1c92d-848c-7297-a1fb-92fec5f3072c",
+  "nika": "01a1c92d-8b6e-71b8-969a-4c7afc1a4056",
+  "zeus": "01a1c92d-91a8-7402-bc95-d98c7c5f711b"
+ },
+ "bg": {
+  "fire": "01a1c92d-af85-7030-8c56-a14d024aa01b",
+  "poison": "01a1c92d-b566-7029-ab96-3b82fb47f725",
+  "dark": "01a1c92d-bd3f-75c7-b36e-63dc90f9f474",
+  "light": "01a1c92d-c43c-70ec-9bc1-a63b2fa5d6a1",
+  "phys": "01a1c92d-caa3-77d8-b1ea-5a7537094ed6",
+  "air": "01a1c92d-d151-7088-8d70-8df677233fa8",
+  "water": "01a1c92d-d73a-7137-a612-f72b4aabed74",
+  "ice": "01a1c92d-dd84-7776-908f-88d514f52aeb",
+  "nature": "01a1c92d-e4bf-725b-89bd-5a61764c923e",
+  "lightning": "01a1c92d-e9e8-7349-9410-1b65fa047193"
+ },
+ "portrait": {
+  "apollo": "01a1c92e-0bf1-7053-8d54-e71cfccc7bd6",
+  "borey": "01a1c92e-1392-7580-a0bd-5ef8dd0e358b",
+  "demeter": "01a1c92e-1b6c-766d-be3c-3907a2dabed1",
+  "hecate": "01a1c92e-22f8-70d3-bf33-b484175c1bea",
+  "heracles": "01a1c92e-2b52-70e7-aab5-ce7ec9f9df10",
+  "hestia": "01a1c92e-33cc-74e8-ab4b-d85e53cf7179",
+  "medusa": "01a1c92e-3b7f-72f2-964c-a033427872ff",
+  "nika": "01a1c92e-42ce-7557-bc1a-ce31811fdd84",
+  "poseidon": "01a1c92e-4af9-7072-8080-1fd78e791bca",
+  "zeus": "01a1c92e-5251-70b9-bdd5-bdd739d09cc3"
+ },
+ "model": {
+  "apollo": "01a1c92f-3a4c-7095-bd0e-213199b1a569",
+  "borey": "01a1c92f-3ef8-7492-9336-a8bb1b2adf93",
+  "demeter": "01a1c92f-43ab-702b-98f3-bb2deda0bcc7",
+  "hecate": "01a1c92f-48f0-77bc-bd74-2cd82bda1627",
+  "medusa": "01a1c92f-4d8f-765f-80e8-8e2bf7143356",
+  "nika": "01a1c92f-52b0-76de-b34a-b42f33a42c73",
+  "zeus": "01a1c92f-5770-74f0-8d6c-7974ef0e2a8c"
+ },
+ "weapon": {
+  "apollo": "01a1c92f-69bb-749a-8588-0162b50e69dd",
+  "borey": "01a1c92f-6f96-713d-82ef-74e63aeb36ed",
+  "demeter": "01a1c92f-7573-76c8-b1ad-eb3b18464558",
+  "hecate": "01a1c92f-7b15-73f6-b016-ad60d9f008b4",
+  "medusa": "01a1c92f-80e4-71f8-8e5c-55d68ed9f9e8",
+  "nika": "01a1c92f-86b9-71f5-bda3-ae3009c19847",
+  "zeus": "01a1c92f-8b80-7295-8785-7b81032b515a"
+ },
+ "bg2": {
+  "fire": "01a1c930-7cb4-71f6-bbae-935a5b924d71",
+  "poison": "01a1c930-8233-76c4-a425-e2dc12547388",
+  "dark": "01a1c930-88a2-7300-bbd0-a150a66c5398",
+  "light": "01a1c930-8eb3-7468-9dc4-d09e2484a0ee",
+  "phys": "01a1c930-95e6-7254-980f-8f6766c0047d",
+  "air": "01a1c930-9c57-77f4-839c-b7026d3b5e82",
+  "water": "01a1c930-a253-7013-bcee-d5d1815f2078",
+  "lightning": "01a1c930-a8b1-7080-a256-d7b84e3724f0"
+ },
+ "portrait2": {
+  "hecate": "01a1c930-b2f0-71f4-bdd8-d6b2bc2d819f",
+  "medusa": "01a1c930-ba17-71dd-9f4d-63375dc92259"
+ },
+ "rig": {
+  "apollo": "01a1c931-7d62-701d-93c3-5d80831965c4",
+  "borey": "01a1c931-8b6a-72a5-b6d9-6f43d11b9169",
+  "demeter": "01a1c931-99d6-7273-8e68-6603886b45b4",
+  "hecate": "01a1c931-a802-7535-9720-d55513c96d92",
+  "medusa": "01a1c931-b641-738f-8981-02520dde890b",
+  "nika": "01a1c931-c442-706e-b93c-ab81d67f602d",
+  "zeus": "01a1c931-d2fd-719b-89d7-cf309d4248ce"
+ },
+ "anim": {
+  "apollo": "01a1c932-383c-7663-bf59-04448fe0fd82",
+  "borey": "01a1c932-3b74-71a9-9e0c-30300e72603e",
+  "demeter": "01a1c932-3e61-77ba-9819-2b20b7783ba9",
+  "hecate": "01a1c932-41ae-7079-857e-603e6f773acb",
+  "medusa": "01a1c932-4496-74af-8399-c2c2d87fe020",
+  "nika": "01a1c932-47fe-7284-9339-475c0b24c8e4",
+  "zeus": "01a1c932-4a86-744f-8d6d-9f0f44e6e485"
+ },
+ "poseidon": {
+  "legs_art": "01a1c940-9116-7259-8c70-ce1684e6ad1f",
+  "weapon_img": "01a1c940-95a3-720f-a0f5-59f13dad97a9",
+  "weapon": "01a1c941-6bfa-777b-a4be-4522c4bd4464",
+  "tpose": "01a1c941-6839-70c1-ae25-db608000c046",
+  "portrait": "01a1c941-cf51-7060-9da4-ce5009d826f0",
+  "model": "01a1c942-0bc6-717f-bba5-4c519b75d0a9"
+ }
+}
