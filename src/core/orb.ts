@@ -3,7 +3,7 @@
 import { Rng } from './rng';
 import { fsin, fcos, PI } from './fmath';
 import {
-  COLS, ROWS, BALL_V, BALL_R, VOLLEY_GAP, ENEMY_T, BallId, BALLS, BALL_FX, elemHit, runLvMul, BALL_IDS,
+  wallMaxOf, COLS, ROWS, BALL_V, BALL_R, VOLLEY_GAP, ENEMY_T, BallId, BALLS, BALL_FX, elemHit, runLvMul, BALL_IDS,
   EnemyId, ENEMY, ECHIDNA_ARMOR, SpiritId, spiritEvery, WallId, wallFx, stageDef, StageDef, MINIS, BASE_WALL_HP,
 } from './orbContent';
 
@@ -21,7 +21,10 @@ export interface OrbConfig {
   rune?: Partial<Record<RuneFx, number>>;
   god?: boolean;
 }
-export type RuneFx = 'normal' | 'allBalls' | 'afflicted' | 'dur' | 'plusBall' | 'spirit' | 'impact' | 'area' | 'beamLight' | 'pierce' | 'dot' | 'wetFrozen' | 'repair' | 'gold';
+/** правка Ш7: what the runes in the sockets give (fractions): elite — minibosses and bosses; dur — chance of +1 turn;
+ *  allBalls — every ball and its effects; impact — the direct hit; area — the club wave and the grenade shards;
+ *  pierce — the ghost ball and the thorn bushes; wallPct — wall health */
+export type RuneFx = 'normal' | 'allBalls' | 'afflicted' | 'dur' | 'plusBall' | 'spirit' | 'impact' | 'area' | 'beamLight' | 'pierce' | 'dot' | 'wetFrozen' | 'repair' | 'gold' | 'elite' | 'wallPct';
 export type Phase = 'aim' | 'fly' | 'enemy' | 'choose' | 'win' | 'lose';
 export interface Act { aim?: number; choice?: number }
 
@@ -82,7 +85,7 @@ export class Orb {
   constructor(cfg: OrbConfig | OrbState) {
     if ('cfg' in cfg) { this.s = cfg; this.rng = new Rng(cfg.rng); return; }
     const sd = stageDef(cfg.stage);
-    const wallMax = Math.round((BASE_WALL_HP * (1 + 0.08 * (cfg.wall.lv - 1)) + (cfg.wallHp ?? 0)) * (cfg.wall.id === 'reinf' ? 1 + wallFx.reinf(cfg.wall.rarity) : 1));
+    const wallMax = wallMaxOf(cfg.wall, cfg.wallHp ?? 0, cfg.rune?.wallPct ?? 0);
     this.rng = new Rng(cfg.seed);
     this.s = {
       cfg, sd, rng: 0, phase: 'aim', turn: 0, tick: 0, phaseT: 0,
@@ -191,7 +194,7 @@ export class Orb {
   private atkOf(kind: Ball['kind'], lv: number): number {
     const c = this.s.cfg, p = 1 + this.s.power;
     if (kind === 'normal') return c.atk * p * (1 + (c.rune?.normal ?? 0) + (c.rune?.allBalls ?? 0));
-    if (kind === 'shard') return c.atk * p * BALL_FX.shard(lv) * (1 + (c.rune?.impact ?? 0));
+    if (kind === 'shard') return c.atk * p * BALL_FX.shard(lv) * (1 + (c.rune?.area ?? 0)) * (1 + (c.rune?.allBalls ?? 0));
     const meta = c.ballLv[kind] ?? 1;
     return c.atk * p * (1 + elemHit(meta) * runLvMul(lv)) * (1 + (c.rune?.allBalls ?? 0));
   }
@@ -202,7 +205,9 @@ export class Orb {
     if (canCrit && this.rng.chance(c.crit)) { d *= c.critDmg; crit = true; }
     if (e.freeze > 0) d *= 1.1;
     if ((e.burnT > 0 || e.poisonT > 0 || e.wet > 0 || e.freeze > 0) && c.rune?.afflicted) d *= 1 + c.rune.afflicted;
+    if ((e.wet > 0 || e.freeze > 0) && c.rune?.wetFrozen) d *= 1 + c.rune.wetFrozen;
     if (ENEMY[e.kind].tier === 'boss') d *= 1 + c.boss;
+    if (ENEMY[e.kind].tier !== 'normal' && c.rune?.elite) d *= 1 + c.rune.elite;
     if (e.kind === 'echidna') { let k = 1; for (let i = 1; i < c.stage; i++) k *= 1.1; d = Math.max(1, d - ECHIDNA_ARMOR * 100 * k); }
     d = Math.round(d);
     if (e.shield > 0) { const a = Math.min(e.shield, d); e.shield -= a; d -= a; }
@@ -215,14 +220,18 @@ export class Orb {
   }
   private ballHit(b: Ball, e: Enemy): void {
     const s = this.s, c = s.cfg, lv = b.lv, rn = c.rune ?? {};
-    this.damage(e, this.atkOf(b.kind, lv) * (1 + (rn.impact ?? 0) * (b.kind === 'normal' ? 0 : 1)), b.kind, true, b.kind);
+    // правка Ш7: «урон при ударе» — the direct hit of every ball (shards count as area); the ghost — «пробивание»
+    const direct = (b.kind === 'shard' ? 1 : 1 + (rn.impact ?? 0)) * (b.kind === 'ghost' ? 1 + (rn.pierce ?? 0) : 1);
+    this.damage(e, this.atkOf(b.kind, lv) * direct, b.kind, true, b.kind);
     const ex = e.c + e.w / 2, ey = e.r + e.h / 2;
-    const A = c.atk * (1 + s.power), dur = Math.round(rn.dur ?? 0);
+    const A = c.atk * (1 + s.power) * (1 + (rn.allBalls ?? 0));
+    // правка Ш7: the duration rune is a chance of one more turn, rolled only when an effect is put on
+    const dur = () => rn.dur && this.rng.chance(rn.dur) ? 1 : 0;
     switch (b.kind) {
-      case 'fire': if (e.hp > 0) { e.burnN = Math.min(3, e.burnN + 1); e.burnT = 3 + dur; } break;
-      case 'poison': if (e.hp > 0) { e.poisonN = Math.min(5, e.poisonN + 1); e.poisonT = 4 + dur; } break;
-      case 'ice': if (e.hp > 0 && (e.wet > 0 || this.rng.chance(BALL_FX.freezeChance(lv)))) { e.freeze = 2 + dur; this.fx.push({ t: 'freeze', x: ex, y: ey }); } break;
-      case 'wet': if (e.hp > 0) e.wet = 2 + dur; break;
+      case 'fire': if (e.hp > 0) { e.burnN = Math.min(3, e.burnN + 1); e.burnT = 3 + dur(); } break;
+      case 'poison': if (e.hp > 0) { e.poisonN = Math.min(5, e.poisonN + 1); e.poisonT = 4 + dur(); } break;
+      case 'ice': if (e.hp > 0 && (e.wet > 0 || this.rng.chance(BALL_FX.freezeChance(lv)))) { e.freeze = 2 + dur(); this.fx.push({ t: 'freeze', x: ex, y: ey }); } break;
+      case 'wet': if (e.hp > 0) e.wet = 2 + dur(); break;
       case 'beam': {
         const row = Math.abs(b.vx) > Math.abs(b.vy);
         const dmg = A * BALL_FX.beam(lv) * (1 + (rn.beamLight ?? 0));
@@ -266,8 +275,8 @@ export class Orb {
       }
       case 'spike': {
         const cc = Math.floor(ex), rr = e.r + e.h; // the cell the enemy will step into
-        if (rr < ROWS && !s.bushes.some(x => x.c === cc && x.r === rr)) { s.bushes.push({ c: cc, r: rr, t: 2 + dur, dmg: A * BALL_FX.thorn(lv) * (1 + (rn.pierce ?? 0)) }); this.fx.push({ t: 'thorn', c: cc, r: rr }); }
-        else { const bu = s.bushes.find(x => x.c === cc && x.r === rr); if (bu) bu.t = Math.max(bu.t, 2 + dur); }
+        if (rr < ROWS && !s.bushes.some(x => x.c === cc && x.r === rr)) { s.bushes.push({ c: cc, r: rr, t: 2 + dur(), dmg: A * BALL_FX.thorn(lv) * (1 + (rn.pierce ?? 0)) }); this.fx.push({ t: 'thorn', c: cc, r: rr }); }
+        else { const bu = s.bushes.find(x => x.c === cc && x.r === rr); if (bu) bu.t = Math.max(bu.t, 2 + dur()); }
         break;
       }
     }
@@ -322,11 +331,12 @@ export class Orb {
     const s = this.s, c = s.cfg, A = c.atk * (1 + s.power);
     s.turn++; s.healThisTurn = 0;
     for (const e of s.enemies) { e.pr = e.r; e.pc = e.c; }
-    // 1. damage over time
+    // 1. damage over time (the rune «урон всех шаров и их эффектов» counts here too)
+    const Ad = A * (1 + (c.rune?.allBalls ?? 0));
     for (const e of [...s.enemies]) {
       if (e.hp <= 0) continue;
-      if (e.burnT > 0) { const d = A * BALL_FX.burn(this.lvOf('fire')) * e.burnN * (1 + (c.rune?.dot ?? 0)); this.fx.push({ t: 'dot', x: e.c + e.w / 2, y: e.r + e.h / 2, dmg: Math.round(d), kind: 'burn' }); this.damage(e, d, 'fire', false, 'burn'); e.burnT--; if (e.burnT <= 0) e.burnN = 0; }
-      if (e.hp > 0 && e.poisonT > 0) { const d = A * BALL_FX.poison(this.lvOf('poison')) * e.poisonN * (1 + (c.rune?.dot ?? 0)); this.fx.push({ t: 'dot', x: e.c + e.w / 2, y: e.r + e.h / 2, dmg: Math.round(d), kind: 'poison' }); this.damage(e, d, 'poison', false, 'poison'); e.poisonT--; if (e.poisonT <= 0) e.poisonN = 0; }
+      if (e.burnT > 0) { const d = Ad * BALL_FX.burn(this.lvOf('fire')) * e.burnN * (1 + (c.rune?.dot ?? 0)); this.fx.push({ t: 'dot', x: e.c + e.w / 2, y: e.r + e.h / 2, dmg: Math.round(d), kind: 'burn' }); this.damage(e, d, 'fire', false, 'burn'); e.burnT--; if (e.burnT <= 0) e.burnN = 0; }
+      if (e.hp > 0 && e.poisonT > 0) { const d = Ad * BALL_FX.poison(this.lvOf('poison')) * e.poisonN * (1 + (c.rune?.dot ?? 0)); this.fx.push({ t: 'dot', x: e.c + e.w / 2, y: e.r + e.h / 2, dmg: Math.round(d), kind: 'poison' }); this.damage(e, d, 'poison', false, 'poison'); e.poisonT--; if (e.poisonT <= 0) e.poisonN = 0; }
     }
     s.enemies = s.enemies.filter(e => e.hp > 0);
     // 2. the spirit

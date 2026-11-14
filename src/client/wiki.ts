@@ -8,11 +8,12 @@ import {
   GEM_SLOTS, GEM_LV_BASE, gemSlotsOf,
 } from '../meta/defs';
 import * as P from '../meta/profile';
+import { RFX, RfxId, RUNE_COMMON, RUNE_REROLL, PLUSBALL_FROM, runeLine } from '../meta/runeDefs';
 
 export interface WikiArticle { icon: string; title: string; body: string }
 export interface WikiSection { id: string; icon: string; name: string; items: WikiArticle[] }
 export interface WikiArt {
-  skill: (id: string) => string; res: (k: string) => string; rune: (r: P.Rune) => string; item: (slot: typeof SLOTS[number], set: typeof SETS[number], rarity: number) => string;
+  skill: (id: string) => string; res: (k: string) => string; rune: (r: { fx: RfxId; rarity: number }) => string; item: (slot: typeof SLOTS[number], set: typeof SETS[number], rarity: number) => string;
   hero: (id: string) => string; gem: (t: typeof GEM_TYPES[number], stars: number) => string; chest: () => string; coupon: (big: boolean) => string;
   setIcon: (s: typeof SETS[number]) => string; loc: (i: number) => string;
 }
@@ -46,7 +47,7 @@ export function wikiSections(A: WikiArt): WikiSection[] {
     {
       id: 'heroes', icon: A.hero(HEROES[0].id), name: 'Герои', items: [
         { icon: A.res('particles'), title: 'Звёзды и частицы', body: `Новый герой открывается за ${HERO_UNLOCK_PARTICLES} частиц. Звезда героя стоит частиц и требует уровня:` + tbl(['★', 'частиц', 'уровень'], STAR_PARTICLES.map((x, i) => [i + 1, x, STAR_LEVEL[i]])) + `★1–5: эффект стрелы +20% за звезду. ★6–10: урон своей стихии +5% за звезду. Слоты рун: 2 + звёзды (максимум 6).` },
-        { icon: A.res('energy'), title: 'Атака и здоровье', body: `Герой 1-го уровня: атака ${HERO_STAT.atk}, здоровье ${HERO_STAT.hp} — это и есть здоровье в бою. Каждый уровень героя: атака +${HERO_STAT.atkLv}, здоровье +${HERO_STAT.hpLv}. Снаряжение и гемы прибавляют числа: оружие, амулет, кольцо и рубин — атаку; мантия, перчатки, сапоги и изумруд — здоровье. Сверху — проценты от всей суммы: комплекты, руны «Ярость» и «Возрождение». Атака ${HERO_STAT.atk * 2} — навыки бьют вдвое сильнее, чем при ${HERO_STAT.atk}.` },
+        { icon: A.res('energy'), title: 'Атака и здоровье', body: `Герой 1-го уровня: атака ${HERO_STAT.atk}, здоровье ${HERO_STAT.hp} — это и есть здоровье в бою. Каждый уровень героя: атака +${HERO_STAT.atkLv}, здоровье +${HERO_STAT.hpLv}. Снаряжение и гемы прибавляют числа: оружие, амулет, кольцо и рубин — атаку; мантия, перчатки, сапоги и изумруд — здоровье. Сверху — проценты от всей суммы: комплекты и руны «Атака» и «Здоровье героя». Топаз прибавляет здоровье стены, сапфир — броню стены. Атака ${HERO_STAT.atk * 2} — навыки бьют вдвое сильнее, чем при ${HERO_STAT.atk}.` },
         { icon: A.coupon(true), title: 'Поиск героев', body: `Малый купон: герой с шансом ${pc(SMALL_COUPON.hero)}, иначе ${SMALL_COUPON.particles} частиц. Средний купон (${BIG_COUPON.price}💎): герой ${pc(BIG_COUPON.hero)}, иначе ${BIG_COUPON.particles} частиц, гарантия героя за ${BIG_COUPON.pity} купонов. Уже открытый герой даёт ${DUP_PARTICLES} частиц. «Герой дня» выпадает в 5 раз чаще.` },
         ...HEROES.map(h => ({ icon: A.hero(h.id), title: h.name, body: `Стихия: ${ELEMENT_NAME[h.element]}. Стрела с начала забега: ${ELEMENT_EFFECT[h.element]}.` })),
       ],
@@ -63,7 +64,7 @@ export function wikiSections(A: WikiArt): WikiSection[] {
     {
       id: 'gems', icon: A.gem('ruby', 4), name: 'Гемы', items: [
         // правка 157: what gems fit which item, gems work from level 1; правка 156: the stat in its own node
-        { icon: A.gem('emerald', 3), title: 'Гнёзда и виды гемов', body: `<p>В каждом предмете 4 гнезда, они открываются на уровнях предмета ${P.SOCKET_LEVEL.join(' / ')}. Каждый предмет принимает два вида гемов:</p>` + li(SLOTS.map(sl => `<b>${SLOT_NAME[sl]}</b> — ${GEM_SLOTS[sl].map(t => `<span>${GEM[t].name}</span>`).join(' · ')}`)) + `<p>Гем на 1-м уровне даёт ${Math.round(GEM_LV_BASE * 100)}% своей силы, к 100-му — всю. Рубин и изумруд прибавляют числа атаки и здоровья, остальные — проценты.</p>` },
+        { icon: A.gem('emerald', 3), title: 'Гнёзда и виды гемов', body: `<p>В каждом предмете 4 гнезда, они открываются на уровнях предмета ${P.SOCKET_LEVEL.join(' / ')}. Каждый предмет принимает два вида гемов:</p>` + li(SLOTS.map(sl => `<b>${SLOT_NAME[sl]}</b> — ${GEM_SLOTS[sl].map(t => `<span>${GEM[t].name}</span>`).join(' · ')}`)) + `<p>Гем на 1-м уровне даёт ${Math.round(GEM_LV_BASE * 100)}% своей силы, к 100-му — всю. Рубин, изумруд, топаз и сапфир прибавляют числа (атака, здоровье героя, здоровье и броня стены), алмаз и гранат — проценты (шанс крита, крит-урон).</p>` },
         ...GEM_TYPES.map(t => ({ icon: A.gem(t, 3), title: GEM[t].name, body: `<p><b>${GEM[t].stat}</b></p><p>До ${GEM[t].pct ? '+' + pc(GEM[t].max) : P.gemValue({ type: t, stars: 4, level: 100 }).split(' ')[0]} у ★4 на 100-м уровне. Доля от максимума по звёздам: ${GEM_STAR_EFF.slice(1).map((x, i) => `★${i + 1} — ${Math.round(x * 100)}%`).join(', ')}.</p><p>Ставится в: ${gemSlotsOf(t).map(sl => `<b>${SLOT_NAME[sl]}</b>`).join(' · ')}</p>` })),
         { icon: A.loc(0), title: 'Поиск по локациям', body: `Каждый поиск может перевести дальше по цепочке, неудача — назад в Пещеру. Бесплатных поисков в день: ${GEM_FREE_PER_DAY}.` + tbl(['локация', 'цена', '★1', '★2', '★3', 'дальше'], GEM_LOCATIONS.map(l => [l.name, l.cost, pc(l.odds[0]), pc(l.odds[1]), pc(l.odds[2]), l.next ? pc(l.next) : '—'])) + 'Остальное — эссенция для синтеза.' },
         { icon: A.loc(3), title: '«Сразу в Руины»', body: `${CR_SEARCH.cost}💎: ★1 ${pc(CR_SEARCH.odds[0])}, ★2 ${pc(CR_SEARCH.odds[1])}, ★3 ${pc(CR_SEARCH.odds[2])}, ★4 ${pc(CR_SEARCH.odds[3])}. Гарантия ★3 за ${CR_SEARCH.pity}, ★4 за ${CR_SEARCH.pity4} поисков. ★4 бывают только здесь, в календаре входа, батл пассе и событиях.` },
@@ -71,13 +72,10 @@ export function wikiSections(A: WikiArt): WikiSection[] {
       ],
     },
     {
-      id: 'runes', icon: A.rune({ uid: 0, id: 'revive', rarity: 5 }), name: 'Руны', items: [
-        { icon: A.rune({ uid: 0, id: 'f_orbs', rarity: 2 }), title: 'Как устроены руны', body: `Три типа: ${RUNE_TYPE_PL.bless.toLowerCase()} (круглые), ${RUNE_TYPE_PL.boost.toLowerCase()} (пятиугольные), навыки (щиты). У героя по 2 слота каждого типа, слоты открываются звёздами героя (сейчас 2 + звёзды, до ${runeSlots(10)}). ` + `Сила руны по редкости: ${RUNE_K.map((k, i) => `${RUNE_RARITY[i]} ×${k}`).join(', ')}.` + ` Открытия: на ${RUNE_RARITY[EPIC].toLowerCase()}, ${RUNE_RARITY[LEGEND].toLowerCase()} и ${RUNE_RARITY[MYTHIC].toLowerCase()}. Руны семейств делают карты своих навыков частее в ${FAMILY_W.join(' / ')} раза.` },
-        { icon: A.res('shards'), title: 'Мастерская', body: `Слияние: до эпической — ещё ${runeDupes(0)} такие же руны, дальше — ${runeDupes(EPIC)}. Улучшение за осколки: ${RUNE_UP.map((x, i) => `${RUNE_RARITY[i]} → ${x}`).join(', ')}. Создать: случайная — ${RUNE_CRAFT}, выбранного типа — ${RUNE_CRAFT_TYPE} осколков. Разбор возвращает половину.` },
-        ...[...BLESS_RUNES, 'elem' as RuneId, ...FAMILY_RUNES, 'skill' as RuneId].map(id => {
-          const d = RUNES[id], r: P.Rune = { uid: 0, id, rarity: 5, elem: 'fire', skill: 'fireball' };
-          return { icon: A.rune(r), title: d.name, body: `${d.line(pc(d.base) + ' (обычная)', id === 'elem' ? 'стихия' : 'навык')}.` + li([`${col(EPIC, RUNE_RARITY[EPIC])}: ${d.e}`, `${col(LEGEND, RUNE_RARITY[LEGEND])}: ${d.l}`, `${col(MYTHIC, RUNE_RARITY[MYTHIC])}: ${d.m}`]) + (d.family ? `Семейство «${FAMILY_NAME[d.family]}».` : '') };
-        }),
+      id: 'runes', icon: A.rune({ fx: 'critdmg', rarity: 5 }), name: 'Руны', items: [
+        { icon: A.rune({ fx: 'crit', rarity: 2 }), title: 'Как устроены руны', body: `<p><span>У каждого из 6 предметов снаряжения — своё гнездо руны.</span> <span>Руна принадлежит одному слоту, её эффект выпадает случайно из списка этого слота (все с равным шансом): ${RUNE_COMMON.length - 1} общих эффектов и особая строка слота.</span> <span>Эффект «+1 обычный шар» бывает только у легендарных и мифических рун.</span> <span>Руна остаётся в гнезде, когда меняешь предмет.</span> <span>Одинаковые эффекты складываются, «+1 обычный шар» — не больше одного.</span></p><p>Сила руны по редкости:</p>` + li(RUNE_K.map((k, i) => `<span>${RUNE_RARITY[i]}</span> <b>×${k}</b>`)) },
+        { icon: A.res('shards'), title: 'Осколки рун', body: '<p>Улучшение:</p>' + li(RUNE_UP.map((x, i) => `<span>${RUNE_RARITY[i]}</span> <b>${x}</b>`)) + '<p>Переброс эффекта, новый эффект всегда другой:</p>' + li(RUNE_REROLL.map((x, i) => `<span>${RUNE_RARITY[i]}</span> <b>${x}</b>`)) + `<p><span>Создать: случайного слота — ${RUNE_CRAFT}, выбранного слота — ${RUNE_CRAFT_TYPE} осколков.</span> <span>Разбор возвращает половину.</span></p>` },
+        ...(Object.keys(RFX) as RfxId[]).map(fx => ({ icon: A.rune({ fx, rarity: MYTHIC }), title: RFX[fx].short, body: `<p>${runeLine(fx, 0)} (обычная) … ${runeLine(fx, MYTHIC)} (мифическая)</p>${RFX[fx].unique ? `<p>Особая строка слота «${SLOT_NAME[RFX[fx].unique!]}»</p>` : ''}` })),
       ],
     },
     {

@@ -9,7 +9,8 @@ import {
   GEM_LOCATIONS, GEM_FREE_PER_DAY, R_TIER, R_PLUS, MYTHIC, gearLines, RUNES, RUNE_TYPES, RUNE_TYPE_NAME, RUNE_TYPE_PL, RUNE_SLOT_TYPE, RuneType,
   runeDupes, runeWorth, runeTier, SET_FX, GEAR_MAIN, HERO_STAT, EPIC, GEM_SLOTS, gemSlotsOf,
 } from '../meta/defs';
-import { runeStone, STONE_SHAPE } from './runeArt';
+import { orbRuneStone, runeSign } from './orbRuneArt';
+import { RFX, runeFxList, RUNE_REROLL, RUNE_UNIQUE, PLUSBALL_FROM, runeLine } from '../meta/runeDefs';
 import { couponSvg, sparksHtml } from './uiArt';
 import { ICONS } from './iconImages';
 import { wikiSections, WikiSection } from './wiki';
@@ -232,7 +233,7 @@ export class Hub {
     /** правка 133: the place whose chest is open in the rating */
     evChest?: number;
     heroPick?: string; map: number; heroSub: HeroSub; heroView?: string; sortSlot?: boolean;
-    item?: number; gem?: number; feed?: boolean; synth?: { target?: number; foods: number[]; small: number; big: number; confirm?: boolean } | null; jewelSub: 'search' | 'gems'; rune?: number; runeFilter: string; showFilter?: boolean; workshop?: boolean; wsTab?: 'merge' | 'craft'; wsCenter?: number; wsPick?: number[]; fusing?: boolean;
+    item?: number; gem?: number; feed?: boolean; synth?: { target?: number; foods: number[]; small: number; big: number; confirm?: boolean } | null; jewelSub: 'search' | 'gems'; rune?: number; runeFilter: string; rch?: { slot: Slot; rarity: number; fx?: string }; rolled?: number; showFilter?: boolean; workshop?: boolean; wsTab?: 'merge' | 'craft'; wsCenter?: number; wsPick?: number[]; fusing?: boolean;
     smith?: { flip: number[]; keep: Record<number, number> } | null;
     wiki?: { sec?: string; q?: string } | null;
     set: SetId; shopTab: 'chests' | 'topup'; taskTab: 'day' | 'week' | 'login'; tChest?: number; mktTab: 'day' | 'week' | 'month'; mElem: Element; mHero: string;
@@ -409,36 +410,6 @@ export class Hub {
     return { icon: itemSvg(it.slot, it.set, 60, r), name: P.itemName(it), sub: RARITIES[r], color: RARITY_COLOR[r], tier: R_TIER[r], altar: true,
       detail: `<span class="was">предел уровня ${RARITY_CAP[r - 1]} → <b>${RARITY_CAP[r]}</b></span>${opens.map(l => `<em class="opn">Открыто: ${l.text}</em>`).join('')}` };
   }
-  private runeResult(was: P.Rune, r: P.Rune): RewardItem {
-    const s = r.rarity, opens = P.runeLines(r).filter(l => l.at === s);
-    return { icon: this.runeBadge(r, 64), name: P.runeName(r), sub: RUNE_RARITY[s], color: RARITY_COLOR[s], tier: R_TIER[s], altar: true,
-      detail: `<span class="was">${P.runeValue(was)} → <b>${P.pctTxt(P.runeMain(r))}</b></span>${opens.map(l => `<em class="opn">Открыто: ${l.text}</em>`).join('')}` };
-  }
-  private wsTap(p: P.Profile, uid: number): void {
-    const r = p.runes.find(x => x.uid === uid); if (!r) return;
-    const c = p.runes.find(x => x.uid === this.sel.wsCenter), pick = this.sel.wsPick ?? [];
-    if (uid === this.sel.wsCenter) { this.sel.wsCenter = undefined; this.sel.wsPick = []; return this.render(); }
-    if (pick.includes(uid)) { this.sel.wsPick = pick.filter(x => x !== uid); return this.render(); }
-    if (c && P.runeMates(p, c).some(x => x.uid === uid)) {
-      if (pick.length >= runeDupes(c.rarity)) return this.toast('Гнёзда заняты: сними копию или нажми «Объединить»');
-      this.sel.wsPick = [...pick, uid]; return this.render();
-    }
-    if (r.rarity >= MYTHIC) return this.toast('Руна уже мифическая — выше некуда');
-    this.sel.wsCenter = uid; this.sel.wsPick = []; this.render();
-  }
-  /** "Подобрать": fill the copies for the centre; with an empty altar take the best rune that can merge */
-  private wsAuto(p: P.Profile): void {
-    let c = p.runes.find(x => x.uid === this.sel.wsCenter);
-    if (!c) {
-      c = [...p.runes].filter(x => P.canMergeRune(p, x)).sort((a, b) => b.rarity - a.rarity || (P.runeHolder(p, b.uid) ? 1 : 0) - (P.runeHolder(p, a.uid) ? 1 : 0))[0];
-      if (!c) return this.toast('Нет рун для слияния: нужны одинаковые руны одной редкости');
-      this.sel.wsCenter = c.uid;
-    }
-    const need = runeDupes(c.rarity), mates = P.runeMates(p, c);
-    if (mates.length < need) { this.sel.wsPick = mates.map(x => x.uid); this.render(); return this.toast(`Не хватает копий: есть ${mates.length} из ${need}`); }
-    this.sel.wsPick = mates.slice(0, need).map(x => x.uid); this.render();
-  }
-
   /** what an action would spend in crystals (79): price, name and picture for the question */
   private crystalCost(p: P.Profile, a: string, v: string): { cost: number; what: string; icon: string } | null {
     const n = Number(v);
@@ -508,7 +479,7 @@ export class Hub {
       const id = v.split(':')[0] as ChestId, pr = CHESTS[id].price;
       return [{ label: 'Ещё ×1', sub: `${pr}💎`, a, v: `${id}:1`, off: p.crystals < pr }, { label: 'Ещё ×10', sub: `${pr * CHEST_X10}💎`, a, v: `${id}:10`, off: p.crystals < pr * CHEST_X10 }];
     }
-    if (a === 'craft') { const c = v ? RUNE_CRAFT_TYPE : RUNE_CRAFT; return [{ label: 'Создать ещё', sub: `${c} ᚱ · есть ${p.shards}`, a, v, off: p.shards < c }]; }
+    if (a === 'craft') { const c = v ? RUNE_CRAFT_TYPE : RUNE_CRAFT; return [{ label: 'Создать ещё', sub: `${c} осколков · есть ${p.shards}`, a, v, off: p.shards < c }]; }
     return undefined;
   }
 
@@ -545,7 +516,7 @@ export class Hub {
     const a = b.dataset.a!, v = b.dataset.v ?? '', n = Number(v);
     this.lastAct = a; // правка 159: a purchase sounds after it went through
     const p = this.p;
-    if (a === 'close') { if (t.closest('.mbox') && !t.closest('.x')) return; this.om = null; this.sel.chestInfo = undefined; this.sel.heroInfo = false; this.sel.item = this.sel.gem = this.sel.rune = undefined; this.sel.pick = undefined; this.sel.workshop = false; this.sel.smith = null; this.sel.wsCenter = undefined; this.sel.wsPick = []; this.panel = null; if (!this.wheel.busy) { this.wheel.open = false; this.wheel.info = false; } return this.render(); }
+    if (a === 'close') { if (t.closest('.mbox') && !t.closest('.x')) return; this.om = null; this.sel.chestInfo = undefined; this.sel.heroInfo = false; this.sel.item = this.sel.gem = this.sel.rune = undefined; this.sel.rch = undefined; this.sel.pick = undefined; this.sel.workshop = false; this.sel.smith = null; this.sel.wsCenter = undefined; this.sel.wsPick = []; this.panel = null; if (!this.wheel.busy) { this.wheel.open = false; this.wheel.info = false; } return this.render(); }
     if (p && a.startsWith('o:')) { // Orb Defense actions
       switch (a) {
         case 'o:ball': this.om = { kind: 'ball', id: v }; return this.render();
@@ -654,32 +625,22 @@ export class Hub {
       case 'resetItem': { if (!b.dataset.sure) { b.dataset.sure = '1'; const sm = b.querySelector('small'); if (sm) sm.textContent = 'Точно?'; b.classList.add('sure'); return; } return this.act(() => P.resetItem(p, this.sel.item!)); }
       case 'toMerge': this.root.querySelector('#ibmerge')?.scrollIntoView({ behavior: 'smooth', block: 'center' }); return;
       // runes
-      case 'rune': this.sel.rune = n; return this.render();
-      case 'runeSlot': if (v === 'lock') return this.toast('Слот откроется следующей звездой героя');
-        this.sel.runeFilter = v; this.render(); return this.toast(`Выбери руну «${RUNE_TYPE_NAME[v as RuneType]}» снизу и нажми «Вставить»`);
+      case 'rune': this.sel.rune = n; this.sel.rch = undefined; return this.render();
+      // правка Ш7: a socket — its rune, or the storage filtered to that slot
+      case 'runeSlot': { const r = P.socketRune(p, v as Slot); if (r) { this.sel.rune = r.uid; return this.render(); }
+        this.sel.runeFilter = v; this.render();
+        return this.toast(p.runes.some(x => x.slot === v && !P.runeHolder(p, x.uid)) ? `Выбери руну слота «${SLOT_NAME[v as Slot]}» снизу и нажми «Вставить»` : `Рун слота «${SLOT_NAME[v as Slot]}» нет. Создай за осколки или открой сундук рун`); }
       case 'filter': this.sel.showFilter = !this.sel.showFilter; return this.render();
       case 'filterSet': this.sel.runeFilter = v; this.sel.showFilter = false; return this.render();
-      case 'workshop': this.sel.workshop = true; this.sel.wsTab = this.sel.wsTab ?? 'merge'; this.sel.wsPick = []; this.sel.wsCenter = undefined; this.sel.rune = undefined; return this.render();
-      case 'wsTab': this.sel.wsTab = v as 'merge'; return this.render();
-      case 'wsClose': this.sel.workshop = false; this.sel.wsCenter = undefined; this.sel.wsPick = []; return this.render();
-      case 'wsRune': return this.wsTap(p, n);
-      case 'wsAuto': return this.wsAuto(p);
-      case 'wsFuse': {
-        const r = p.runes.find(x => x.uid === this.sel.wsCenter); if (!r || this.sel.fusing) return;
-        const pick = this.sel.wsPick ?? [];
-        if (pick.length < runeDupes(r.rarity)) return this.toast(`Поставь ${runeDupes(r.rarity)} ${runeDupes(r.rarity) === 1 ? 'копию' : 'копии'} в гнёзда`);
-        const alt = this.root.querySelector('.altar'); this.sel.fusing = true; alt?.classList.add('fusing');
-        window.setTimeout(() => {
-          this.sel.fusing = false;
-          this.doMerge(() => { const was = { ...r }; P.mergeRune(p, r.uid, pick); return [this.runeResult(was, r)]; }, () => { this.sel.wsPick = []; });
-        }, 900);
-        return;
-      }
-      case 'craft': return this.act(() => { P.craftRune(p, (v || undefined) as RuneType | undefined); return 'Мастерская рун'; }, 'Мастерская рун', [a, v]);
+      case 'craft': return this.act(() => { P.craftRune(p, (v || undefined) as Slot | undefined); return 'Новая руна'; }, 'Новая руна', [a, v]);
       case 'runeUp': return this.act(() => { P.upgradeRune(p, this.sel.rune!); return 'Редкость руны повышена'; });
-      case 'runeMerge': { const r = p.runes.find(x => x.uid === this.sel.rune); this.sel.rune = undefined; this.sel.workshop = true; this.sel.wsTab = 'merge'; this.sel.wsCenter = r?.uid; this.sel.wsPick = []; if (r) this.wsAuto(p); return this.render(); }
+      case 'runeReroll': return this.act(() => { const fx = P.rerollRune(p, this.sel.rune!); this.sel.rolled = this.sel.rune; return `Новый эффект: ${RFX[fx].short}`; });
+      case 'runeChance': { const r = p.runes.find(x => x.uid === this.sel.rune);
+        this.sel.rch = v ? { slot: v as Slot, rarity: this.sel.rch?.rarity ?? r?.rarity ?? 0, fx: r && r.slot === v ? r.fx : undefined } : r ? { slot: r.slot, rarity: r.rarity, fx: r.fx } : { slot: (SLOTS as readonly string[]).includes(this.sel.runeFilter) ? this.sel.runeFilter as Slot : 'book', rarity: 0 };
+        return this.render(); }
+      case 'rchClose': this.sel.rch = undefined; return this.render();
       case 'runeBreak': return this.act(() => { const g = P.dismantleRune(p, this.sel.rune!); this.sel.rune = undefined; return `Руна разобрана: +${g} осколков`; });
-      case 'runeToggle': return this.act(() => { P.toggleRune(p, p.active, this.sel.rune!); this.sel.rune = undefined; });
+      case 'runeToggle': return this.act(() => { P.toggleRune(p, this.sel.rune!); this.sel.rune = undefined; });
       // jeweler
       case 'jsub': this.sel.jewelSub = v as 'search'; this.sel.gem = undefined; return this.render();
       case 'explore': return this.act(() => {
@@ -1120,11 +1081,7 @@ export class Hub {
       const it = P.equippedItem(p, sl);
       if (it?.set && it.rarity >= 2) { const fx = SET_FX[it.set][sl]; out.push(`<span class="spc" style="--c:${SET_COLOR[it.set]}">${fx.name}${it.rarity >= MYTHIC ? ' ★' : ''}</span>`); }
     }
-    const h = p.heroes[p.active];
-    for (const uid of h.runes.slice(0, runeSlots(h.stars))) {
-      const r = p.runes.find(x => x.uid === uid);
-      if (r && runeTier(r.rarity) > 0) out.push(`<span class="spc rune" style="--c:${RARITY_COLOR[r.rarity]}">${P.runeShort(r)}</span>`);
-    }
+    for (const sl of SLOTS) { const r = P.socketRune(p, sl); if (r && r.rarity >= 2) out.push(`<span class="spc rune" style="--c:${RARITY_COLOR[r.rarity]}">${RFX[r.fx].short}</span>`); }
     return out.length ? `<div class="spcs"><small>Особые эффекты</small>${out.join('')}</div>` : '';
   }
 
@@ -1207,7 +1164,6 @@ export class Hub {
         `Стрела с начала забега: ${ELEMENT_EFFECT[vd.element]}`,
         `★1–5: сила эффекта стрелы +20% за звезду (сейчас +${20 * Math.min(5, h.stars)}%)`,
         `★6–10: урон стихии «${ELEMENT_NAME[vd.element]}» +5% за звезду (сейчас +${5 * Math.max(0, h.stars - 5)}%)`,
-        `Слотов рун: ${runeSlots(h.stars)} из 6`,
         `Уровень: атака +${HERO_STAT.atkLv}, здоровье +${HERO_STAT.hpLv} за уровень (сейчас +${P.statNum(HERO_STAT.atkLv * (h.level - 1))} / +${P.statNum(HERO_STAT.hpLv * (h.level - 1))})`,
       ];
       const need = h.stars < 10 ? STAR_PARTICLES[h.stars] : 0, lvl = h.stars < 10 ? STAR_LEVEL[h.stars] : 0;
@@ -1245,43 +1201,42 @@ export class Hub {
     return top + subtabs + `<div class="subbody"><div class="shead">${body}</div><div class="hscroll" id="hscroll">${list}</div></div>`;
   }
 
-  // ---------------- runes ----------------
-  runeBadge(r: P.Rune, size = 50): string { return runeStone(r, size, r.skill ? SKILL_ICON[r.skill] : undefined); }
+  // ---------------- runes (правки Ш7, Ш37): a socket in every gear slot ----------------
+  runeBadge(r: { fx: P.Rune['fx']; rarity: number }, size = 50, cls = ''): string { return orbRuneStone(r, size, cls); }
 
+  /** the temple with the hero and six sockets — weapon, amulet, ring on the left; mantle, gloves, boots on the right, as on the gear tab */
   private runeStage(p: P.Profile): string {
-    const h = p.heroes[p.active], hd = hero(p.active), ns = runeSlots(h.stars);
+    const hd = hero(p.active);
+    const order: Slot[] = ['book', 'amulet', 'ring', 'mantle', 'gloves', 'boots'];
     const pos = [[4, 4], [0, 37], [6, 70], [96, 4], [100, 37], [94, 70]]; // % left/top: three on each side
-    const short: Record<RuneType, string> = { bless: 'Благосл.', boost: 'Усиление', skill: 'Навык' };
-    const slots = [0, 1, 2, 3, 4, 5].map(i => {
-      const [x, y] = pos[i], st = `left:${x}%;top:${y}%`, type = RUNE_SLOT_TYPE[i];
-      if (i >= ns) return `<button class="rslot lock ${type}" style="${st}" data-a="runeSlot" data-v="lock"><svg viewBox="0 0 100 100" class="rsh2"><path d="${STONE_SHAPE[type]}"/></svg><span>🔒</span><small>★${i - 1}</small></button>`;
-      const r = p.runes.find(q => q.uid === h.runes[i]);
-      return r ? `<button class="rslot full" style="${st}" data-a="rune" data-v="${r.uid}">${this.runeBadge(r, 70)}</button>`
-        : `<button class="rslot ${type}" style="${st}" data-a="runeSlot" data-v="${type}"><svg viewBox="0 0 100 100" class="rsh2"><path d="${STONE_SHAPE[type]}"/></svg><span>+</span><small>${short[type]}</small></button>`;
+    let n = 0;
+    const slots = order.map((sl, i) => {
+      const [x, y] = pos[i], st = `left:${x}%;top:${y}%`, r = P.socketRune(p, sl);
+      if (r) n++;
+      return r ? `<button class="rslot full orsock" style="${st};--c:${RARITY_COLOR[r.rarity]}" data-a="runeSlot" data-v="${sl}">${this.runeBadge(r, 62)}<small class="orsn">${SLOT_NAME[sl]}</small></button>`
+        : `<button class="rslot orsock empty" style="${st}" data-a="runeSlot" data-v="${sl}"><span class="orsi">${itemSvg(sl, sl === 'book' ? 'guard' : null, 30)}</span><small class="orsn">${SLOT_NAME[sl]}</small></button>`;
     }).join('');
     return `<div class="stagebox runes temple" style="--c:${EL_HEX[hd.element]}">${templeBg(this.heroBig(p.active, 140))}<div class="arc">${slots}</div>
-      <div class="tstats"><span class="plaque">${hd.name}</span><div class="muted small">слотов ${ns} из 6</div></div></div>`;
+      <div class="tstats"><span class="plaque">${hd.name}</span><div class="muted small">рун в гнёздах: ${n} из 6</div></div></div>`;
   }
 
-  /** worth putting on: a stronger copy of a worn kind, or a free slot of its type */
+  /** worth putting on: its socket is empty, or holds a rune of a lower rarity */
   private runeBetter(p: P.Profile, r: P.Rune): boolean {
-    const h = p.heroes[p.active], ns = runeSlots(h.stars), key = P.runeKey(r);
-    const on = h.runes.slice(0, ns).map(u => p.runes.find(x => x.uid === u)).filter(Boolean) as P.Rune[];
-    const same = on.find(x => P.runeKey(x) === key);
-    if (same) return r.rarity > same.rarity;
-    return RUNE_SLOT_TYPE.some((t, i) => i < ns && t === P.runeType(r) && h.runes[i] === null);
+    const on = P.socketRune(p, r.slot);
+    return !on || r.rarity > on.rarity;
   }
 
   private runeList(p: P.Profile): [string, string] {
-    const used = new Set(Object.values(p.heroes).flatMap(h => h.runes).filter((x): x is number => x !== null));
-    const f = (RUNE_TYPES as readonly string[]).includes(this.sel.runeFilter) ? this.sel.runeFilter as RuneType : 'all';
-    const order = (r: P.Rune) => RUNE_TYPES.indexOf(P.runeType(r));
-    const list = p.runes.filter(r => !used.has(r.uid) && (f === 'all' || P.runeType(r) === f))
-      .sort((a, b) => b.rarity - a.rarity || order(a) - order(b) || P.runeKey(a).localeCompare(P.runeKey(b)));
-    const chips = `<div class="rtabs">${[['all', 'Все'], ...RUNE_TYPES.map(t => [t, RUNE_TYPE_PL[t]])].map(([k, n]) => `<button class="${f === k ? 'on' : ''}" data-a="filterSet" data-v="${k}">${n}</button>`).join('')}</div>`;
-    return [`<div class="toolbar"><span class="muted small">${resImg('shards')} осколков: <b>${fmt(p.shards)}</b> · рун: ${p.runes.length}</span>
-      <button class="pill" data-a="workshop">Мастерская рун</button></div>${chips}
-      ${list.length ? '' : '<p class="muted">Свободных рун нет. Создай в мастерской из осколков или открой сундук рун в магазине</p>'}`, `<div class="igrid runes">${padCells(list.map(r => `<button class="rcard t${R_TIER[r.rarity]} p${R_PLUS[r.rarity]}" style="--r:${RARITY_COLOR[r.rarity]}" data-a="rune" data-v="${r.uid}">${plusFrame(r.rarity)}${this.runeBetter(p, r) ? '<span class="upg">⇧</span>' : ''}${P.canMergeRune(p, r) ? '<span class="dot">!</span>' : ''}${this.runeBadge(r, 54)}</button>`)).join('')}</div>`];
+    const f = (SLOTS as readonly string[]).includes(this.sel.runeFilter) ? this.sel.runeFilter as Slot : 'all';
+    const list = p.runes.filter(r => !P.runeHolder(p, r.uid) && (f === 'all' || r.slot === f))
+      .sort((a, b) => b.rarity - a.rarity || SLOTS.indexOf(a.slot) - SLOTS.indexOf(b.slot) || a.fx.localeCompare(b.fx));
+    const chips = `<div class="rtabs ortabs"><button class="${f === 'all' ? 'on' : ''}" data-a="filterSet" data-v="all">Все</button>${SLOTS.map(sl => `<button class="${f === sl ? 'on' : ''}" data-a="filterSet" data-v="${sl}" aria-label="${SLOT_NAME[sl]}">${itemSvg(sl, sl === 'book' ? 'guard' : null, 22)}</button>`).join('')}</div>`;
+    const c = f === 'all' ? RUNE_CRAFT : RUNE_CRAFT_TYPE;
+    return [`<div class="toolbar"><span class="muted small">${resImg('shards')} <b>${fmt(p.shards)}</b> · рун: ${p.runes.length}</span>
+      <button class="pill" data-a="runeChance">Шансы</button>
+      <button class="pill" data-a="craft" data-v="${f === 'all' ? '' : f}" ${p.shards >= c ? '' : 'disabled'}>Создать${f === 'all' ? '' : ` «${SLOT_NAME[f]}»`} · ${c}</button></div>${chips}
+      ${list.length ? '' : `<p class="muted">${f === 'all' ? 'Свободных рун нет.' : `Свободных рун слота «${SLOT_NAME[f]}» нет.`} Создай за осколки или открой сундук рун в магазине</p>`}`,
+      `<div class="igrid runes">${padCells(list.map(r => `<button class="rcard orcard t${R_TIER[r.rarity]} p${R_PLUS[r.rarity]}" style="--r:${RARITY_COLOR[r.rarity]}" data-a="rune" data-v="${r.uid}">${this.runeBetter(p, r) ? '<span class="upg">⇧</span>' : ''}<i class="orslot">${itemSvg(r.slot, r.slot === 'book' ? 'guard' : null, 18)}</i>${this.runeBadge(r, 50)}</button>`)).join('')}</div>`];
   }
 
   // ================= jeweler =================
@@ -1421,7 +1376,7 @@ export class Hub {
         const c = CHESTS[id], pity = P.chestPity(p, id), set = this.sel.set;
         const rr = [0, 1, 2, 0, 1, 2];
         const icons = id === 'runes'
-          ? ([{ id: 'revive', rarity: 0 }, { id: 'elem', elem: 'fire', rarity: 1 }, { id: 'skill', skill: 'meteor', rarity: 2 }, { id: 'f_orbs', rarity: 5 }, { id: 'fury', rarity: 1 }, { id: 'elem', elem: 'ice', rarity: 2 }] as P.Rune[]).map(r => med(this.runeBadge({ ...r, uid: 0 }, 32), r.rarity))
+          ? ([{ fx: 'crit', rarity: 0 }, { fx: 'critdmg', rarity: 1 }, { fx: 'dur', rarity: 2 }, { fx: 'plusball', rarity: 5 }, { fx: 'spirit', rarity: 1 }, { fx: 'atk', rarity: 2 }] as const).map(r => med(this.runeBadge(r, 32), r.rarity))
           : SLOTS.map((sl, i) => { const r = id === 'obsidian' ? (i % 3 === 1 ? 2 : 1) : rr[i]; return med(itemSvg(sl, id === 'set' ? set : SETS[i % 3], 34, r), r); });
         const title = id === 'set' ? `Сундук комплекта «${SET_NAME[set]}»` : c.name;
         const what = id === 'runes' ? `1 руна: ${tierTxt(c.odds, true)}` : id === 'set' ? `1 предмет комплекта, включая ${({ guard: 'книгу', wanderer: 'посох', berserk: 'жезл' } as Record<SetId, string>)[set]}: ${tierTxt(c.odds)}` : `1 предмет любого комплекта: ${tierTxt(c.odds)}`;
@@ -1605,13 +1560,13 @@ export class Hub {
       return `<div class="modal" data-a="close"><div class="mbox" style="--r:#ffcf4a"><div class="mhead"><div><b>${c.name}</b><div class="muted small">Шансы за одно открытие</div></div><button class="x" data-a="close">✕</button></div>
         ${c.odds.map((o, r) => o > 0 ? `<div class="oddrow"><span style="color:${RARITY_COLOR[r]}">${names[r]}</span><b>${+(o * 100).toFixed(2)}%</b></div>` : '').join('')}
         ${c.pity ? `<div class="muted small" style="margin-top:8px">Гарантия: ${names[c.pity.rarity].toLowerCase()} или лучше не реже чем раз в ${c.pity.every} открытий. ×10 стоит как 9.</div>` : ''}
-        ${id === 'set' ? '<div class="muted small">Слот выпадает случайно: оружие, мантия, перчатки, сапоги, амулет или кольцо — по 1/6.</div>' : id === 'obsidian' ? '<div class="muted small">Комплект и слот — случайные. Эпические предметы любого комплекта идут в слияние на эпическое +1 и выше.</div>' : '<div class="muted small">Тип руны случайный: благословение, усиление или навык — по 1/3.</div>'}
+        ${id === 'set' ? '<div class="muted small">Слот выпадает случайно: оружие, мантия, перчатки, сапоги, амулет или кольцо — по 1/6.</div>' : id === 'obsidian' ? '<div class="muted small">Комплект и слот — случайные. Эпические предметы любого комплекта идут в слияние на эпическое +1 и выше.</div>' : '<div class="muted small">Слот руны случайный (по 1/6), эффект — случайный из списка слота.</div>'}
       </div></div>`;
     }
     if (this.panel === 'bp') return this.vBp(p);
     if (this.panel === 'passes') return this.vPasses(p);
     if (this.sel.wiki && this.screen === 'settings') return this.wikiScreen();
-    if (this.sel.workshop && this.screen === 'hero') return this.workshopScreen(p);
+    if (this.sel.rch && this.screen === 'hero') return this.runeChances(p);
     if (this.sel.smith && this.screen === 'hero') return this.smithModal(p);
     const it = p.items.find(x => x.uid === this.sel.item);
     if (it && this.screen === 'hero') return this.itemModal(p, it);
@@ -1826,7 +1781,7 @@ export class Hub {
       case 'wChest': return [{ icon: chestSvg(2, 46), q: '5' }];
       case 'mGem': return [{ icon: gemSvg('ruby', 40, 4), q: '1' }, { icon: gemSvg('sapphire', 40, 3), q: '2' }, { icon: resImg('essBig', 'mpi'), q: '20' }];
       case 'mHero': return [{ icon: `${this.heroSvg(hr)}<i class="pz">${resImg('particles', 'pzi')}</i>`, q: '100' }, { icon: couponSvg(true, 44), q: '10' }];
-      case 'mLegend': return [{ icon: runeStone({ id: 'elem', elem: el, rarity: 5 }, 44), q: '2' }, { icon: itemSvg('mantle', set, 44, 2), q: '1' }];
+      case 'mLegend': return [{ icon: orbRuneStone({ fx: 'elite', rarity: 5 }, 44), q: '2' }, { icon: itemSvg('mantle', set, 44, 2), q: '1' }];
       default: return [{ icon: this.prizeIcon(o.icon), q: '' }];
     }
   }
@@ -1957,21 +1912,37 @@ export class Hub {
   }
 
   private runeModal(p: P.Profile, r: P.Rune): string {
-    const holder = P.runeHolder(p, r.uid), on = holder === p.active, d = RUNES[r.id], s = r.rarity, col = RARITY_COLOR[s];
-    const mates = P.runeMates(p, r).length, need = runeDupes(s);
-    const lines = P.runeLines(r).map(l => `<div class="gline${l.on ? ' on' : ''}${l.at > 0 ? ' fx' : ''}"><i>${l.on ? '✓' : '🔒'}</i><span>${l.at > 0 ? `<em style="color:${RARITY_COLOR[l.at]}">${RUNE_RARITY[l.at]}</em>` : ''}${l.text}</span></div>`).join('');
-    return `<div class="modal" data-a="close"><div class="mbox runebox t${R_TIER[s]}" style="--r:${col}">
-      <div class="mhead"><span class="rbig">${this.runeBadge(r, 72)}</span><div><b>${P.runeName(r)}</b>
-        <div class="small"><span class="rtype">${RUNE_TYPE_NAME[d.type]}</span> · <b style="color:${col}">${RUNE_RARITY[s]}</b></div></div><button class="x" data-a="close">✕</button></div>
-      <div class="statline">${P.runeValue(r)}${s < MYTHIC ? ` <span class="muted small">→ ${RUNE_RARITY[s + 1].toLowerCase()}: ${P.pctTxt(P.runeMain(r, s + 1))}</span>` : ''}</div>
-      <div class="glines">${lines}</div>
-      ${holder && !on ? `<div class="muted small">Вставлена у героя: ${hero(holder).name}</div>` : ''}
-      <div class="btns"><button class="btn big2" data-a="runeToggle">${on ? 'Снять' : holder ? 'Забрать себе' : 'Вставить'}</button>
-        ${s < MYTHIC ? `<button class="btn" data-a="runeUp" ${p.shards >= RUNE_UP[s] ? '' : 'disabled'}>Улучшить · ${RUNE_UP[s]} ᚱ</button>` : ''}</div>
-      <div class="btns">${s < MYTHIC ? `<button class="btn ${mates >= need ? '' : 'ghost'}" data-a="runeMerge" ${mates >= need ? '' : 'disabled'}><span>Слить с копиями (${Math.min(mates, need)}/${need})</span></button>` : ''}
-        ${holder ? '' : `<button class="btn ghost" data-a="runeBreak"><span>Разобрать</span> · +${Math.floor(runeWorth(s) / 2)} ᚱ</button>`}</div>
-      <div class="muted small"><span>Осколков: ${fmt(p.shards)}.</span> <span>${s < MYTHIC ? (need === 1 ? 'Слияние: ещё одна такая же руна этой редкости.' : 'Слияние: ещё 2 такие же руны этой редкости.') : 'Высшая редкость.'}</span></div>
+    const holder = P.runeHolder(p, r.uid), s = r.rarity, col = RARITY_COLOR[s], other = holder ? null : P.socketRune(p, r.slot);
+    const n = runeFxList(r.slot, s).length, uniq = RUNE_UNIQUE[r.slot] === r.fx;
+    const roll = this.sel.rolled === r.uid; this.sel.rolled = undefined;
+    const up = s < MYTHIC ? RUNE_UP[s] : 0, rr = RUNE_REROLL[s];
+    const next = s < MYTHIC && RFX[r.fx].max ? `<div class="ornext">${RUNE_RARITY[s + 1]}: <b>${runeLine(r.fx, s + 1)}</b></div>` : '';
+    return `<div class="modal" data-a="close"><div class="mbox runebox orbox t${R_TIER[s]}" style="--r:${col}">
+      <div class="mhead"><span class="rbig${roll ? ' orroll' : ''}">${this.runeBadge(r, 76)}</span><div><b>${P.runeName(r)}</b>
+        <div class="small"><span class="rtype">${SLOT_NAME[r.slot]}</span><b style="color:${col}">${RUNE_RARITY[s]}</b>${uniq ? '<span class="oruq">★ особая строка слота</span>' : ''}</div></div><button class="x" data-a="close">✕</button></div>
+      <div class="statline${roll ? ' orroll2' : ''}">${P.runeValue(r)}</div>${next}
+      <div class="muted small">${trS(`Эффект выпадает случайно из ${n} эффектов слота «${SLOT_NAME[r.slot]}». Переброс даёт новый, другой эффект. Редкость руны сохраняется`)}</div>
+      ${holder ? `<div class="orwhere">✓ В гнезде: ${SLOT_NAME[holder]}</div>` : other ? `<div class="orwhere muted">В гнезде сейчас: ${P.runeName(other)} · ${RUNE_RARITY[other.rarity].toLowerCase()}</div>` : ''}
+      <div class="btns"><button class="btn big2" data-a="runeToggle">${holder ? 'Снять' : other ? 'Заменить' : 'Вставить'}</button>
+        ${s < MYTHIC ? `<button class="btn" data-a="runeUp" ${p.shards >= up ? '' : 'disabled'}>Улучшить · ${up}</button>` : ''}</div>
+      <div class="btns"><button class="btn orreroll" data-a="runeReroll" ${p.shards >= rr ? '' : 'disabled'}>🎲 Перебросить · ${rr}</button><button class="btn ghost" data-a="runeChance">Шансы</button></div>
+      ${holder ? '' : `<div class="btns"><button class="btn ghost" data-a="runeBreak"><span>Разобрать</span> · +${Math.floor(runeWorth(s) / 2)}</button></div>`}
+      <div class="muted small orshards">${resImg('shards')} Осколков рун: <b>${fmt(p.shards)}</b></div>
     </div></div>`;
+  }
+
+  /** правка Ш7: «Шансы переброса» — every line of a slot with its chance; tabs for the six slots; a tap closes it */
+  private runeChances(p: P.Profile): string {
+    const c = this.sel.rch!, list = runeFxList(c.slot, c.rarity), cur = c.fx && list.includes(c.fx as P.Rune['fx']) ? c.fx : undefined;
+    const k = cur ? list.length - 1 : list.length, ch = (100 / k).toFixed(1).replace('.', ',') + '%';
+    const rows = list.map(fx => `<div class="orch${fx === cur ? ' cur' : ''}${RUNE_UNIQUE[c.slot] === fx ? ' uq' : ''}"><img src="${runeSign(fx)}" alt=""><span>${runeLine(fx, c.rarity)}</span><b>${fx === cur ? 'сейчас' : ch}</b></div>`).join('');
+    const tabs = SLOTS.map(sl => `<button class="${sl === c.slot ? 'on' : ''}" data-a="runeChance" data-v="${sl}" aria-label="${SLOT_NAME[sl]}">${itemSvg(sl, sl === 'book' ? 'guard' : null, 26)}</button>`).join('');
+    return `<div class="modal orchm" data-a="rchClose"><div class="mbox orchbox" data-a="rchClose" style="--r:${RARITY_COLOR[c.rarity]}">
+      <div class="orchhead"><b>Шансы переброса</b><span>${SLOT_NAME[c.slot]} · <em style="color:${RARITY_COLOR[c.rarity]}">${RUNE_RARITY[c.rarity]}</em></span></div>
+      <div class="orchlist">${rows}</div>
+      ${c.rarity < PLUSBALL_FROM ? '<div class="muted small orchnote">Эффект «+1 обычный шар» бывает только у легендарных и мифических рун</div>' : ''}
+      <div class="orchtabs">${tabs}</div>
+      <div class="orchtap">Нажми, чтобы закрыть</div></div></div>`;
   }
 
   /** smith (71): every merge that can be done now, a tick per row, tap an item to keep it */
@@ -1994,59 +1965,6 @@ export class Hub {
         <button class="stonebtn" data-a="smGo" ${on ? '' : 'disabled'}><b>Слить выбранное</b><small>${on} ${on === 1 ? 'слияние' : on < 5 && on ? 'слияния' : 'слияний'}</small></button></div>
         <div class="muted small">Уровень остаётся самый высокий, на остальные потраченное вернётся на 90%. Надетый предмет всегда остаётся.</div>`
       : '<p class="muted">Нечего сливать. Обычные и редкие: 3 одинаковых предмета (слот, комплект, редкость). Эпические и выше: смотри «Повысить редкость» в карточке предмета.</p>');
-  }
-
-  /** rune workshop (74): a stone altar with the centre and copy sockets, the storage below; a "craft" tab */
-  private workshopScreen(p: P.Profile): string {
-    const tab = this.sel.wsTab ?? 'merge';
-    const tabs = `<div class="wstabs"><button class="${tab === 'merge' ? 'on' : ''}" data-a="wsTab" data-v="merge">Слияние</button><button class="${tab === 'craft' ? 'on' : ''}" data-a="wsTab" data-v="craft">Создание</button></div>`;
-    const head = `<div class="wshead"><div class="wstitle">Мастерская рун</div><span class="wsshard">${resImg('shards')} ${fmt(p.shards)}</span><button class="x" data-a="wsClose">✕</button></div>`;
-    let body = '';
-    if (tab === 'merge') {
-      const c = p.runes.find(x => x.uid === this.sel.wsCenter), need = c ? runeDupes(c.rarity) : 2, pick = (this.sel.wsPick ?? []).filter(u => p.runes.some(x => x.uid === u));
-      const col = c ? RARITY_COLOR[c.rarity] : '#8a7a6a', ncol = c && c.rarity < MYTHIC ? RARITY_COLOR[c.rarity + 1] : col;
-      const pos = need === 2 ? [[22, 72], [78, 72]] : [[50, 80]];
-      const ghost = c ? this.runeBadge(c, 46) : '';
-      const sockets = pos.map(([x, y], i) => { const r = p.runes.find(q => q.uid === pick[i]);
-        return `<button class="asock cp${r ? ' full' : ''}" style="left:${x}%;top:${y}%" ${r ? `data-a="wsRune" data-v="${r.uid}"` : ''}>${r ? this.runeBadge(r, 50) + '<i class="chk">✓</i>' : `<span class="ghost">${ghost}</span>`}</button>`; }).join('');
-      const chan = pos.map(([x, y], i) => `<path class="chan${pick[i] ? ' lit' : ''}" d="M${x * 3.6} ${y * 2.4} Q${(x * 3.6 + 180) / 2} ${y * 2.4 - 6} 180 ${0.32 * 240}"/>`).join('');
-      const full = !!c && pick.length >= need;
-      const altar = `<div class="altar${full ? ' ready' : ''}" style="--c:${col};--n:${ncol}">
-        <svg class="altsvg" viewBox="0 0 360 240"><defs><radialGradient id="altg" cx=".5" cy=".4"><stop offset="0" stop-color="#5a4c42"/><stop offset="1" stop-color="#1e1814"/></radialGradient></defs>
-          <ellipse cx="180" cy="150" rx="172" ry="84" fill="#0c0908"/><ellipse cx="180" cy="140" rx="168" ry="80" fill="url(#altg)" stroke="#0c0908" stroke-width="3"/>
-          <ellipse cx="180" cy="140" rx="150" ry="66" fill="none" stroke="#2a221c" stroke-width="3"/>
-          <ellipse cx="180" cy="140" rx="140" ry="58" fill="none" stroke="var(--c)" stroke-width="1.5" stroke-dasharray="3 9" class="aring"/>
-          ${chan}<circle cx="180" cy="77" r="44" fill="#0c0908"/><circle cx="180" cy="77" r="40" fill="none" stroke="var(--c)" stroke-width="2" class="aglow"/></svg>
-        ${sockets}
-        <button class="asock cen${c ? ' full' : ''}" style="left:50%;top:32%" ${c ? `data-a="wsRune" data-v="${c.uid}"` : ''}>${c ? this.runeBadge(c, 72) : '<span class="q">?</span>'}</button>
-        <div class="aflash"></div></div>`;
-      const info = c ? `<div class="wsinfo"><b>${P.runeName(c)}</b>
-          <div class="rplq"><span style="--c:${col}">${RUNE_RARITY[c.rarity]}</span>${c.rarity < MYTHIC ? `<em>➜</em><span style="--c:${ncol}">${RUNE_RARITY[c.rarity + 1]}</span>` : ''}</div>
-          ${c.rarity < MYTHIC ? `<div class="wsbonus">${P.runeValue(c)} → <b>${P.pctTxt(P.runeMain(c, c.rarity + 1))}</b></div>${P.runeLines(c).filter(l => l.at === c.rarity + 1).map(l => `<div class="opn">Откроется: ${l.text}</div>`).join('')}` : '<div class="muted small">Высшая редкость</div>'}
-          <div class="muted small">Нужно ${need === 1 ? 'ещё 1 такая же руна' : 'ещё 2 такие же руны'} той же редкости, не вставленные</div></div>`
-        : '<div class="wsinfo"><div class="muted">Выбери руну в хранилище — она встанет в центр алтаря</div></div>';
-      const btns = `<div class="wsbtns"><button class="btn ghost" data-a="wsAuto">Подобрать</button><button class="stonebtn" data-a="wsFuse" ${full ? '' : 'disabled'}><b>Объединить</b><small>${c ? `${Math.min(pick.length, need)}/${need}` : '—'}</small></button></div>`;
-      const mates = new Set(c ? P.runeMates(p, c).map(x => x.uid) : []);
-      const list = [...p.runes].sort((a, b) => b.rarity - a.rarity || P.runeKey(a).localeCompare(P.runeKey(b)) || a.uid - b.uid).map(r => {
-        const cls = r.uid === c?.uid ? ' cen' : pick.includes(r.uid) ? ' pk' : mates.has(r.uid) ? ' mate' : c ? ' dim' : '';
-        const worn = P.runeHolder(p, r.uid);
-        return `<button class="rcard t${R_TIER[r.rarity]}${cls}" style="--r:${RARITY_COLOR[r.rarity]}" data-a="wsRune" data-v="${r.uid}">${P.canMergeRune(p, r) && !c ? '<span class="dot">!</span>' : ''}${worn ? `<span class="worn">${this.heroSvg(worn)}</span>` : ''}${pick.includes(r.uid) ? '<i class="chk">✓</i>' : ''}${this.runeBadge(r, 48)}</button>`;
-      }).join('');
-      body = altar + info + btns + `<div class="vault"><div class="vhead">Хранилище <small>${p.runes.length}</small></div><div class="vgrid">${list || '<p class="muted">Рун пока нет</p>'}</div></div>`;
-    } else {
-      const sample: Record<RuneType, P.Rune> = { bless: { uid: 0, id: 'revive', rarity: 0 }, boost: { uid: 0, id: 'f_orbs', rarity: 0 }, skill: { uid: 0, id: 'skill', skill: 'meteor', rarity: 0 } };
-      body = `<div class="altar craft" style="--c:#c99a3a;--n:#ffcf4a"><svg class="altsvg" viewBox="0 0 360 240"><defs><radialGradient id="altg2" cx=".5" cy=".4"><stop offset="0" stop-color="#5a4c42"/><stop offset="1" stop-color="#1e1814"/></radialGradient></defs>
-          <ellipse cx="180" cy="150" rx="172" ry="84" fill="#0c0908"/><ellipse cx="180" cy="140" rx="168" ry="80" fill="url(#altg2)" stroke="#0c0908" stroke-width="3"/>
-          <ellipse cx="180" cy="140" rx="140" ry="58" fill="none" stroke="var(--c)" stroke-width="1.5" stroke-dasharray="3 9" class="aring"/>
-          <circle cx="180" cy="110" r="52" fill="#0c0908"/><circle cx="180" cy="110" r="48" fill="none" stroke="var(--c)" stroke-width="2" class="aglow"/></svg>
-          <span class="asock cen big" style="left:50%;top:46%"><span class="q">ᚱ</span></span></div>
-        <div class="wsinfo"><b>Создать руну из осколков</b><div class="muted small">Новая руна — обычная. Одинаковые потом сливаются на алтаре.</div></div>
-        <div class="wsbtns"><button class="stonebtn" data-a="craft" ${p.shards >= RUNE_CRAFT ? '' : 'disabled'}><b>Случайная</b><small>${RUNE_CRAFT} ᚱ</small></button></div>
-        <div class="vhead">Руна выбранного типа</div>
-        <div class="wsrow">${RUNE_TYPES.map(t => `<button class="wsbtn" data-a="craft" data-v="${t}" ${p.shards >= RUNE_CRAFT_TYPE ? '' : 'disabled'}>${this.runeBadge(sample[t], 44)}<b>${RUNE_TYPE_NAME[t]}</b><small>${RUNE_CRAFT_TYPE} ᚱ</small></button>`).join('')}</div>
-        <div class="muted small" style="margin-top:10px">Ненужную руну можно разобрать в её карточке — вернётся половина осколков.</div>`;
-    }
-    return `<div class="wscreen">${head}${tabs}<div class="wsbody">${body}</div></div>`;
   }
 
   private gemModal(p: P.Profile, g: P.Gem): string {
@@ -2099,7 +2017,7 @@ export class Hub {
     if (icon === '◆') return gemSvg('amethyst', 28, 3);
     if (icon === '◇') return gemSvg('sapphire', 28, 2);
     if (RES_OF[icon]) return resImg(RES_OF[icon]);
-    if (icon === '🔶') return runeStone({ id: 'fury', rarity: 5 }, 34);
+    if (icon === '🔶') return orbRuneStone({ fx: 'critdmg', rarity: 5 }, 34);
     if (icon === '🛡️') return itemSvg('mantle', 'guard', 34, 2);
     if (icon === '📕') return itemSvg('book', 'guard', 34, 2);
     if (icon === '🏆') return chestSvg(2, 36);

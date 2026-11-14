@@ -2364,7 +2364,7 @@ div.rstats span{flex:1 1 auto;min-width:0}div.rstats small{letter-spacing:0;line
 .obstats div{display:flex;justify-content:space-between;padding:6px 8px;border-bottom:1px solid rgba(160,120,60,.35);font:13px system-ui}.obstats b i{color:#1f8a4a;font-style:normal}
 .obcost{display:flex;justify-content:center;gap:16px;font:700 14px system-ui}.obcost .no{color:#c0261a}.obcost .ok{color:#1f8a4a}
 .obbtns{display:flex;gap:10px;justify-content:center}
-.owin{max-width:440px}.ores{margin:6px 0 8px;text-align:center;font:600 14px system-ui;color:#f0e6cc}
+.owin{max-width:440px}.owst{display:flex;flex-wrap:wrap;justify-content:center;gap:2px 14px;margin:0 0 8px;padding:6px 8px;border-radius:10px;background:#0005;font:600 13px system-ui;color:#f0e6cc}.owst small{flex-basis:100%;text-align:center;font-weight:500;font-size:11px;color:#cbbba0}.ores{margin:6px 0 8px;text-align:center;font:600 14px system-ui;color:#f0e6cc}
 .olist{display:flex;flex-direction:column;gap:8px;max-height:62vh;overflow:auto}
 .orow{display:flex;gap:10px;align-items:center;padding:8px;border-radius:12px;background:linear-gradient(#f6f2e8,#ddd4c2);border:2px solid #b89a5a;color:#3a2a14}
 .orow.on{border-color:#2fbf6a;box-shadow:0 0 0 2px #2fbf6a55}.orow.locked{filter:saturate(.4)}
@@ -2395,6 +2395,59 @@ div.rstats span{flex:1 1 auto;min-width:0}div.rstats small{letter-spacing:0;line
 .otitle{display:flex;flex-direction:column;align-items:center;text-align:center;font-family:Georgia,serif;filter:drop-shadow(0 4px 6px #000)}
 .otitle b{font-size:44px;font-weight:900;letter-spacing:1px;background:linear-gradient(#fffbe8,#f2d27a 45%,#b8861c 55%,#ffe9a0);-webkit-background-clip:text;background-clip:text;color:transparent;-webkit-text-stroke:1.5px #3a2600}
 .otitle span{margin-top:-4px;font-size:22px;font-weight:700;letter-spacing:6px;color:#bff5d0;text-shadow:0 0 10px #2fe080,0 2px 2px #000;text-transform:uppercase}
+/* ---- Orb Defense runes (правки Ш7, Ш37): marble stone + sign, rarity glow drawn here ---- */
+.orst{position:relative;display:inline-block;width:var(--s);height:var(--s);flex:none;vertical-align:middle}
+.orst img{position:absolute;display:block;pointer-events:none}
+.orst .orsb{inset:0;width:100%;height:100%;object-fit:contain;filter:drop-shadow(0 0 1.5px var(--q)) drop-shadow(0 0 1.5px var(--q)) drop-shadow(0 0 calc(var(--s)*.08) var(--q)) drop-shadow(0 2px 2px #000a)}
+.orst::after{content:'';position:absolute;inset:7%;border-radius:50%;box-shadow:inset 0 0 0 calc(var(--s)*.03) color-mix(in srgb,var(--q) 70%,transparent),inset 0 0 calc(var(--s)*.12) color-mix(in srgb,var(--q) 45%,transparent);pointer-events:none}
+.orst .orss{left:18%;top:18%;width:64%;height:64%;object-fit:contain;filter:drop-shadow(0 1px 1px #0009);z-index:1}
+.orst .orpl{position:absolute;right:-3px;bottom:-2px;z-index:2;min-width:calc(var(--s)*.34);padding:0 3px;height:calc(var(--s)*.3);border-radius:8px;background:#1a1410;border:1.5px solid var(--q);color:#fff;font-size:calc(var(--s)*.2);font-weight:900;line-height:calc(var(--s)*.27);text-align:center}
+.orst.t3 .orsb{animation:orleg 2.4s ease-in-out infinite}
+.orst.t4 .orsb{animation:ormyth 1.6s ease-in-out infinite}
+@keyframes orleg{50%{filter:drop-shadow(0 0 2px var(--q)) drop-shadow(0 0 2px var(--q)) drop-shadow(0 0 calc(var(--s)*.18) var(--q)) drop-shadow(0 2px 2px #000a)}}
+@keyframes ormyth{50%{filter:drop-shadow(0 0 2.5px var(--q)) drop-shadow(0 0 2.5px #ffd0a0) drop-shadow(0 0 calc(var(--s)*.24) var(--q)) drop-shadow(0 2px 2px #000a)}}
+.rslot.orsock{width:72px;height:84px;border-radius:14px;justify-content:flex-start;padding-top:2px;gap:1px}
+.rslot.orsock.full{background:radial-gradient(circle at 50% 40%,color-mix(in srgb,var(--c) 30%,transparent),transparent 62%)}
+.rslot.orsock.empty .orsi{width:58px;height:58px;border-radius:50%;border:2px dashed #e6cf8a99;background:#0e0b0a99;display:flex;align-items:center;justify-content:center;opacity:.9}
+.rslot.orsock.empty .orsi svg{opacity:.45;filter:grayscale(.6)}
+.rslot.orsock .orsn{position:relative;font-size:9.5px;font-weight:800;color:#f2e6c8;text-shadow:0 1px 2px #000,0 0 3px #000;margin-top:2px;white-space:nowrap}
+.orcard .orslot{position:absolute;left:3px;bottom:3px;width:20px;height:20px;border-radius:6px;background:#0008;display:flex;align-items:center;justify-content:center;z-index:2}
+.orcard .orslot svg{width:16px;height:16px}
+.ortabs button{display:flex;align-items:center;justify-content:center;padding:4px 2px}
+.ortabs button:first-child{flex:1.4}
+.ortabs button svg{width:22px;height:22px;flex:none}
+.ortabs button:not(.on) svg{opacity:.75}
+.orbox .mhead .rbig{width:auto;height:auto;margin-right:4px;filter:none}
+.orbox .mhead .small{display:flex;flex-wrap:wrap;gap:2px 6px;align-items:center;margin-top:3px}
+.orbox .oruq{flex-basis:100%}
+.orbox .ornext{margin:-2px 0 8px;font-size:12.5px;color:#cbbba0}.orbox .ornext b{color:#9ee6a8}
+.orbox .oruq{color:#ffd56a;font-weight:800}
+.orbox .orwhere{margin:8px 0 2px;font-size:13px;font-weight:700;color:#7fe0a0}
+.orbox .orwhere.muted{color:#cbbba0;font-weight:600}
+.orbox .orshards{margin-top:6px;text-align:center}
+.orbox .btns .orreroll{background:linear-gradient(#7a5cff,#4a2fc0);color:#fff;border-color:#2a1a70}
+.orroll .orst{animation:orroll .75s cubic-bezier(.3,1.4,.5,1)}
+@keyframes orroll{0%{transform:scale(.55) rotate(-200deg);filter:brightness(2.4)}60%{filter:brightness(1.6)}100%{transform:none;filter:none}}
+.orroll2{animation:orflash .9s ease-out}
+@keyframes orflash{0%{background:#7a5cff88;color:#fff}100%{}}
+.orchm{z-index:60}
+.orchbox{max-width:420px;max-height:calc(100% - 24px);overflow-y:auto;overscroll-behavior:contain;padding:12px 12px 10px;background:linear-gradient(#2a221c,#16110e);border:2px solid #c9a65a;border-radius:16px}
+.orchhead{display:flex;flex-direction:column;align-items:center;gap:2px;margin-bottom:8px}
+.orchhead b{font-size:18px;color:#ffe9b0;letter-spacing:.3px}
+.orchhead span{font-size:12.5px;color:#cbbba0}.orchhead em{font-style:normal;font-weight:800}
+.orchlist{display:flex;flex-direction:column;gap:3px}
+.orch{display:flex;align-items:center;gap:8px;padding:4px 8px;border-radius:9px;background:#ffffff0b;border:1px solid #ffffff14;font-size:12.5px;line-height:1.25;color:#efe4cf}
+.orch img{width:26px;height:26px;object-fit:contain;flex:none;filter:drop-shadow(0 1px 1px #000)}
+.orch span{flex:1}
+.orch b{flex:none;min-width:46px;text-align:right;color:#ffd56a;font-size:12.5px}
+.orch.uq{border-color:#c9a65a99;background:linear-gradient(90deg,#c9a65a2e,#ffffff08)}
+.orch.cur{border-color:#7fe0a0aa;background:#2fbf6a24}.orch.cur b{color:#7fe0a0}
+.orchnote{margin:6px 2px 0}
+.orchtabs{display:flex;gap:4px;margin-top:10px;background:#0006;border-radius:12px;padding:3px}
+.orchtabs button{flex:1;display:flex;align-items:center;justify-content:center;padding:5px 2px;border-radius:9px}
+.orchtabs button.on{background:linear-gradient(#ffd98a,#d0902e);box-shadow:inset 0 1px 0 #fff8}
+.orchtabs button svg{width:26px;height:26px}
+.orchtap{margin-top:8px;text-align:center;font-size:12px;color:#a8988a}
 </style>
 </head>
 <body>

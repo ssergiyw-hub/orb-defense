@@ -141,3 +141,7 @@ export function stageDef(s: number): StageDef {
   };
 }
 export const BASE_WALL_HP = 1200;
+/** wall health: base × wall level, plus the wall gems (topaz, a number), then the reinforced wall and the wall rune (%) */
+export function wallMaxOf(wall: { id: WallId; rarity: number; lv: number }, gemHp: number, runePct: number): number {
+  return Math.round((BASE_WALL_HP * (1 + 0.08 * (wall.lv - 1)) + gemHp) * (1 + (wall.id === 'reinf' ? wallFx.reinf(wall.rarity) : 0) + runePct));
+}

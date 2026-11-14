@@ -94,6 +94,18 @@ for i,k in enumerate(RN):
     al=nd.gaussian_filter((~b).astype(float),0.6)
     img=Image.fromarray(np.dstack([a,np.clip(al*1.2,0,1)*255]).astype(np.uint8),'RGBA'); img=img.crop(bbox(np.array(img),30))
     save(img,f'rune/{k}.webp',90)
+# --- rune signs that the 2170 sheet has no (Meshy, 14.11): attack, hero health, gold, burn+poison, wet+frozen
+im=np.array(Image.open(U+'meshy-runes2.png').convert('RGB')).astype(int)
+wh=(im.min(2)>235)&((im.max(2)-im.min(2))<18)
+lab,n=nd.label(wh); edge=set(np.unique(np.concatenate([lab[0],lab[-1],lab[:,0],lab[:,-1]])))-{0}
+bg=np.isin(lab,list(edge))
+for k,(x,y,w,h) in {'atk':(57,23,159,474),'hp':(292,47,191,173),'gold':(534,59,217,163),'dot':(276,292,223,190),'wetfrozen':(528,295,224,187)}.items():
+    x0,y0,x1,y1=max(0,x-12),max(0,y-12),x+w+12,y+h+12
+    a=im[y0:y1,x0:x1]; b=bg[y0:y1,x0:x1]
+    al=nd.gaussian_filter((~b).astype(float),0.6)
+    img=Image.fromarray(np.dstack([a,np.clip(al*1.2,0,1)*255]).astype(np.uint8),'RGBA'); img=img.crop(bbox(np.array(img),30))
+    if k=='atk': img=img.rotate(-40,resample=Image.BICUBIC,expand=True); img=img.crop(bbox(np.array(img),30))  # the long sword lies across the stone
+    save(img,f'rune/{k}.webp',90)
 # --- enemies (from enemies.py output)
 meta['en']={}
 for fn in os.listdir('en'):

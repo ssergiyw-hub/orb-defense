@@ -79,7 +79,7 @@ function spiritsModal(p: P.Profile): string {
 }
 
 function wallsModal(p: P.Profile): string {
-  const o = OM.orb(p);
+  const o = OM.orb(p), ws = OM.wallStats(p);
   const rows = WALL_IDS.map(w => {
     const x = o.walls[w], r = w === 'start' ? 0 : OM.rarityOf(x.lv), cost = OM.wallCost(x.lv), use = o.wall === w;
     const btn = !x.owned
@@ -91,5 +91,7 @@ function wallsModal(p: P.Profile): string {
         <div class="obtns2">${btn}</div></div></div>`;
   }).join('');
   return `<div class="modal" data-a="close"><div class="mbox owin"><div class="mhead"><div><b>Стены</b><div class="muted small">Покупка — за кристаллы, укрепление — камнями стены (бои и батл пасс)</div></div><button class="x" data-a="close">✕</button></div>
-    <div class="ores">🧱 Камни стены: <b>${o.wallStones}</b> · 💎 ${p.crystals}</div><div class="olist">${rows}</div></div></div>`;
+    <div class="ores">🧱 Камни стены: <b>${o.wallStones}</b> · 💎 ${p.crystals}</div>
+    <div class="owst"><span>❤️ Здоровье стены в бою: <b>${fmt(ws.hp)}</b></span><span>🛡 Броня: <b>${ws.armor}</b></span><small>${trS('Здоровье растёт от уровня стены, топазов и рун «Здоровье стены». Броня — от сапфиров: гасит часть каждого удара врага, но удар не меньше 1 и не слабее половины')}</small></div>
+    <div class="olist">${rows}</div></div></div>`;
 }

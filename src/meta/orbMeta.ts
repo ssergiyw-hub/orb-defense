@@ -1,7 +1,7 @@
 // Orb Defense: the meta of the new game on top of the «Призванный герой» profile — balls (books), spirits (tavern),
 // walls, and what a stage gives. Gear, gems, heroes, shop and tasks stay from the old game.
 import * as P from './profile';
-import { BallId, BALL_IDS, SpiritId, SPIRIT_IDS, WallId, WALL_IDS, HERO_BALL, stageDef } from '../core/orbContent';
+import { BallId, BALL_IDS, SpiritId, SPIRIT_IDS, WallId, WALL_IDS, HERO_BALL, stageDef, wallMaxOf } from '../core/orbContent';
 import type { OrbConfig, Orb } from '../core/orb';
 
 export interface OrbProfile {
@@ -83,18 +83,39 @@ export function upgradeWall(p: P.Profile, w: WallId): void {
   o.wallStones -= c; x.lv++;
 }
 
+// ---------------- wall gems (правка Ш9) ----------------
+/** topaz — wall health, sapphire — wall armor: plain numbers from the gems in the sockets */
+export function wallGems(p: P.Profile): { hp: number; armor: number } {
+  const out = { hp: 0, armor: 0 };
+  for (const g of P.equippedGems(p)) { if (g.type === 'topaz') out.hp += P.gemAmount(g); else if (g.type === 'sapphire') out.armor += P.gemAmount(g); }
+  return { hp: Math.round(out.hp), armor: Math.round(out.armor * 10) / 10 };
+}
+const wallNow = (p: P.Profile) => { const o = orb(p), w = o.walls[o.wall].owned ? o.wall : 'start'; return { id: w, rarity: w === 'start' ? 0 : rarityOf(o.walls[w].lv), lv: o.walls[w].lv }; };
+/** what the wall has in battle: health (level, gems, reinforced wall, rune) and armor */
+export function wallStats(p: P.Profile): { hp: number; armor: number } {
+  const g = wallGems(p);
+  return { hp: wallMaxOf(wallNow(p), g.hp, P.runeTotals(p).wallhp ?? 0), armor: g.armor };
+}
+
 // ---------------- a battle from the profile ----------------
 export function makeConfig(p: P.Profile, stage: number, heroId: string, seed: number): OrbConfig {
-  const o = orb(p), st = P.statSheet(p, heroId), mods = P.computeMods(p, heroId);
+  const o = orb(p), st = P.statSheet(p, heroId), mods = P.computeMods(p, heroId), rt = P.runeTotals(p), wg = wallGems(p);
   const sp = o.spirit && o.spirits[o.spirit].owned ? { id: o.spirit, rarity: rarityOf(o.spirits[o.spirit].lv), lv: o.spirits[o.spirit].lv } : undefined;
-  const w = o.walls[o.wall].owned ? o.wall : 'start';
+  // правка Ш7: the rune lines go to the battle; attack and hero health are already in the stat sheet
+  const rune: OrbConfig['rune'] = {
+    normal: rt.normal, allBalls: rt.allballs, afflicted: rt.afflicted, dur: rt.dur, plusBall: rt.plusball, spirit: rt.spirit,
+    impact: rt.impact, area: rt.area, beamLight: rt.beamlight, pierce: rt.pierce, dot: rt.dot, wetFrozen: rt.wetfrozen,
+    repair: rt.repair, gold: rt.gold, elite: rt.elite, wallPct: rt.wallhp,
+  };
+  for (const k of Object.keys(rune) as (keyof typeof rune)[]) if (!rune[k]) delete rune[k];
   return {
     seed, stage, heroId, heroBall: HERO_BALL[heroId] ?? 'fire',
     atk: Math.round(st.atk), hp: Math.round(st.hp * 3),
-    crit: Math.min(0.75, 0.05 + mods.crit), critDmg: mods.critDmg + ballCritTotal(p), boss: mods.boss,
+    crit: Math.min(0.75, 0.05 + mods.crit + (rt.crit ?? 0)), critDmg: mods.critDmg + ballCritTotal(p) + (rt.critdmg ?? 0), boss: mods.boss,
     ballLv: Object.fromEntries(BALL_IDS.map(b => [b, o.balls[b].lv])),
-    normals: NORMALS, spirit: sp,
-    wall: { id: w, rarity: w === 'start' ? 0 : rarityOf(o.walls[w].lv), lv: o.walls[w].lv },
+    normals: NORMALS, spirit: sp, wall: wallNow(p),
+    ...(wg.hp ? { wallHp: wg.hp } : {}), ...(wg.armor ? { wallArmor: wg.armor } : {}),
+    ...(Object.keys(rune).length ? { rune } : {}),
   };
 }
 
@@ -105,7 +126,7 @@ export function finishOrb(p: P.Profile, m: Orb, stage: number, quit: boolean): O
   const lines: string[] = [];
   p.runs++; if (win) p.wins++;
   P.taskAdd(p, 'kills', s.kills); if (share > 0.3) P.taskAdd(p, 'runs', 1); if (win) P.taskAdd(p, 'wins', 1);
-  const gold = Math.round((140 + 25 * stage) * share + s.kills * 1.5);
+  const gold = Math.round(((140 + 25 * stage) * share + s.kills * 1.5) * (1 + (s.cfg.rune?.gold ?? 0))); // правка Ш7: rune «золото за бой»
   p.gold += gold;
   const scrolls = share > 0.3 ? Math.max(1, Math.round(P.STAGE.scrolls(stage) * share)) : 0;
   p.scrolls += scrolls;

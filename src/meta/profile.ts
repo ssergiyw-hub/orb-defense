@@ -12,13 +12,16 @@ import {
   SMALL_COUPON, STAR_LEVEL, STAR_PARTICLES, SetId, Slot, gemXpFor, heroXpFor, levelCost, runeSlots, spentTo,
   RARITIES, SLOT_NAME, SET_NAME, WEAPON_NAME, RUNE_RARITY, GEM_LOCATIONS, GEM_FREE_PER_DAY, CHESTS, CHEST_X10, ChestId, HERO_UNLOCK_PARTICLES,
 } from './defs';
+import { RfxId, RFX, runeFxList, runeAmount, runeLine, RUNE_REROLL } from './runeDefs';
 import { ELEMENT_NAME } from '../core/content';
 
 export interface HeroState { owned: boolean; level: number; xp: number; stars: number; particles: number; runes: (number | null)[] }
 export interface Item { uid: number; slot: Slot; set: SetId | null; rarity: number; level: number; gems: (number | null)[] }
 export interface Gem { uid: number; type: GemType; stars: number; level: number; xp: number }
-/** a rune: its kind (id), rarity step 0..9, and the element or skill for the runes that have one */
-export interface Rune { uid: number; id: RuneId; rarity: number; elem?: Element; skill?: SkillId }
+/** правки Ш7, Ш37: a rune of a gear slot — its effect (rolled from the slot's list) and rarity step 0..9 */
+export interface Rune { uid: number; slot: Slot; fx: RfxId; rarity: number }
+/** the rune of the old game (before gv 3), only for the migration */
+interface OldRune { uid: number; id: RuneId; rarity: number; elem?: Element; skill?: SkillId }
 
 export interface Profile {
   v: 1;
@@ -33,6 +36,8 @@ export interface Profile {
   gems: Gem[];
   /** @deprecated v0.5: gems live in item sockets */ bookGems?: (number | null)[];
   runes: Rune[];
+  /** правка Ш7: the rune in the socket of every gear slot (stays when the item is changed) */
+  runeOn?: Partial<Record<Slot, number>>;
   maxMap: number;
   idleAt: number; fastIdleDay: string;
   pityGem: number; pityGem4?: number; pityCoupon: number; pityLottery: number; lotteryFreeDay: string;
@@ -136,7 +141,7 @@ export function newProfile(starter: string): Profile {
     items: [], equipped: { book: null, mantle: null, gloves: null, boots: null, amulet: null, ring: null },
     gems: [], runes: [],
     maxMap: 0, idleAt: Date.now(), fastIdleDay: '', pityGem: 0, pityCoupon: 0, pityLottery: 0, lotteryFreeDay: '',
-    energyBuys: { day: '', n: 0 }, nextUid: 1, seen: [], runs: 0, wins: 0, gv: 2,
+    energyBuys: { day: '', n: 0 }, nextUid: 1, seen: [], runs: 0, wins: 0, gv: 3, runeOn: {},
   };
   // starter kit: a common book and one gem
   const book = addItem(p, 'book', 'guard', 0); p.equipped.book = book.uid;
@@ -166,6 +171,8 @@ export function load(): Profile | null {
     const ex = p.explore as unknown as { found?: { type: GemType; stars: number }[] } | undefined;
     if (ex?.found?.length) { for (const f of ex.found) addGem(p, f.type, f.stars); ex.found = []; }
     if ((p.gv ?? 1) < 2) { migrateV2(p); save(p); }
+    if ((p.gv ?? 1) < 3) { migrateV3(p); save(p); }
+    p.runeOn ??= {};
     // правка 157: a gem that does not fit its item any more goes back to the Jeweller (the gem itself is kept)
     for (const it of p.items) it.gems = it.gems.map(u => { const g = u === null ? null : p.gems.find(x => x.uid === u); return g && !gemFits(g.type, it.slot) ? null : u; });
     // правка 185: input records move out of the profile
@@ -190,7 +197,7 @@ function migrateV2(p: Profile): void {
       p.gold += a.gold - b.gold; p.scrolls += a.scrolls - b.scrolls; it.level = cap;
     }
   }
-  for (const r of p.runes as (Rune & { kind?: string })[]) {
+  for (const r of p.runes as unknown as (OldRune & { kind?: string })[]) {
     if (r.id) continue;
     r.id = r.kind === 'destroy' ? 'destroy' : r.kind === 'absorb' ? 'absorb' : 'elem';
     r.rarity = [0, 1, 2, LEGEND][Math.min(3, Math.max(0, r.rarity))];
@@ -200,12 +207,25 @@ function migrateV2(p: Profile): void {
     const had = h.runes.filter((x): x is number => x !== null);
     h.runes = [null, null, null, null, null, null];
     for (const uid of had) {
-      const r = p.runes.find(x => x.uid === uid); if (!r) continue;
+      const r = (p.runes as unknown as OldRune[]).find(x => x.uid === uid); if (!r) continue;
       const i = RUNE_SLOT_TYPE.findIndex((t, k) => t === RUNES[r.id].type && h.runes[k] === null && k < runeSlots(h.stars));
       if (i >= 0) h.runes[i] = uid;
     }
   }
   p.gv = 2;
+}
+/** gv 3 (Orb Defense, правки Ш7, Ш9): the runes of the old game go back as shards — every step paid in full;
+ *  the gems that are gone (amethyst, jade) become the new wall gems */
+function migrateV3(p: Profile): void {
+  const old = p.runes as unknown as (OldRune | Rune)[];
+  let back = 0;
+  p.runes = [];
+  for (const r of old) { if ('fx' in r && r.fx) p.runes.push(r); else back += runeWorth(Math.max(0, Math.min(MYTHIC, r.rarity))); }
+  p.shards += back;
+  for (const h of Object.values(p.heroes)) h.runes = [null, null, null, null, null, null];
+  p.runeOn = {};
+  for (const g of p.gems) { if (g.type === 'amethyst') g.type = 'topaz'; else if (g.type === 'jade') g.type = 'sapphire'; }
+  p.gv = 3;
 }
 let saveHook: ((json: string) => void) | null = null;
 /** Б2: the client sends every saved profile to the game server too (src/client/cloud.ts) */
@@ -226,41 +246,25 @@ function addGem(p: Profile, type: GemType, stars: number): Gem {
 }
 export const itemName = (it: Item) => `${it.slot === 'book' && it.set ? WEAPON_NAME[it.set] : SLOT_NAME[it.slot]}${it.set ? ` «${SET_NAME[it.set]}»` : ''}`;
 
-// ---------------- runes: names and lines ----------------
-export const runeType = (r: Rune): RuneType => RUNES[r.id].type;
-/** what makes two runes the same: kind plus element or skill */
-export const runeKey = (r: Rune) => `${r.id}:${r.elem ?? r.skill ?? ''}`;
-/** the element or skill the rune is about, for its text */
-/** правка 196: what the element rune makes stronger, element by element */
-export const ELEM_RUNE_FX: Record<Element, string> = {
-  fire: 'поджог', ice: 'замедление', nature: 'лечение от попаданий', light: 'усиление за попадание', dark: 'ослабление защиты',
-  lightning: 'шанс перескока молнии', water: 'расширение стрелы', phys: 'отталкивание', air: 'ускорение стрелы', poison: 'отравление',
-};
-const runeX = (r: Rune) => r.elem ? ELEMENT_NAME[r.elem] : r.skill ? SKILLS[r.skill].name : '';
-export function runeName(r: Rune): string {
-  const d = RUNES[r.id];
-  return r.id === 'elem' ? `Руна стихии: ${runeX(r)}` : r.id === 'skill' ? `Руна: ${runeX(r)}` : d.type === 'bless' ? `Руна «${d.name}»` : d.name;
-}
-/** percent for a rune line: one decimal under 10%, none above */
+// ---------------- runes: names and lines (правки Ш7, Ш37) ----------------
+export const runeName = (r: { fx: RfxId }) => `Руна «${RFX[r.fx].short}»`;
+/** the line of the rune with its number; at another rarity when asked */
+export const runeValue = (r: { fx: RfxId; rarity: number }, s = r.rarity) => runeLine(r.fx, s);
+/** percent for a line: one decimal under 10%, none above */
 export const pctTxt = (v: number) => { const x = v * 100; return (x < 10 ? x.toFixed(1).replace('.0', '') : Math.round(x).toString()).replace('.', ',') + '%'; };
-export const runeMain = (r: Rune, s = r.rarity) => RUNES[r.id].base * RUNE_K[s];
-export function runeValue(r: Rune, s = r.rarity): string { return RUNES[r.id].line(pctTxt(runeMain(r, s)), runeX(r)); }
-/** every line of a rune: the main one, the family card bonus, what opens at epic / legendary / mythic */
-export function runeLines(r: Rune): { at: number; text: string; on: boolean }[] {
-  const d = RUNES[r.id], s = r.rarity, out: { at: number; text: string; on: boolean }[] = [];
-  if (d.family) out.push({ at: 0, text: `карты «${FAMILY_NAME[d.family]}» выпадают в ${String(FAMILY_W[runeTier(s)]).replace('.', ',')} раза чаще`, on: true });
-  if (r.skill && SKILLS[r.skill].rune) out.push({ at: 0, text: 'открывает этот навык в бою (без руны его нет)', on: true });
-  // правка 196: an element rune names the effect of its own element
-  const fx = r.id === 'elem' && r.elem ? ELEM_RUNE_FX[r.elem] : '';
-  out.push({ at: EPIC, text: fx ? `${fx} сильнее на 20%` : d.e, on: s >= EPIC }, { at: LEGEND, text: fx ? `${fx} сильнее на 40%` : d.l, on: s >= LEGEND }, { at: MYTHIC, text: fx ? `${fx} сильнее на 60%` : d.m, on: s >= MYTHIC });
-  return out;
+/** the slot whose socket holds this rune */
+export const runeHolder = (p: Profile, uid: number): Slot | null => SLOTS.find(s => p.runeOn?.[s] === uid) ?? null;
+export const socketRune = (p: Profile, s: Slot): Rune | null => { const u = p.runeOn?.[s]; return u === undefined ? null : p.runes.find(r => r.uid === u) ?? null; };
+/** every effect of the runes in the sockets, summed. «+1 обычный шар» counts once, the duration chance stops at 100% */
+export function runeTotals(p: Profile): Partial<Record<RfxId, number>> {
+  const t: Partial<Record<RfxId, number>> = {};
+  for (const s of SLOTS) {
+    const r = socketRune(p, s); if (!r) continue;
+    t[r.fx] = r.fx === 'plusball' ? 1 : (t[r.fx] ?? 0) + runeAmount(r.fx, r.rarity);
+  }
+  if (t.dur) t.dur = Math.min(1, t.dur);
+  return t;
 }
-/** a short label: blessing or family name, element, skill */
-export function runeShort(r: Rune): string {
-  const d = RUNES[r.id];
-  return r.id === 'elem' ? runeX(r) : r.id === 'skill' ? runeX(r) : d.family ? FAMILY_NAME[d.family] : d.name;
-}
-export const runeHolder = (p: Profile, uid: number) => Object.keys(p.heroes).find(id => p.heroes[id].runes.includes(uid)) ?? null;
 
 // ---------------- timers ----------------
 export function tick(p: Profile): void {
@@ -599,10 +603,8 @@ export function statSheet(p: Profile, heroId = p.active): StatSheet {
   if ((sets.guard ?? 0) >= 2) hpPct += SET_PCT.guard2;
   if ((sets.guard ?? 0) >= 6) hpPct += SET_PCT.guard6;
   if ((sets.wanderer ?? 0) >= 4) hpPct += SET_PCT.wanderer4Hp;
-  for (const uid of h.runes.slice(0, runeSlots(h.stars))) {
-    const r = p.runes.find(x => x.uid === uid); if (!r) continue;
-    if (r.id === 'fury') atkPct += runeMain(r); else if (r.id === 'revive') hpPct += runeMain(r);
-  }
+  // правка Ш7: the rune lines «Атака» and «Здоровье героя»
+  const rt = runeTotals(p); atkPct += rt.atk ?? 0; hpPct += rt.hp ?? 0;
   const atkFlat = hero.atk + gear.atk + gems.atk, hpFlat = hero.hp + gear.hp + gems.hp;
   return { atk: atkFlat * (1 + atkPct), hp: Math.max(30, hpFlat * (1 + hpPct)), atkFlat, hpFlat, atkPct, hpPct, hero, gear, gems };
 }
@@ -651,38 +653,12 @@ export function computeMods(p: Profile, heroId = p.active): RunMods {
   for (const g of equippedGems(p)) {
     const v = gemAmount(g);
     switch (g.type) {
-      case 'sapphire': m.def += v; break;
-      case 'topaz': m.pickup += v; break; case 'amethyst': m.area += v; break; case 'diamond': m.crit += v; break;
-      case 'garnet': m.critDmg += v; break; case 'jade': m.regen += v; break;
+      // правка Ш9: sapphire (wall armor) and topaz (wall health) work in the ball battle (orbMeta.makeConfig)
+      case 'diamond': m.crit += v; break;
+      case 'garnet': m.critDmg += v; break;
     }
   }
-  // runes of this hero: main line by step, more at epic / legendary / mythic
-  const mx = (a: number | undefined, b: number) => Math.max(a ?? 0, b);
-  for (const uid of h.runes.slice(0, runeSlots(h.stars))) {
-    const r = p.runes.find(x => x.uid === uid); if (!r) continue;
-    const v = runeMain(r), t = runeTier(r.rarity), d = RUNES[r.id];
-    switch (r.id) {
-      case 'revive': if (t) m.revive = mx(m.revive, [0, 0.3, 0.6, 1][t]); break;
-      case 'wisdom': m.xp! += v; m.rerolls! += t; break;
-      case 'luck': m.loot! += v; m.goldBoss! += [0, 0.1, 0.2, 0.35][t]; break;
-      case 'guard': m.def += v; m.iframes! += [0, 0.2, 0.35, 0.5][t]; break;
-      case 'destroy': m.boss += v; if (t) m.bossCut = mx(m.bossCut, [0, 0.05, 0.1, 0.15][t]); break;
-      case 'absorb': m.vamp += v; if (t) m.killHeal = mx(m.killHeal, [0, 0.04, 0.06, 0.08][t]); break;
-      case 'regen': m.regen += v; if (t) m.lvlHeal = mx(m.lvlHeal, [0, 0.05, 0.08, 0.12][t]); break;
-      case 'swift': m.speed += v; m.pickup += [0, 0.25, 0.5, 0.8][t]; break;
-      case 'fury': if (t) m.fury = mx(m.fury, [0, 0.1, 0.2, 0.3][t]); break;
-      case 'elem': if (r.elem) { m.elem[r.elem] = (m.elem[r.elem] ?? 0) + v; if (t) m.elemPow![r.elem] = (m.elemPow![r.elem] ?? 0) + [0, 0.2, 0.4, 0.6][t]; } break;
-      case 'skill': if (r.skill) {
-        m.skillDmg![r.skill] = (m.skillDmg![r.skill] ?? 0) + v;
-        if (t) m.start![r.skill] = mx(m.start![r.skill], t);
-        if (SKILLS[r.skill].rune) m.unlock!.push(r.skill);
-      } break;
-      default: if (d.family) { // family runes
-        const f = d.family;
-        m.fam![f] = (m.fam![f] ?? 0) + v; m.famLv![f] = mx(m.famLv![f], t); m.famW![f] = mx(m.famW![f], FAMILY_W[t]);
-      }
-    }
-  }
+  // правка Ш7: the runes of Orb Defense work in the ball battle (orbMeta.makeConfig), not here
   if (passActive(p, 'month')) m.rerolls! += 1;
   return m;
 }
@@ -905,71 +881,44 @@ export function starUp(p: Profile, id: string): void {
   h.particles -= need; h.stars++;
 }
 
-// ---------------- runes ----------------
-/** a new rune of a kind; elem/skill picked at random when the kind needs one */
-export function addRune(p: Profile, id: RuneId, rarity: number, x?: { elem?: Element; skill?: SkillId }): Rune {
-  const r: Rune = { uid: p.nextUid++, id, rarity };
-  if (id === 'elem') r.elem = x?.elem ?? pick(ELEMENTS);
-  if (id === 'skill') r.skill = x?.skill ?? pick(RUNE_SKILLS);
+// ---------------- runes (правки Ш7, Ш37) ----------------
+/** a new rune of a slot; the effect is rolled from the slot's list when not given */
+export function addRune(p: Profile, slot: Slot, rarity: number, fx?: RfxId): Rune {
+  const r: Rune = { uid: p.nextUid++, slot, rarity, fx: fx ?? pick(runeFxList(slot, rarity)) };
   p.runes.push(r); return r;
 }
-/** a random rune: type 1/3 each (or the one asked), then any kind of that type */
-export function randomRune(p: Profile, rarity: number, type?: RuneType): Rune {
-  const t = type ?? pick(['bless', 'boost', 'skill'] as RuneType[]);
-  if (t === 'bless') return addRune(p, pick(BLESS_RUNES), rarity);
-  if (t === 'skill') return addRune(p, 'skill', rarity);
-  // boosts: 10 elements and 6 families, each as likely
-  const k = Math.floor(rnd() * (ELEMENTS.length + FAMILY_RUNES.length));
-  return k < ELEMENTS.length ? addRune(p, 'elem', rarity, { elem: ELEMENTS[k] }) : addRune(p, FAMILY_RUNES[k - ELEMENTS.length], rarity);
-}
-export function craftRune(p: Profile, type?: RuneType): Rune {
-  pay(p, 'shards', type ? RUNE_CRAFT_TYPE : RUNE_CRAFT);
-  return randomRune(p, 0, type);
+/** a random rune: any slot (or the one asked), any effect of its list */
+export function randomRune(p: Profile, rarity: number, slot?: Slot): Rune { return addRune(p, slot ?? pick(SLOTS), rarity); }
+/** the workshop: a common rune of a random slot, or of the chosen slot for more */
+export function craftRune(p: Profile, slot?: Slot): Rune {
+  pay(p, 'shards', slot ? RUNE_CRAFT_TYPE : RUNE_CRAFT);
+  return randomRune(p, 0, slot);
 }
 export function upgradeRune(p: Profile, uid: number): void {
   const r = p.runes.find(x => x.uid === uid) ?? fail('Нет руны');
   if (r.rarity >= MYTHIC) fail('Руна уже мифическая');
   pay(p, 'shards', RUNE_UP[r.rarity]); r.rarity++;
 }
-/** identical runes of the same step that are not worn by anyone */
-export const runeMates = (p: Profile, r: Rune) => p.runes.filter(x => x.uid !== r.uid && runeKey(x) === runeKey(r) && x.rarity === r.rarity && !runeHolder(p, x.uid));
-export const canMergeRune = (p: Profile, r: Rune) => r.rarity < MYTHIC && runeMates(p, r).length >= runeDupes(r.rarity);
-export function mergeRune(p: Profile, uid: number, pick?: number[]): void {
+/** правка Ш7: a new random effect from the slot's list — never the same one again */
+export function rerollRune(p: Profile, uid: number): RfxId {
   const r = p.runes.find(x => x.uid === uid) ?? fail('Нет руны');
-  if (r.rarity >= MYTHIC) fail('Руна уже мифическая');
-  const need = runeDupes(r.rarity), mates = runeMates(p, r);
-  if (mates.length < need) fail(`Нужно ещё ${need} ${need === 1 ? 'такая же руна' : 'таких же руны'} (${RUNE_RARITY[r.rarity].toLowerCase()}, не вставленные)`);
-  let used = mates.slice(0, need);
-  if (pick) {
-    if (new Set(pick).size !== need || pick.length !== need) fail(`Выбери ${need} ${need === 1 ? 'копию' : 'копии'}`);
-    used = pick.map(u => mates.find(x => x.uid === u) ?? fail('Эта руна не подходит: нужна такая же, той же редкости, не вставленная'));
-  }
-  p.runes = p.runes.filter(x => !used.includes(x));
-  r.rarity++;
+  pay(p, 'shards', RUNE_REROLL[r.rarity]);
+  r.fx = pick(runeFxList(r.slot, r.rarity).filter(f => f !== r.fx));
+  return r.fx;
 }
 export function dismantleRune(p: Profile, uid: number): number {
   const r = p.runes.find(x => x.uid === uid) ?? fail('Нет руны');
-  if (runeHolder(p, uid)) fail('Сначала сними руну с героя');
+  if (runeHolder(p, uid)) fail('Сначала сними руну');
   const g = Math.floor(runeWorth(r.rarity) / 2);
   p.runes = p.runes.filter(x => x !== r); p.shards += g;
   return g;
 }
-/** put a rune on (or take it off): a slot of its type; the same kind already on is swapped */
-export function toggleRune(p: Profile, heroId: string, uid: number): void {
-  const h = p.heroes[heroId];
-  const at = h.runes.indexOf(uid);
-  if (at >= 0) { h.runes[at] = null; return; }
+/** put a rune into the socket of its slot (the old one goes back to the storage), or take it out */
+export function toggleRune(p: Profile, uid: number): void {
   const r = p.runes.find(x => x.uid === uid) ?? fail('Нет руны');
-  for (const [id, o] of Object.entries(p.heroes)) if (id !== heroId && o.runes.includes(uid)) o.runes[o.runes.indexOf(uid)] = null;
-  const ns = runeSlots(h.stars), type = runeType(r);
-  const same = h.runes.findIndex((u, i) => i < ns && u !== null && (() => { const o = p.runes.find(x => x.uid === u); return !!o && runeKey(o) === runeKey(r); })());
-  if (same >= 0) { h.runes[same] = uid; return; }
-  const free = RUNE_SLOT_TYPE.findIndex((t, i) => i < ns && t === type && h.runes[i] === null);
-  if (free < 0) {
-    const has = RUNE_SLOT_TYPE.some((t, i) => i < ns && t === type);
-    fail(has ? `Слоты «${RUNE_TYPE_NAME[type]}» заняты. Сними руну, чтобы вставить эту` : `Слот «${RUNE_TYPE_NAME[type]}» откроется следующей звездой героя`);
-  }
-  h.runes[free] = uid;
+  p.runeOn ??= {};
+  if (p.runeOn[r.slot] === uid) { delete p.runeOn[r.slot]; return; }
+  p.runeOn[r.slot] = uid;
 }
 
 // ---------------- shop ----------------
@@ -1304,7 +1253,7 @@ export const WEEK_OFFERS: MarketOffer[] = [
 export const MONTH_OFFERS: MarketOffer[] = [
   { id: 'mGem', icon: '◆', label: '«Гемовый»', desc: '1 гем ★4 + 2 гема ★3 случайного типа + 20 больших эссенций', price: 3500, old: 6900, limit: 1, give: p => { randomGem(p, [0, 0, 0, 1]); for (let i = 0; i < 2; i++) randomGem(p, [0, 0, 1]); p.essBig += 20; } },
   { id: 'mHero', icon: '🦸', label: '«Героический»', desc: '10 средних купонов + 100 частиц выбранного героя', price: 2400, old: 4000, limit: 1, pick: 'hero', give: (p, c) => { p.couponsBig += 10; p.heroes[c.hero].particles += 100; } },
-  { id: 'mLegend', icon: '🔶', label: '«Легендарный»', desc: '2 легендарные руны выбранной стихии + эпический предмет выбранного комплекта', price: 3000, old: 5000, limit: 1, pick: 'setElem', give: (p, c) => { for (let i = 0; i < 2; i++) addRune(p, 'elem', LEGEND, { elem: c.elem }); addItem(p, pick(SLOTS), c.set, EPIC); } },
+  { id: 'mLegend', icon: '🔶', label: '«Легендарный»', desc: '2 легендарные руны (слот и эффект случайные) + эпический предмет выбранного комплекта', price: 3000, old: 5000, limit: 1, pick: 'setElem', give: (p, c) => { for (let i = 0; i < 2; i++) randomRune(p, LEGEND); addItem(p, pick(SLOTS), c.set, EPIC); } },
 ];
 function openChestN(p: Profile, n: number, set: SetId): void { for (let i = 0; i < n; i++) openChest(p, 'set', 1, set); }
 function monthKey(): string { return today().slice(0, 7); }

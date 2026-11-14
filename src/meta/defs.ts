@@ -117,12 +117,16 @@ export function spentTo(L: number): { gold: number; scrolls: number } {
 
 // ---- gems ----
 export type GemType = 'ruby' | 'emerald' | 'sapphire' | 'topaz' | 'amethyst' | 'diamond' | 'garnet' | 'jade';
-export const GEM_TYPES: readonly GemType[] = ['ruby', 'emerald', 'sapphire', 'topaz', 'amethyst', 'diamond', 'garnet', 'jade'];
+/** правка Ш9 (Orb Defense): six gems — attack, hero health, wall health, wall armor, crit chance, crit damage.
+ *  Amethyst and jade are gone (they stay in the type only for old saves, which turn them into topaz and sapphire) */
+export const GEM_TYPES: readonly GemType[] = ['ruby', 'emerald', 'topaz', 'sapphire', 'diamond', 'garnet'];
 export const GEM: Record<GemType, { name: string; stat: string; max: number; color: string; pct: boolean }> = {
   ruby: { name: 'Рубин', stat: 'атака', max: 0.60, color: '#e8304a', pct: false },
   emerald: { name: 'Изумруд', stat: 'здоровье', max: 0.75, color: '#2fc46a', pct: false },
-  sapphire: { name: 'Сапфир', stat: 'защита', max: 0.04, color: '#3a6cf0', pct: true },
-  topaz: { name: 'Топаз', stat: 'радиус подбора', max: 1.00, color: '#f5b83a', pct: true },
+  // правка Ш9: wall armor — a number cut from every enemy hit on the wall (the hit stays at least 1 and loses at most half)
+  sapphire: { name: 'Сапфир', stat: 'броня стены', max: 0.30, color: '#3a6cf0', pct: false },
+  // правка Ш9: wall health — a number added to the wall
+  topaz: { name: 'Топаз', stat: 'здоровье стены', max: 6.00, color: '#f5b83a', pct: false },
   amethyst: { name: 'Аметист', stat: 'радиус урона', max: 0.50, color: '#9b5cf0', pct: true },
   diamond: { name: 'Алмаз', stat: 'шанс крита', max: 0.04, color: '#cfeffd', pct: true },
   garnet: { name: 'Гранат', stat: 'урон крита', max: 0.12, color: '#a8203a', pct: true },
@@ -133,9 +137,11 @@ export const GEM_STAR_EFF = [0, 0.15, 0.35, 0.65, 1.0]; // ★1..★4 share of t
 export const GEM_LV_BASE = 0.4;
 export const gemShare = (level: number) => GEM_LV_BASE + (1 - GEM_LV_BASE) * level / 100;
 /** правка 157: each item takes two kinds of gems (ruby and emerald fit two slots each, so at most 8 of them, not 12) */
+/** правка Ш9: оружие — атака, крит-урон; амулет — атака, шанс крита; кольцо — шанс крита, крит-урон;
+ *  мантия — здоровье героя, здоровье стены; перчатки — здоровье стены, броня стены; сапоги — здоровье героя, броня стены */
 export const GEM_SLOTS: Record<Slot, readonly GemType[]> = {
-  book: ['ruby', 'garnet'], amulet: ['ruby', 'amethyst'], ring: ['diamond', 'garnet'],
-  mantle: ['emerald', 'sapphire'], gloves: ['emerald', 'jade'], boots: ['sapphire', 'topaz'],
+  book: ['ruby', 'garnet'], amulet: ['ruby', 'diamond'], ring: ['diamond', 'garnet'],
+  mantle: ['emerald', 'topaz'], gloves: ['topaz', 'sapphire'], boots: ['emerald', 'sapphire'],
 };
 export const gemFits = (t: GemType, s: Slot) => GEM_SLOTS[s].includes(t);
 /** the slots a gem goes into, in the screen order */
