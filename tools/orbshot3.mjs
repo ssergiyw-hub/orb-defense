@@ -5,7 +5,7 @@ const p = await b.newPage({ viewport: { width: Number(process.argv[2] ?? 390), h
 const errs = []; p.on('pageerror', e => errs.push(String(e))); p.on('console', m => { if (m.type() === 'error') errs.push(m.text()); });
 const click = sel => p.evaluate(s => document.querySelector(s)?.click(), sel);
 await p.addInitScript(l => localStorage.setItem('mw-lang', l), process.env.OLANG ?? 'ru');
-await p.goto('file://' + process.cwd() + '/dist/index.html'); await p.waitForTimeout(3600);
+await p.goto('file://' + process.cwd() + '/dist/index.html'); await p.waitForTimeout(5500);
 await click('[data-a="startPick"][data-v="veles"]'); await click('[data-a="startGo"]'); await p.waitForTimeout(300);
 await p.evaluate(() => {
   const s = JSON.parse(localStorage.getItem('mw-profile-v1'));
@@ -24,7 +24,7 @@ await p.evaluate(() => {
   s.nextUid = u + 1;
   localStorage.setItem('mw-profile-v1', JSON.stringify(s));
 });
-await p.reload(); await p.waitForTimeout(3600);
+await p.reload(); await p.waitForTimeout(5500);
 await click('[data-a="go"][data-v="hero"]'); await p.waitForTimeout(900);
 await p.screenshot({ path: 'shots/r-gear.png' });
 await click('[data-a="sub"][data-v="runes"]'); await p.waitForTimeout(900); await p.screenshot({ path: 'shots/r-runes.png' });
