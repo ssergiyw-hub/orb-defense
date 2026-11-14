@@ -71,14 +71,22 @@ jobs:
           UPLOAD_KEY_ALIAS: ${{ secrets.UPLOAD_KEY_ALIAS }}
           UPLOAD_KEY_PASSWORD: ${{ secrets.UPLOAD_KEY_PASSWORD }}
         run: |
-          # check the secret first and say what is wrong in plain words (the value itself is never printed)
-          K=$(printf '%s' "$UPLOAD_KEYSTORE_B64" | tr -d ' \r\n\t')
-          BAD=$(printf '%s' "$K" | tr -d 'A-Za-z0-9+/=' | wc -c)
-          echo "UPLOAD_KEYSTORE_B64: $(printf '%s' "$K" | wc -c) characters, $BAD not base64, starts with MII: $(case "$K" in MII*) echo yes;; *) echo no;; esac)"
-          if [ "$BAD" != 0 ] || ! printf '%s' "$K" | base64 -d > /tmp/upload.jks 2>/dev/null; then
-            echo "::error::Секрет UPLOAD_KEYSTORE_B64 испорчен: нужна только длинная строка из конца ключ-загрузки-google-play.txt (после «=== UPLOAD_KEYSTORE_B64 ===»), целиком, без других строк. APK собран, AAB — нет."
-            exit 1
-          fi
+          # the secret may carry extra lines from the txt (the "=== UPLOAD_KEYSTORE_B64 ===" header, spaces):
+          # take the long base64 run only. Values are never printed — only lengths and yes/no.
+          python3 - <<'PY'
+          import os, re, base64, sys
+          raw = os.environ.get('UPLOAD_KEYSTORE_B64', '')
+          runs = sorted(re.findall(r'[A-Za-z0-9+/=]{1000,}', re.sub(r'\s', '', raw.replace('=== UPLOAD_KEYSTORE_B64 ===', ''))), key=len)
+          sp, kp, al = (os.environ.get(k, '') for k in ('UPLOAD_STORE_PASSWORD', 'UPLOAD_KEY_PASSWORD', 'UPLOAD_KEY_ALIAS'))
+          print(f'UPLOAD_KEYSTORE_B64: {len(raw)} chars, key part {len(runs[-1]) if runs else 0}; store password {len(sp)} chars, key password {len(kp)} chars, same {sp == kp}; alias is "upload": {al == "upload"}')
+          try:
+              data = base64.b64decode(runs[-1], validate=True)
+              assert data[:1] == b'\x30'
+          except Exception:
+              print('::error::Секрет UPLOAD_KEYSTORE_B64 испорчен: нужна длинная строка из конца ключ-загрузки-google-play.txt целиком. APK собран, AAB — нет.'); sys.exit(1)
+          open('/tmp/upload.jks', 'wb').write(data)
+          PY
+          keytool -list -keystore /tmp/upload.jks -storepass "$UPLOAD_STORE_PASSWORD" -alias "$UPLOAD_KEY_ALIAS" > /dev/null 2>&1 || { echo "::error::Ключ не открывается: неверный UPLOAD_STORE_PASSWORD или UPLOAD_KEY_ALIAS (должен быть upload). APK собран, AAB — нет."; exit 1; }
           for i in 1 2 3; do ./gradlew bundleRelease --no-daemon && break; echo "retry $i"; sleep 20; done
           rm -f /tmp/upload.jks
           cp app/build/outputs/bundle/release/app-release.aab ../orb-defense.aab
