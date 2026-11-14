@@ -1,0 +1,9 @@
+{
+  "note": "правка 167: полы этапов (Meshy nano-banana-pro, 9 кредитов); упаковка tools/art/pack_floors.py; первый вариант гор был 3D-плиткой с рамкой — заменён",
+  "desert": "01a1cf40-84c1-77e8-9960-c8c8d7defdde",
+  "meadow": "01a1cf40-8ac1-74f6-9d8b-f563e9b3e7d8",
+  "forest": "01a1cf40-9358-7516-a6de-4fdfc7115017",
+  "swamp": "01a1cf40-9c54-7021-b84d-4ccdddbbff6c",
+  "grave": "01a1cf40-a52c-72b2-aaee-5bbffce20ec5",
+  "mount": "01a1cf41-a976-774b-9332-d485f7643a10"
+}
