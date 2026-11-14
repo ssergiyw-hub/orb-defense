@@ -61,6 +61,8 @@ jobs:
 
       - name: Build AAB for Google Play (only when the upload key is in the secrets)
         if: env.HAS_UPLOAD_KEY == 'true'
+        id: aab
+        continue-on-error: true
         working-directory: android
         env:
           UPLOAD_KEYSTORE_B64: ${{ secrets.UPLOAD_KEYSTORE_B64 }}
@@ -69,7 +71,14 @@ jobs:
           UPLOAD_KEY_ALIAS: ${{ secrets.UPLOAD_KEY_ALIAS }}
           UPLOAD_KEY_PASSWORD: ${{ secrets.UPLOAD_KEY_PASSWORD }}
         run: |
-          printf '%s' "$UPLOAD_KEYSTORE_B64" | tr -d ' \r\n' | base64 -d > /tmp/upload.jks
+          # check the secret first and say what is wrong in plain words (the value itself is never printed)
+          K=$(printf '%s' "$UPLOAD_KEYSTORE_B64" | tr -d ' \r\n\t')
+          BAD=$(printf '%s' "$K" | tr -d 'A-Za-z0-9+/=' | wc -c)
+          echo "UPLOAD_KEYSTORE_B64: $(printf '%s' "$K" | wc -c) characters, $BAD not base64, starts with MII: $(case "$K" in MII*) echo yes;; *) echo no;; esac)"
+          if [ "$BAD" != 0 ] || ! printf '%s' "$K" | base64 -d > /tmp/upload.jks 2>/dev/null; then
+            echo "::error::Секрет UPLOAD_KEYSTORE_B64 испорчен: нужна только длинная строка из конца ключ-загрузки-google-play.txt (после «=== UPLOAD_KEYSTORE_B64 ===»), целиком, без других строк. APK собран, AAB — нет."
+            exit 1
+          fi
           for i in 1 2 3; do ./gradlew bundleRelease --no-daemon && break; echo "retry $i"; sleep 20; done
           rm -f /tmp/upload.jks
           cp app/build/outputs/bundle/release/app-release.aab ../orb-defense.aab
@@ -106,3 +115,9 @@ jobs:
             android/app/build/outputs/apk/debug/app-debug.apk
             orb-defense.aab
           fail_on_unmatched_files: false
+
+      - name: AAB failed — APK is published, but the run is marked red
+        if: steps.aab.outcome == 'failure'
+        run: |
+          echo "::error::AAB для Google Play не собран — смотри шаг «Build AAB». APK в релизе latest обновлён."
+          exit 1
