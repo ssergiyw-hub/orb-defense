@@ -1,0 +1,145 @@
+773|Залишається найвищий рівень, витрачене на інші повернеться на {}%. Вдягнений предмет завжди залишається|The highest level stays, {}% of what was spent on the others comes back. An equipped item always stays|Die höchste Stufe bleibt, {}% des für die anderen Ausgegebenen kommt zurück. Ein angelegter Gegenstand bleibt immer|Se queda el nivel más alto; lo gastado en los demás se devuelve al {}%. El objeto equipado siempre se queda|Fica o nível mais alto, o gasto nos outros volta em {}%. O item equipado sempre fica|Zostaje najwyższy poziom, wydane na pozostałe wróci w {}%. Założony przedmiot zawsze zostaje|En yüksek seviye kalır, diğerlerine harcananın %{}'i geri döner. Kuşanılmış eşya her zaman kalır|Le niveau le plus haut reste, {} % de ce qui a été dépensé pour les autres est rendu. L'objet équipé reste toujours|Resta il livello più alto, il {}% di quanto speso per gli altri viene restituito. L'oggetto equipaggiato resta sempre
+774|Рівень предмета росте за золото й сувої до межі рідкості. «Скидання рівня» повертає {}% витраченого|Item level grows for gold and scrolls up to the rarity cap. "Level reset" returns {}% of what was spent|Die Gegenstandsstufe steigt mit Gold und Schriftrollen bis zur Seltenheitsgrenze. „Stufe zurücksetzen“ gibt {}% des Ausgegebenen zurück|El nivel del objeto sube con oro y pergaminos hasta el límite de rareza. «Reiniciar nivel» devuelve el {}% de lo gastado|O nível do item sobe com ouro e pergaminhos até o limite da raridade. "Redefinir nível" devolve {}% do gasto|Poziom przedmiotu rośnie za złoto i zwoje do limitu rzadkości. „Reset poziomu” zwraca {}% wydanego|Eşya seviyesi altın ve parşömenle nadirlik sınırına kadar artar. "Seviye sıfırlama" harcananın %{}'ini geri verir|Le niveau de l'objet monte avec de l'or et des parchemins jusqu'au plafond de rareté. « Réinitialiser le niveau » rend {} % de la dépense|Il livello dell'oggetto sale con oro e pergamene fino al limite di rarità. «Azzera livello» restituisce il {}% della spesa
+775|Рівні й навички|Levels and skills|Stufen und Fähigkeiten|Niveles y habilidades|Níveis e habilidades|Poziomy i umiejętności|Seviyeler ve yetenekler|Niveaux et compétences|Livelli e abilità
+776|Шкода|Damage|Schaden|Daño|Dano|Obrażenia|Hasar|Dégâts|Danni
+777|Шкода за навичками|Damage by skill|Schaden nach Fähigkeit|Daño por habilidad|Dano por habilidade|Obrażenia według umiejętności|Yeteneğe göre hasar|Dégâts par compétence|Danni per abilità
+778|Шкода по стіні|Damage to the wall|Schaden an der Mauer|Daño a la muralla|Dano à muralha|Obrażenia muru|Duvara hasar|Dégâts au rempart|Danni alle mura
+779|Шкоди ще немає|No damage yet|Noch kein Schaden|Aún no hay daño|Ainda sem dano|Na razie brak obrażeń|Henüz hasar yok|Pas encore de dégâts|Ancora nessun danno
+780|Посилення|Boost|Verstärkung|Refuerzo|Reforço|Wzmocnienie|Güçlendirme|Renfort|Potenziamento
+781|Посилення|Boosts|Verstärkungen|Refuerzos|Reforços|Wzmocnienia|Güçlendirmeler|Renforts|Potenziamenti
+782|Фізика|Physical|Physisch|Física|Física|Fizyczne|Fiziksel|Physique|Fisico
+783|Фраги|Frags|Frags|Bajas|Abates|Fragi|Leş|Frags|Uccisioni
+784|Сховище|Storage|Lager|Almacén|Armazém|Magazyn|Depo|Réserve|Deposito
+785|Ціни|Prices|Preise|Precios|Preços|Ceny|Fiyatlar|Prix|Prezzi
+786|Ціни й нагороди ще налаштовуються|Prices and rewards are still being tuned|Preise und Belohnungen werden noch abgestimmt|Precios y recompensas aún en ajuste|Preços e recompensas ainda em ajuste|Ceny i nagrody są jeszcze dopracowywane|Fiyatlar ve ödüller hâlâ ayarlanıyor|Prix et récompenses encore en réglage|Prezzi e ricompense ancora in fase di bilanciamento
+787|Ланцюгова блискавка|Chain lightning|Kettenblitz|Rayo en cadena|Relâmpago em cadeia|Łańcuch błyskawic|Zincirleme şimşek|Éclair en chaîne|Fulmine a catena
+788|Частинки|Shards|Splitter|Fragmentos|Fragmentos|Odłamki|Parçalar|Fragments|Frammenti
+789|Частинки героя дня|Hero of the day shards|Splitter des Helden des Tages|Fragmentos del héroe del día|Fragmentos do herói do dia|Odłamki bohatera dnia|Günün kahramanı parçaları|Fragments du héros du jour|Frammenti dell'eroe del giorno
+790|Хащі|Thicket|Dickicht|Espesura|Matagal|Gąszcz|Çalılık|Fourré|Boscaglia
+791|Чорний ринок|Black market|Schwarzmarkt|Mercado negro|Mercado negro|Czarny rynek|Kara pazar|Marché noir|Mercato nero
+792|Шаман-цілитель|Shaman healer|Schamane-Heiler|Chamán sanador|Xamã curandeiro|Szaman uzdrowiciel|Şifacı şaman|Chaman guérisseur|Sciamano guaritore
+793|Шанс самоцвіту|Gem chance|Edelsteinchance|Probabilidad de gema|Chance de gema|Szansa na klejnot|Mücevher şansı|Chance de gemme|Probabilità gemma
+794|Шанси · {} колесо|Odds · {} wheel|Chancen · {} Rad|Probabilidades · rueda {}|Chances · roda {}|Szanse · koło {}|Olasılıklar · {} çark|Chances · roue {}|Probabilità · ruota {}
+795|Шанси за одне відкриття|Odds per opening|Chancen pro Öffnung|Probabilidades por apertura|Chances por abertura|Szanse na jedno otwarcie|Açılış başına olasılık|Chances par ouverture|Probabilità per apertura
+796|Шипи|Spikes|Stacheln|Púas|Espinhos|Kolce|Dikenler|Épines|Spine
+797|Щит|Shield|Schild|Escudo|Escudo|Tarcza|Kalkan|Bouclier|Scudo
+798|Щитоносець|Shield bearer|Schildträger|Escudero|Escudeiro|Tarczownik|Kalkancı|Porte-bouclier|Scudiero
+799|Економіка|Economy|Wirtschaft|Economía|Economia|Ekonomia|Ekonomi|Économie|Economia
+800|Економія|Saver|Sparmodus|Ahorro|Economia|Oszczędny|Tasarruf|Économie|Risparmio
+801|Енергію можна купити {} рази на день|Energy can be bought {} times a day|Energie kann {}-mal am Tag gekauft werden|La energía se puede comprar {} veces al día|A energia pode ser comprada {} vezes por dia|Energię można kupić {} razy dziennie|Enerji günde {} kez alınabilir|L'énergie s'achète {} fois par jour|L'energia si può comprare {} volte al giorno
+802|Енергія|Energy|Energie|Energía|Energia|Energia|Enerji|Énergie|Energia
+803|Епічна|Epic|Episch|Épica|Épica|Epicka|Destansı|Épique|Epica
+804|Епічна +{}|Epic +{}|Episch +{}|Épica +{}|Épica +{}|Epicka +{}|Destansı +{}|Épique +{}|Epica +{}
+805|Епічний предмет|Epic item|Epischer Gegenstand|Objeto épico|Item épico|Epicki przedmiot|Destansı eşya|Objet épique|Oggetto epico
+806|Епічна скриня спорядження|Epic gear chest|Epische Ausrüstungstruhe|Cofre de equipo épico|Baú de equipamento épico|Epicka skrzynia ekwipunku|Destansı eşya sandığı|Coffre d'équipement épique|Forziere di equipaggiamento epico
+807|Епічне|Epic|Episch|Épico|Épico|Epickie|Destansı|Épique|Epico
+808|Епічне +{}|Epic +{}|Episch +{}|Épico +{}|Épico +{}|Epickie +{}|Destansı +{}|Épique +{}|Epico +{}
+809|Епічна зброя комплекту|Epic set weapon|Epische Set-Waffe|Arma épica del conjunto|Arma épica do conjunto|Epicka broń zestawu|Destansı set silahı|Arme épique d'ensemble|Arma epica del set
+810|Ця карта|This map|Diese Karte|Este mapa|Este mapa|Ta mapa|Bu harita|Cette carte|Questa mappa
+811|Ця руна не підходить: потрібна така сама, тієї ж рідкості, не вставлена|This rune doesn't fit: you need an identical one, same rarity, not inserted|Diese Rune passt nicht: Es braucht eine gleiche, derselben Seltenheit, nicht eingesetzt|Esta runa no sirve: necesitas una igual, de la misma rareza, sin insertar|Esta runa não serve: precisa de uma igual, da mesma raridade, não inserida|Ta runa nie pasuje: potrzebna taka sama, tej samej rzadkości, niewstawiona|Bu rün uymuyor: aynısı, aynı nadirlikte ve takılı olmayan gerekir|Cette rune ne convient pas : il faut la même, de même rareté, non insérée|Questa runa non va: ne serve una uguale, della stessa rarità, non inserita
+812|Етап {}|Stage {}|Etappe {}|Etapa {}|Etapa {}|Etap {}|Aşama {}|Étape {}|Fase {}
+813|Етап пройдено|Stage cleared|Etappe geschafft|Etapa superada|Etapa concluída|Etap ukończony|Aşama geçildi|Étape réussie|Fase superata
+814|Цей предмет не підходить для злиття|This item can't be merged|Dieser Gegenstand kann nicht verschmolzen werden|Este objeto no sirve para fusionar|Este item não serve para fusão|Ten przedmiot nie nadaje się do łączenia|Bu eşya birleştirmeye uygun değil|Cet objet ne peut pas être fusionné|Questo oggetto non si può fondere
+815|Ефекти на епічному (і сильніші на міфічному|Effects at epic (stronger at mythic|Effekte ab episch (stärker bei mythisch|Efectos en épico (y más fuertes en mítico|Efeitos no épico (e mais fortes no mítico|Efekty na epickim (i mocniejsze na mitycznym|Destansıda etkiler (efsanevide daha güçlü|Effets à épique (et plus forts à mythique|Effetti a epico (e più forti a mitico
+816|Ювелірня|Jeweler|Juwelier|Joyería|Joalheria|Jubiler|Kuyumcu|Joaillier|Gioielliere
+817|Отрута|Poison|Gift|Veneno|Veneno|Trucizna|Zehir|Poison|Veleno
+818|Отр. аура|Poison aura|Giftaura|Aura venen.|Aura veneno|Aura trucizny|Zehir aurası|Aura poison|Aura veleno
+819|Отруйна аура|Poison aura|Giftaura|Aura venenosa|Aura venenosa|Trująca aura|Zehirli aura|Aura empoisonnée|Aura velenosa
+820|Отруйна калюжа|Poison puddle|Giftpfütze|Charco venenoso|Poça venenosa|Trująca kałuża|Zehirli birikinti|Flaque empoisonnée|Pozza velenosa
+821|Отруйна смуга перед стіною, отрута накопичується|A poison strip in front of the wall, the poison builds up|Ein Giftstreifen vor der Mauer, das Gift sammelt sich|Una franja venenosa ante la muralla; el veneno se acumula|Uma faixa venenosa diante da muralha, o veneno acumula|Trujący pas przed murem, trucizna się kumuluje|Duvarın önünde zehirli şerit, zehir birikir|Une bande empoisonnée devant le rempart, le poison s'accumule|Una striscia velenosa davanti alle mura, il veleno si accumula
+822|Отруйна склянка|Poison vial|Giftphiole|Frasco venenoso|Frasco venenoso|Trująca fiolka|Zehir şişesi|Fiole empoisonnée|Fiala velenosa
+823|Отруйні болота|Poison swamps|Giftsümpfe|Pantanos venenosos|Pântanos venenosos|Trujące bagna|Zehirli bataklık|Marais empoisonnés|Paludi velenose
+824|Лють|Fury|Wut|Furia|Fúria|Furia|Öfke|Fureur|Furia
+825|авто|auto|auto|auto|auto|auto|oto|auto|auto
+826|самолікування кожні {} с|self-heal every {} s|Selbstheilung alle {} s|autocuración cada {} s|autocura a cada {} s|samoleczenie co {} s|her {} sn kendini iyileştirme|auto-soin toutes les {} s|autocura ogni {} s
+827|базові характеристики предмета +{}|base item stats +{}|Grundwerte des Gegenstands +{}|estadísticas base del objeto +{}|atributos base do item +{}|bazowe statystyki przedmiotu +{}|eşyanın temel özellikleri +{}|stats de base de l'objet +{}|statistiche base dell'oggetto +{}
+828|без {}% здоров'я|missing {}% health|ohne {}% Leben|sin el {}% de salud|sem {}% de vida|bez {}% zdrowia|canının %{}'i eksik|sans {} % de vie|senza il {}% di salute
+829|безкошт|free|gratis|gratis|grátis|darmo|bedava|gratuit|gratis
+830|безкошт. {}|free {}|gratis {}|gratis {}|grátis {}|darmo {}|bedava {}|gratuit {}|gratis {}
+831|безкоштовно · залишилось {} з {}|free · {} of {} left|gratis · noch {} von {}|gratis · quedan {} de {}|grátis · restam {} de {}|za darmo · zostało {} z {}|bedava · {}/{} kaldı|gratuit · encore {} sur {}|gratis · restano {} su {}
+832|бонуси в забіг від героя і спорядження|run bonuses from the hero and gear|Laufboni von Held und Ausrüstung|bonos de partida del héroe y el equipo|bônus de partida do herói e do equipamento|bonusy do biegu od bohatera i ekwipunku|kahraman ve teçhizattan koşu bonusları|bonus de partie du héros et de l'équipement|bonus partita da eroe ed equipaggiamento
+833|бос карти приходить без {}% здоров'я|the map boss arrives missing {}% health|der Kartenboss kommt ohne {}% Leben|el jefe del mapa llega sin el {}% de salud|o chefe do mapa chega sem {}% de vida|boss mapy przychodzi bez {}% zdrowia|harita bossu canının %{}'i eksik gelir|le boss de la carte arrive sans {} % de vie|il boss della mappa arriva senza il {}% di salute
+834|у|in|in|en|em|w|içinde|dans|in
+835|у бою|in battle|im Kampf|en combate|em batalha|w walce|savaşta|en combat|in battaglia
+836|у русі {}% шанс ухилитися від удару|while moving, {}% chance to dodge a hit|in Bewegung {}% Chance, einem Treffer auszuweichen|en movimiento, {}% de esquivar un golpe|em movimento, {}% de chance de esquivar um golpe|w ruchu {}% szansy na unik ciosu|hareket halinde %{} darbeden kaçma şansı|en mouvement, {} % de chance d'esquiver un coup|in movimento, {}% di probabilità di schivare un colpo
+837|вампіризм|lifesteal|Lebensraub|robo de vida|roubo de vida|wampiryzm|can çalma|vol de vie|rubavita
+838|вампіризм {}|lifesteal {}|Lebensraub {}|robo de vida {}|roubo de vida {}|wampiryzm {}|can çalma {}|vol de vie {}|rubavita {}
+839|хвиль|waves|Wellen|oleadas|ondas|fal|dalga|vagues|ondate
+840|хвиль{}|waves{}|Wellen{}|oleadas{}|ondas{}|fal{}|dalga{}|vagues{}|ondate{}
+841|хвиля|wave|Welle|oleada|onda|fala|dalga|vague|ondata
+842|хвилі|waves|Wellen|oleadas|ondas|fale|dalga|vagues|ondate
+843|воскресіння напевно|guaranteed revival|sichere Wiederbelebung|resurrección asegurada|ressurreição garantida|pewne wskrzeszenie|kesin diriliş|résurrection assurée|resurrezione garantita
+844|вороги в аурі повільніші на {}|enemies in the aura are {} slower|Gegner in der Aura {} langsamer|los enemigos en el aura van {} más lentos|inimigos na aura ficam {} mais lentos|wrogowie w aurze wolniejsi o {}|auradaki düşmanlar {} daha yavaş|ennemis dans l'aura ralentis de {}|nemici nell'aura più lenti del {}
+845|вороги поруч із героєм повільніші на {}|enemies near the hero are {} slower|Gegner nahe dem Helden {} langsamer|los enemigos cerca del héroe van {} más lentos|inimigos perto do herói ficam {} mais lentos|wrogowie przy bohaterze wolniejsi o {}|kahramanın yakınındaki düşmanlar {} daha yavaş|ennemis près du héros ralentis de {}|nemici vicino all'eroe più lenti del {}
+846|випадає в {} разів частіше. Змінюється щодня|drops {} times more often. Changes every day|fällt {}-mal häufiger. Wechselt täglich|sale {} veces más a menudo. Cambia cada día|sai {} vezes mais. Muda todo dia|wypada {} razy częściej. Zmienia się codziennie|{} kat daha sık düşer. Her gün değişir|tombe {} fois plus souvent. Change chaque jour|esce {} volte più spesso. Cambia ogni giorno
+847|самоцвіт {} ★{}|gem {} ★{}|Edelstein {} ★{}|gema {} ★{}|gema {} ★{}|klejnot {} ★{}|mücevher {} ★{}|gemme {} ★{}|gemma {} ★{}
+848|самоцвітів|gems|Edelsteine|gemas|gemas|klejnotów|mücevher|gemmes|gemme
+849|далі|next|weiter|siguiente|próximo|dalej|sonraki|ensuite|poi
+850|далі: {}|next: {}|weiter: {}|siguiente: {}|próximo: {}|dalej: {}|sonraki: {}|ensuite : {}|poi: {}
+851|до {}|up to {}|bis {}|hasta {}|até {}|do {}|en fazla {}|jusqu'à {}|fino a {}
+852|довше на {} с|{} s longer|{} s länger|{} s más|{} s a mais|dłużej o {} s|{} sn daha uzun|{} s de plus|{} s in più
+853|щодня|daily|täglich|diario|diário|codziennie|günlük|quotidien|giornaliero
+854|щотижня|weekly|wöchentlich|semanal|semanal|co tydzień|haftalık|hebdomadaire|settimanale
+855|є {}|have {}|vorhanden {}|tienes {}|tem {}|masz {}|sende {}|tu as {}|hai {}
+856|ще +{} снаряд|+{} more projectile|+{} weiteres Geschoss|+{} proyectil más|+{} projétil a mais|jeszcze +{} pocisk|+{} mermi daha|+{} projectile de plus|+{} proiettile in più
+857|ще +{} сфера|+{} more orb|+{} weitere Kugel|+{} esfera más|+{} esfera a mais|jeszcze +{} kula|+{} küre daha|+{} sphère de plus|+{} sfera in più
+858|ще {} така сама руна|{} more identical rune|noch {} gleiche Rune|{} runa igual más|mais {} runa igual|jeszcze {} taka sama runa|{} aynı rün daha|encore {} rune identique|ancora {} runa uguale
+859|ще {} такі самі руни|{} more identical runes|noch {} gleiche Runen|{} runas iguales más|mais {} runas iguais|jeszcze {} takie same runy|{} aynı rün daha|encore {} runes identiques|ancora {} rune uguali
+860|ще одна така сама руна|one more identical rune|noch eine gleiche Rune|una runa igual más|mais uma runa igual|jeszcze jedna taka sama runa|bir aynı rün daha|encore une rune identique|ancora una runa uguale
+861|жезл|wand|Zauberstab|varita|varinha|różdżka|değnek|baguette|bacchetta
+862|за {}|for {}|für {}|por {}|por {}|za {}|{} karşılığında|pour {}|per {}
+863|забіг починається з цією навичкою (рів. {}|the run starts with this skill (lv. {}|der Lauf beginnt mit dieser Fähigkeit (St. {}|la partida empieza con esta habilidad (nv. {}|a partida começa com esta habilidade (nv. {}|bieg zaczyna się z tą umiejętnością (poz. {}|koşu bu yetenekle başlar (sv. {}|la partie commence avec cette compétence (niv. {}|la partita inizia con questa abilità (liv. {}
+864|сповільнення|slow|Verlangsamung|ralentización|lentidão|spowolnienie|yavaşlatma|ralentissement|rallentamento
+865|захист|defense|Verteidigung|defensa|defesa|obrona|savunma|défense|difesa
+866|захист +{}|defense +{}|Verteidigung +{}|defensa +{}|defesa +{}|obrona +{}|savunma +{}|défense +{}|difesa +{}
+867|захист +{}%, лікування {}% за секунду|defense +{}%, heals {}% per second|Verteidigung +{}%, Heilung {}% pro Sekunde|defensa +{}%, curación del {}% por segundo|defesa +{}%, cura {}% por segundo|obrona +{}%, leczenie {}% na sekundę|savunma +%{}, saniyede %{} iyileşme|défense +{} %, soin de {} % par seconde|difesa +{}%, cura del {}% al secondo
+868|захист {}|defense {}|Verteidigung {}|defensa {}|defesa {}|obrona {}|savunma {}|défense {}|difesa {}
+869|здоров'я|health|Leben|salud|vida|zdrowie|can|vie|salute
+870|здоров'я +{}|health +{}|Leben +{}|salud +{}|vida +{}|zdrowie +{}|can +{}|vie +{}|salute +{}
+871|здоров'я {}|health {}|Leben {}|salud {}|vida {}|zdrowie {}|can {}|vie {}|salute {}
+872|здоров'я, захист|health, defense|Leben, Verteidigung|salud, defensa|vida, defesa|zdrowie, obrona|can, savunma|vie, défense|salute, difesa
+873|золота|gold|Gold|de oro|de ouro|złota|altın|or|oro
+874|золотий мінібос приходить частіше (+{}|the golden mini-boss comes more often (+{}|der goldene Mini-Boss kommt öfter (+{}|el minijefe dorado llega más a menudo (+{}|o minichefe dourado vem mais vezes (+{}|złoty miniboss przychodzi częściej (+{}|altın mini boss daha sık gelir (+{}|le mini-boss doré vient plus souvent (+{}|il miniboss dorato arriva più spesso (+{}
+875|з|of|von|de|de|z|/|sur|su
+876|кожна {}-та атака|every {}th attack|jeder {}. Angriff|cada {}.º ataque|a cada {}º ataque|co {}. atak|her {}. saldırı|toutes les {} attaques|ogni {}° attacco
+877|кожна {}-та атака — вірний крит|every {}th attack is a sure crit|jeder {}. Angriff ist ein sicherer Krit|cada {}.º ataque es crítico seguro|a cada {}º ataque, crítico garantido|co {}. atak — pewny kryt|her {}. saldırı kesin kritik|toutes les {} attaques, critique assuré|ogni {}° attacco è un critico sicuro
+878|кожна {}-та атака — подвійний постріл|every {}th attack is a double shot|jeder {}. Angriff ist ein Doppelschuss|cada {}.º ataque es un disparo doble|a cada {}º ataque, disparo duplo|co {}. atak — podwójny strzał|her {}. saldırı çift atış|toutes les {} attaques, tir double|ogni {}° attacco è un doppio colpo
+879|кожна {}-та атака: +{} стріли|every {}th attack: +{} arrows|jeder {}. Angriff: +{} Pfeile|cada {}.º ataque: +{} flechas|a cada {}º ataque: +{} flechas|co {}. atak: +{} strzały|her {}. saldırı: +{} ok|toutes les {} attaques : +{} flèches|ogni {}° attacco: +{} frecce
+880|кожна {}-та атака: +{} стріли віялом|every {}th attack: +{} arrows in a fan|jeder {}. Angriff: +{} Pfeile im Fächer|cada {}.º ataque: +{} flechas en abanico|a cada {}º ataque: +{} flechas em leque|co {}. atak: +{} strzały wachlarzem|her {}. saldırı: yelpaze şeklinde +{} ok|toutes les {} attaques : +{} flèches en éventail|ogni {}° attacco: +{} frecce a ventaglio
+881|кожна {}-та атака: пробивають ще {} ворогів|every {}th attack: pierce {} more enemies|jeder {}. Angriff: durchbohren {} weitere Gegner|cada {}.º ataque: atraviesan {} enemigos más|a cada {}º ataque: atravessam mais {} inimigos|co {}. atak: przebijają jeszcze {} wrogów|her {}. saldırı: {} düşmanı daha deler|toutes les {} attaques : transpercent {} ennemis de plus|ogni {}° attacco: trafiggono altri {} nemici
+882|кожна {}-та атака: стріли пробивають ще {} ворогів|every {}th attack: arrows pierce {} more enemies|jeder {}. Angriff: Pfeile durchbohren {} weitere Gegner|cada {}.º ataque: las flechas atraviesan {} enemigos más|a cada {}º ataque: flechas atravessam mais {} inimigos|co {}. atak: strzały przebijają jeszcze {} wrogów|her {}. saldırı: oklar {} düşmanı daha deler|toutes les {} attaques : les flèches transpercent {} ennemis de plus|ogni {}° attacco: le frecce trafiggono altri {} nemici
+883|кожні {} с хвиля темряви навколо героя|every {} s a wave of darkness around the hero|alle {} s eine Welle der Dunkelheit um den Helden|cada {} s, una onda oscura alrededor del héroe|a cada {} s, uma onda de trevas em volta do herói|co {} s fala mroku wokół bohatera|her {} sn kahramanın etrafında karanlık dalgası|toutes les {} s, une vague de ténèbres autour du héros|ogni {} s un'onda oscura intorno all'eroe
+884|кожні {} с, радіус більший|every {} s, larger radius|alle {} s, größerer Radius|cada {} s, mayor radio|a cada {} s, raio maior|co {} s, większy zasięg|her {} sn, daha geniş yarıçap|toutes les {} s, rayon plus grand|ogni {} s, raggio maggiore
+885|кожні {} вбивств — лікування {}% здоров'я|every {} kills — heal {}% health|alle {} Kills — Heilung {}% Leben|cada {} bajas, cura el {}% de salud|a cada {} abates — cura {}% da vida|co {} zabójstw — leczenie {}% zdrowia|her {} öldürmede — canın %{}'i iyileşir|toutes les {} éliminations — soin de {} % de vie|ogni {} uccisioni: cura del {}% di salute
+886|кожні {} вбивств: +{}|every {} kills: +{}|alle {} Kills: +{}|cada {} bajas: +{}|a cada {} abates: +{}|co {} zabójstw: +{}|her {} öldürmede: +{}|toutes les {} éliminations : +{}|ogni {} uccisioni: +{}
+887|кожні {} вбивств: швидкість атаки +{}% на {} с|every {} kills: attack speed +{}% for {} s|alle {} Kills: Angriffstempo +{}% für {} s|cada {} bajas: velocidad de ataque +{}% durante {} s|a cada {} abates: velocidade de ataque +{}% por {} s|co {} zabójstw: szybkość ataku +{}% na {} s|her {} öldürmede: saldırı hızı +%{}, {} sn|toutes les {} éliminations : vitesse d'attaque +{} % pendant {} s|ogni {} uccisioni: velocità d'attacco +{}% per {} s
+888|картки «{}» випадають у {} рази частіше|«{}» cards drop {} times more often|Karten «{}» fallen {}-mal häufiger|las cartas «{}» salen {} veces más|as cartas «{}» saem {} vezes mais|karty «{}» wypadają {} razy częściej|«{}» kartları {} kat daha sık düşer|les cartes « {} » tombent {} fois plus souvent|le carte «{}» escono {} volte più spesso
+889|книгу|book|Buch|libro|livro|księgę|kitap|livre|libro
+890|копії|copies|Kopien|copias|cópias|kopie|kopya|copies|copie
+891|копію|copy|Kopie|copia|cópia|kopię|kopya|copie|copia
+892|кристалів|crystals|Kristalle|cristales|cristais|kryształów|kristal|cristaux|cristalli
+893|крит +{}|crit +{}|Krit +{}|crítico +{}|crítico +{}|kryt +{}|kritik +{}|critique +{}|critico +{}
+894|лікування {}|heal {}|Heilung {}|curación {}|cura {}|leczenie {}|iyileşme {}|soin {}|cura {}
+895|лікування {} здоров'я кожні {} с|heals {} health every {} s|heilt {} Leben alle {} s|cura {} de salud cada {} s|cura {} de vida a cada {} s|leczenie {} zdrowia co {} s|{} can iyileşme, her {} sn|soigne {} vie toutes les {} s|cura {} di salute ogni {} s
+896|лікування {}%, двічі за забіг|heal {}%, twice per run|Heilung {}%, zweimal pro Lauf|curación del {}%, dos veces por partida|cura {}%, duas vezes por partida|leczenie {}%, dwa razy na bieg|%{} iyileşme, koşu başına iki kez|soin de {} %, deux fois par partie|cura del {}%, due volte a partita
+897|лікує {}|heals {}|heilt {}|cura {}|cura {}|leczy {}|{} iyileştirir|soigne {}|cura {}
+898|локація|location|Ort|lugar|local|lokacja|konum|lieu|luogo
+899|будь-якого комплекту|of any set|aus jedem Set|de cualquier conjunto|de qualquer conjunto|dowolnego zestawu|herhangi bir setten|de n'importe quel ensemble|di qualsiasi set
+900|будь-який комплект, той самий слот|any set, same slot|beliebiges Set, gleicher Platz|cualquier conjunto, misma ranura|qualquer conjunto, mesmo espaço|dowolny zestaw, to samo miejsce|herhangi bir set, aynı yuva|n'importe quel ensemble, même emplacement|qualsiasi set, stesso slot
+901|макс|max|max|máx|máx|maks|maks|max|max
+902|максимум|maximum|Maximum|máximo|máximo|maksimum|maksimum|maximum|massimo
+903|повільніші на {}%, радіус більший|{}% slower, larger radius|{}% langsamer, größerer Radius|{}% más lentos, mayor radio|{}% mais lentos, raio maior|wolniejsi o {}%, większy zasięg|%{} daha yavaş, daha geniş yarıçap|ralentis de {} %, rayon plus grand|più lenti del {}%, raggio maggiore
+904|менше {}% здоров'я|below {}% health|unter {}% Leben|menos del {}% de salud|menos de {}% de vida|poniżej {}% zdrowia|can %{}'in altında|moins de {} % de vie|sotto il {}% di salute
+905|блискавка +{} стрибка, промінь ширший, +{} дух|lightning +{} jump, wider beam, +{} spirit|Blitz +{} Sprung, breiterer Strahl, +{} Geist|rayo +{} salto, rayo de luz más ancho, +{} espíritu|raio +{} salto, feixe mais largo, +{} espírito|błyskawica +{} skok, szerszy promień, +{} duch|şimşek +{} sıçrama, daha geniş ışın, +{} ruh|éclair +{} rebond, rayon plus large, +{} esprit|fulmine +{} salto, raggio più ampio, +{} spirito
+906|монстрів|monsters|Monster|monstruos|monstros|potworów|canavar|monstres|mostri
+907|м'якше, {} кадрів — береже батарею|lighter, {} fps — saves battery|schonender, {} FPS — spart Akku|más suave, {} fps: ahorra batería|mais leve, {} fps — poupa bateria|lżej, {} kl./s — oszczędza baterię|daha hafif, {} fps — pili korur|plus léger, {} i/s — économise la batterie|più leggero, {} fps: risparmia batteria
+908|на {} рів. +{}|at lv. {} +{}|auf St. {} +{}|en nv. {} +{}|no nv. {} +{}|na poz. {} +{}|{}. sv'de +{}|au niv. {} +{}|al liv. {} +{}
+909|навичка|skill|Fähigkeit|habilidad|habilidade|umiejętność|yetenek|compétence|abilità
+910|нагороди забігу +{}|run rewards +{}|Laufbelohnungen +{}|recompensas de partida +{}|recompensas da partida +{}|nagrody biegu +{}|koşu ödülleri +{}|récompenses de partie +{}|ricompense partita +{}
+911|вдягнено|equipped|angelegt|equipado|equipado|założone|kuşanıldı|équipé|equipaggiato
+912|назад у Печеру|back to the Cave|zurück in die Höhle|de vuelta a la Cueva|de volta à Caverna|z powrotem do Jaskini|Mağara'ya geri|retour à la Grotte|di nuovo alla Caverna
+913|накопичено {} д|{} d saved up|{} T angespart|acumulado {} d|acumulado {} d|zgromadzono {} d|{} g birikti|{} j accumulés|accumulati {} g
+914|не вистачає|not enough|nicht genug|no alcanza|não basta|brakuje|yetersiz|insuffisant|non basta
+915|невразливість після удару довша на {} с|invulnerability after a hit lasts {} s longer|Unverwundbarkeit nach einem Treffer {} s länger|la invulnerabilidad tras un golpe dura {} s más|invulnerabilidade após golpe dura {} s a mais|nietykalność po ciosie dłuższa o {} s|darbeden sonraki dokunulmazlık {} sn daha uzun|invulnérabilité après un coup plus longue de {} s|invulnerabilità dopo un colpo più lunga di {} s
+916|новий|new|neu|nuevo|novo|nowy|yeni|nouveau|nuovo
+917|новий герой|new hero|neuer Held|nuevo héroe|novo herói|nowy bohater|yeni kahraman|nouveau héros|nuovo eroe

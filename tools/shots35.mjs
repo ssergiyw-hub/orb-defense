@@ -1,0 +1,15 @@
+import { chromium } from 'playwright';
+const b = await chromium.launch();
+const p = await b.newPage({ viewport: { width: 390, height: 800 }, deviceScaleFactor: 2 });
+const errs = []; p.on('pageerror', e => errs.push(String(e)));
+const click = sel => p.evaluate(s => document.querySelector(s)?.click(), sel);
+await p.goto('file://' + process.cwd() + '/dist/index.html'); await p.waitForTimeout(3200);
+await click('[data-a="startPick"][data-v="stribog"]'); await click('[data-a="startGo"]'); await p.waitForTimeout(300);
+await p.evaluate(() => { const s = JSON.parse(localStorage.getItem('mw-profile-v1')); s.gold = 40000; s.scrolls = 60; localStorage.setItem('mw-profile-v1', JSON.stringify(s)); });
+await p.reload(); await p.waitForTimeout(3400);
+await click('[data-a="go"][data-v="hero"]'); await click('[data-a="sub"][data-v="gear"]'); await p.waitForTimeout(300);
+await p.evaluate(() => document.querySelector('.gslotcard[data-a="item"]')?.click()); await p.waitForTimeout(300); await p.screenshot({ path: 'shots/w9-10-item.png' });
+await click('[data-a="up"][data-v="999"]'); await p.waitForTimeout(400); await p.screenshot({ path: 'shots/w9-11-item-max.png' });
+await click('[data-a="resetItem"]'); await p.waitForTimeout(200); await p.screenshot({ path: 'shots/w9-12-reset.png' });
+await click('.modal .x'); await p.evaluate(() => document.querySelector('.icard')?.click()); await p.waitForTimeout(300); await p.screenshot({ path: 'shots/w9-13-item-free.png' });
+console.log(errs); await b.close();

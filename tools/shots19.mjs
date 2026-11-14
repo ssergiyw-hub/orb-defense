@@ -1,0 +1,23 @@
+import { chromium } from 'playwright';
+const b = await chromium.launch();
+const p = await b.newPage({ viewport: { width: 390, height: 800 }, deviceScaleFactor: 2, hasTouch: true });
+const errs = []; p.on('pageerror', e => errs.push(String(e)));
+const shot = n => p.screenshot({ path: `shots/s-${n}.png` });
+const click = sel => p.evaluate(s => document.querySelector(s)?.click(), sel);
+await p.goto('file://' + process.cwd() + '/dist/index.html#god'); await p.waitForTimeout(3300);
+await click('[data-a="startPick"][data-v="apollo"]'); await click('[data-a="startGo"]'); await p.waitForTimeout(300);
+await p.evaluate(() => { const s = JSON.parse(localStorage.getItem('mw-profile-v1')); s.seen = ['hub','chars','gear','jewel','shop','runes','settings']; s.crystals = 40000; s.idleAt = Date.now() - 3 * 3600e3; localStorage.setItem('mw-profile-v1', JSON.stringify(s)); });
+await p.reload(); await p.waitForTimeout(3500); await shot('01-hub-halfchest');
+await click('[data-a="market"]'); await p.waitForTimeout(300); await shot('02-market'); await click('.modal .x');
+await click('[data-a="wheel"]'); await p.waitForTimeout(300); await shot('03-wheel'); await click('.wheelbox2 .x');
+await click('[data-a="bp"]'); await p.waitForTimeout(300); await shot('04-bp'); await click('.modal .x');
+await click('[data-a="passes"]'); await p.waitForTimeout(300); await shot('05-passes'); await click('.modal .x');
+await click('[data-a="go"][data-v="settings"]'); await p.waitForTimeout(300); await shot('06-settings');
+await click('[data-a="go"][data-v="hero"]'); await click('[data-a="sub"][data-v="runes"]'); await p.waitForTimeout(300); await shot('07-runes');
+await click('[data-a="go"][data-v="jewel"]'); await p.waitForTimeout(300); await click('[data-a="synth"]'); await p.waitForTimeout(300); await shot('08-synth');
+await click('[data-a="go"][data-v="hub"]'); await click('.phit'); await p.waitForTimeout(3500);
+for (let i = 0; i < 40; i++) { if (await p.evaluate(() => !document.getElementById('cards').hidden)) break; await p.waitForTimeout(400); }
+await p.waitForTimeout(500); await shot('09-cards');
+await p.evaluate(() => document.querySelector('#cardList .sk')?.click()); await p.waitForTimeout(300);
+await p.evaluate(() => document.getElementById('pauseBtn').click()); await p.waitForTimeout(200); await shot('10-pause');
+console.log(errs); await b.close();

@@ -1,0 +1,13 @@
+import { chromium } from 'playwright';
+const b = await chromium.launch();
+const p = await b.newPage({ viewport: { width: 390, height: 800 }, deviceScaleFactor: 2, hasTouch: true });
+const click = sel => p.evaluate(s => document.querySelector(s)?.click(), sel);
+await p.goto('file://' + process.cwd() + '/dist/index.html'); await p.waitForTimeout(3400);
+await click('[data-a="startPick"][data-v="apollo"]'); await click('[data-a="startGo"]'); await p.waitForTimeout(300);
+await p.evaluate(() => { const s = JSON.parse(localStorage.getItem('mw-profile-v1')); s.seen = ['hub','chars','gear','jewel','shop','runes','settings']; s.heroes.apollo.stars = 3;
+  for (let i = 0; i < 8; i++) s.runes.push({ uid: 900 + i, kind: i % 3 ? 'elem' : 'destroy', elem: ['fire','ice','light','dark'][i % 4], rarity: i % 4 });
+  s.heroes.apollo.runes = [900, 901, null, null, null, null]; localStorage.setItem('mw-profile-v1', JSON.stringify(s)); });
+await p.reload(); await p.waitForTimeout(3600);
+await click('[data-a="go"][data-v="hero"]'); await click('[data-a="sub"][data-v="runes"]'); await p.waitForTimeout(400); await p.screenshot({ path: '/tmp/r-old.png' });
+await click('[data-a="rune"][data-v="902"]'); await p.waitForTimeout(300); await p.screenshot({ path: '/tmp/r-old2.png' });
+await b.close();

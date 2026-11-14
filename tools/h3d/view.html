@@ -1,0 +1,20 @@
+<!doctype html><html><head><style>body{margin:0;background:#2a2420}canvas{display:block}</style>
+<script type="importmap">{"imports":{"three":"./node_modules/three/build/three.module.js","three/addons/":"./node_modules/three/examples/jsm/"}}</script></head><body>
+<script type="module">
+import * as THREE from 'three';
+import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
+const q = new URLSearchParams(location.search), W = 1200, H = 420;
+const r = new THREE.WebGLRenderer({ antialias: true, preserveDrawingBuffer: true }); r.setSize(W, H); r.outputColorSpace = THREE.SRGBColorSpace; document.body.appendChild(r.domElement);
+const scene = new THREE.Scene(); scene.background = new THREE.Color(0x2a2420);
+scene.add(new THREE.HemisphereLight(0xffffff, 0x554433, 2.2)); const d = new THREE.DirectionalLight(0xffffff, 1.6); d.position.set(2, 4, 3); scene.add(d);
+const g = await new GLTFLoader().loadAsync('m/' + q.get('m') + '.glb');
+const box = new THREE.Box3().setFromObject(g.scene), size = box.getSize(new THREE.Vector3()), c = box.getCenter(new THREE.Vector3());
+r.setScissorTest(true);
+for (let i = 0; i < 4; i++) {
+  const o = g.scene.clone(); const holder = new THREE.Group(); o.position.sub(c); holder.add(o); holder.rotation.y = i * Math.PI / 2;
+  const s2 = new THREE.Scene(); s2.background = scene.background; s2.add(holder); scene.children.filter(x => x.isLight).forEach(l => s2.add(l.clone()));
+  const h = size.y * 0.6, cam = new THREE.OrthographicCamera(-h * 0.75, h * 0.75, h, -h, 0.01, 100); cam.position.set(0, 0, 10); cam.lookAt(0, 0, 0);
+  r.setViewport(i * W / 4, 0, W / 4, H); r.setScissor(i * W / 4, 0, W / 4, H); r.render(s2, cam);
+}
+document.title = 'done ' + JSON.stringify({ x: size.x.toFixed(2), y: size.y.toFixed(2), z: size.z.toFixed(2) });
+</script></body></html>

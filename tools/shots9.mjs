@@ -1,0 +1,12 @@
+import { chromium } from 'playwright';
+const b = await chromium.launch();
+const p = await b.newPage({ viewport: { width: 390, height: 800 }, deviceScaleFactor: 2 });
+const click = sel => p.evaluate(s => document.querySelector(s)?.click(), sel);
+await p.goto('file://' + process.cwd() + '/dist/index.html');
+await click('[data-a="startPick"]'); await click('[data-a="startGo"]'); await p.waitForTimeout(300);
+await p.evaluate(() => { const s = JSON.parse(localStorage.getItem('mw-profile-v1')); s.gold = 5e6; s.seen = ['hub','chars','gear','jewel','shop','runes']; localStorage.setItem('mw-profile-v1', JSON.stringify(s)); });
+await p.reload(); await p.waitForTimeout(300);
+await click('.tab:nth-child(2)'); await p.waitForTimeout(300);
+for (let i = 0; i < 30; i++) await click('[data-a="explore"][data-v="gold"]');
+await p.waitForTimeout(300); await p.screenshot({ path: 'shots/w-09-jewel.png' });
+await b.close();

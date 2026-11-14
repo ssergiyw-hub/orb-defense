@@ -1,0 +1,33 @@
+// правки 112–115: wall defence — hub button, wall window, rating, battle frames, damage window, result
+import { chromium } from 'playwright';
+import fs from 'fs';
+const b = await chromium.launch();
+const p = await b.newPage({ viewport: { width: 390, height: 844 }, deviceScaleFactor: 2 });
+const errs = []; p.on('pageerror', e => errs.push(String(e))); p.on('console', m => { if (m.type() === 'error') errs.push(m.text()); });
+const click = sel => p.evaluate(s => document.querySelector(s)?.click(), sel);
+const hash = process.argv[2] ?? '#god#auratest#skilltest';
+await p.goto('file://' + process.cwd() + '/dist/index.html' + hash); await p.waitForTimeout(3200);
+await click('[data-a="startPick"][data-v="heracles"]'); await click('[data-a="startGo"]'); await p.waitForTimeout(300);
+await p.evaluate(() => { const s = JSON.parse(localStorage.getItem('mw-profile-v1')); s.seen = ['hub','chars','gear','jewel','shop','runes','settings']; s.maxMap = 3; localStorage.setItem('mw-profile-v1', JSON.stringify(s)); });
+await p.reload(); await p.waitForTimeout(3400);
+fs.mkdirSync('shots', { recursive: true });
+await p.screenshot({ path: 'shots/w45-hub.png' });
+await click('[data-a="wallOpen"]'); await p.waitForTimeout(500); await p.screenshot({ path: 'shots/w45-wallwin.png' });
+await click('[data-a="rating"]'); await p.waitForTimeout(400); await p.screenshot({ path: 'shots/w45-rating.png' });
+await click('[data-a="wallOpen"]'); await p.waitForTimeout(300);
+await click('[data-a="wallGo"]'); await p.waitForTimeout(4000);
+await p.screenshot({ path: 'shots/w45-battle1.png' });
+await p.keyboard.down('a'); await p.waitForTimeout(700); await p.keyboard.up('a');
+await p.waitForTimeout(6000); await p.screenshot({ path: 'shots/w45-battle2.png' });
+await p.waitForTimeout(5000); await p.screenshot({ path: 'shots/w45-battle3.png' });
+await click('#pauseBtn'); await p.waitForTimeout(200); await click('#dmgBtn'); await p.waitForTimeout(300); await p.screenshot({ path: 'shots/w45-dmg.png' });
+await click('#dmgClose'); await click('#resumeBtn');
+await click('#speedBtn'); await click('#speedBtn');
+for (let k = 0; k < 40; k++) { await p.waitForTimeout(1000); if (await p.evaluate(() => !document.getElementById('cards').hidden)) break; }
+await p.screenshot({ path: 'shots/w45-cards.png' });
+await click('#cardList .sk'); await p.waitForTimeout(3000);
+await p.screenshot({ path: 'shots/w45-battle4.png' });
+await click('#pauseBtn'); await p.waitForTimeout(200); await click('#quitBtn'); await p.waitForTimeout(1500);
+await p.screenshot({ path: 'shots/w45-result.png' });
+await click('.dmgd summary'); await p.waitForTimeout(300); await p.screenshot({ path: 'shots/w45-result2.png' });
+console.log(JSON.stringify(errs)); await b.close(); process.exit(0);

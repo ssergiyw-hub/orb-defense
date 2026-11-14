@@ -1,0 +1,11 @@
+import { chromium } from 'playwright';
+const [,, qs, ci, upCi] = process.argv;
+const b = await chromium.launch({ args: ['--use-gl=angle', '--use-angle=swiftshader', '--enable-unsafe-swiftshader'] });
+const p = await b.newPage(); await p.goto('http://localhost:8765/rig.html?' + qs); await p.waitForFunction(() => document.title.startsWith('done'), null, { timeout: 180000 });
+const r = await p.evaluate(([ci, upCi]) => { const { bones, root, THREE } = window.X; const out = [];
+  for (let i = 0; i < 6; i++) { const c = window.X.clips[ci]; const t = c.duration * i / 6; window.frame(ci, t, Math.PI / 2, upCi >= 0 ? [upCi, 0] : undefined); root.updateMatrixWorld(true);
+    const g = n => bones[n].getWorldPosition(new THREE.Vector3());
+    const sh = g('RightShoulder').sub(g('LeftShoulder')), hp = g('RightUpLeg').sub(g('LeftUpLeg')), ft = g('RightFoot').sub(g('LeftFoot'));
+    const deg = v => (Math.atan2(v.z, v.x) * 180 / Math.PI).toFixed(0);
+    out.push(`t${t.toFixed(2)} shoulders ${deg(sh)} hips ${deg(hp)} feet ${deg(ft)}`); } return out; }, [+ci, +upCi]);
+console.log(r.join('\n')); await b.close(); process.exit(0);

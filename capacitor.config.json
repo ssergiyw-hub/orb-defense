@@ -1,0 +1,9 @@
+{
+  "appId": "app.summonedhero.orbdefense",
+  "appName": "Orb Defense: Olympus",
+  "webDir": "dist",
+  "android": {
+    "backgroundColor": "#0d0f18",
+    "adjustMarginsForEdgeToEdge": "force"
+  }
+}

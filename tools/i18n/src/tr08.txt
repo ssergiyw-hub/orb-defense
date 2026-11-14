@@ -1,0 +1,129 @@
+918|новий рівень|new level|neue Stufe|nuevo nivel|novo nível|nowy poziom|yeni seviye|nouveau niveau|nuovo livello
+919|новий рівень у бою лікує {}% здоров'я|a new level in battle heals {}% health|eine neue Stufe im Kampf heilt {}% Leben|cada nivel nuevo en combate cura el {}% de salud|novo nível em batalha cura {}% da vida|nowy poziom w walce leczy {}% zdrowia|savaşta yeni seviye canın %{}'ini iyileştirir|chaque niveau en combat soigne {} % de vie|ogni nuovo livello in battaglia cura il {}% di salute
+920|потрібен рів. {}|needs lv. {}|benötigt St. {}|requiere nv. {}|requer nv. {}|wymaga poz. {}|sv. {} gerekir|niv. {} requis|serve liv. {}
+921|потрібно|need|benötigt|necesitas|precisa|potrzeba|gerekli|il faut|servono
+922|звичайна|common|gewöhnlich|común|comum|zwykła|sıradan|commune|comune
+923|звичайного|common|gewöhnlichen|común|comum|zwykłego|sıradan|commun|comune
+924|звичайної|common|gewöhnlichen|común|comum|zwykłej|sıradan|commune|comune
+925|досвід|XP|EP|EXP|XP|PD|TP|XP|PE
+926|досвід навичок +{}|skill XP +{}|Fähigkeits-EP +{}|EXP de habilidades +{}|XP de habilidades +{}|PD umiejętności +{}|yetenek TP +{}|XP de compétences +{}|PE abilità +{}
+927|зброя|weapon|Waffe|arma|arma|broń|silah|arme|arma
+928|уламків рун|rune shards|Runensplitter|fragmentos de runa|fragmentos de runa|odłamków run|rün parçası|éclats de rune|schegge di runa
+929|послаблення захисту|defense break|Verteidigung geschwächt|defensa reducida|defesa reduzida|osłabienie obrony|savunma kırma|défense affaiblie|difesa indebolita
+930|залишилось {}/{}|{}/{} left|noch {}/{}|quedan {}/{}|restam {}/{}|zostało {}/{}|{}/{} kaldı|encore {}/{}|restano {}/{}
+931|зупиняти автопошук на ★{}|stop auto-search at ★{}|Autosuche bei ★{} stoppen|detener búsqueda auto en ★{}|parar busca automática em ★{}|zatrzymaj autoposzukiwanie na ★{}|★{} çıkınca otomatik aramayı durdur|arrêter la recherche auto à ★{}|ferma la ricerca auto a ★{}
+932|залишаємось у Печері|we stay in the Cave|wir bleiben in der Höhle|nos quedamos en la Cueva|ficamos na Caverna|zostajemy w Jaskini|Mağara'da kalıyoruz|on reste dans la Grotte|restiamo nella Caverna
+933|відкриває цю навичку в бою (без руни її немає|unlocks this skill in battle (without the rune it doesn't exist|schaltet diese Fähigkeit im Kampf frei (ohne Rune gibt es sie nicht|desbloquea esta habilidad en combate (sin la runa no existe|libera esta habilidade em batalha (sem a runa ela não existe|odblokowuje tę umiejętność w walce (bez runy jej nie ma|bu yeteneği savaşta açar (rün olmadan yoktur|débloque cette compétence en combat (sans la rune elle n'existe pas|sblocca questa abilità in battaglia (senza la runa non c'è
+934|скасувати|cancel|abbrechen|cancelar|cancelar|anuluj|iptal|annuler|annulla
+935|отруєння|poison|Vergiftung|envenenamiento|envenenamento|zatrucie|zehirlenme|empoisonnement|avvelenamento
+936|відштовхування|knockback|Rückstoß|empuje|repulsão|odrzut|geri itme|recul|respinta
+937|пасивна|passive|passiv|pasiva|passiva|pasywna|pasif|passive|passiva
+938|перезарядка −{}|cooldown −{}|Abklingzeit −{}|recarga −{}|recarga −{}|odnowienie −{}|bekleme −{}|recharge −{}|ricarica −{}
+939|перезарядка −{}%, блискавка ще +{} стрибка|cooldown −{}%, lightning +{} more jump|Abklingzeit −{}%, Blitz +{} weiterer Sprung|recarga −{}%, rayo +{} salto más|recarga −{}%, raio +{} salto a mais|odnowienie −{}%, błyskawica jeszcze +{} skok|bekleme −%{}, şimşek +{} sıçrama daha|recharge −{} %, éclair +{} rebond de plus|ricarica −{}%, fulmine +{} salto in più
+940|перескок на сусіда|jumps to a neighbor|springt auf einen Nachbarn|salta al vecino|salta para o vizinho|przeskok na sąsiada|yandakine sıçrar|saute sur un voisin|salta al vicino
+941|площа +{}|area +{}|Fläche +{}|área +{}|área +{}|obszar +{}|alan +{}|zone +{}|area +{}
+942|площа +{}%, перезарядка −{}|area +{}%, cooldown −{}|Fläche +{}%, Abklingzeit −{}|área +{}%, recarga −{}|área +{}%, recarga −{}|obszar +{}%, odnowienie −{}|alan +%{}, bekleme −{}|zone +{} %, recharge −{}|area +{}%, ricarica −{}
+943|підпал|burn|Brand|quemadura|queimadura|podpalenie|yakma|brûlure|bruciatura
+944|поки нічого|nothing yet|noch nichts|aún nada|nada ainda|na razie nic|henüz yok|rien pour l'instant|ancora niente
+945|повний|full|voll|lleno|cheio|pełny|dolu|plein|pieno
+946|отримавши удар, герой ранить ворогів поруч на {}% цього удару|when hit, the hero damages nearby enemies for {}% of that hit|bei einem Treffer verletzt der Held nahe Gegner um {}% dieses Treffers|al recibir un golpe, el héroe hiere a los enemigos cercanos con el {}% de ese golpe|ao levar um golpe, o herói fere inimigos próximos com {}% dele|po otrzymaniu ciosu bohater rani pobliskich wrogów za {}% tego ciosu|darbe alınca kahraman yakındaki düşmanlara o darbenin %{}'i kadar hasar verir|quand il est touché, le héros blesse les ennemis proches de {} % du coup|quando viene colpito, l'eroe ferisce i nemici vicini del {}% del colpo
+947|після удару по герою швидкість +{}% на {} с|after the hero is hit, speed +{}% for {} s|nach einem Treffer am Helden Tempo +{}% für {} s|tras recibir un golpe, velocidad +{}% durante {} s|após o herói levar golpe, velocidade +{}% por {} s|po ciosie w bohatera szybkość +{}% na {} s|kahraman vurulunca hız +%{}, {} sn|après un coup reçu, vitesse +{} % pendant {} s|dopo un colpo subito, velocità +{}% per {} s
+948|посох|staff|Stab|báculo|cajado|kostur|asa|bâton|bastone
+949|межа|cap|Grenze|límite|limite|limit|sınır|plafond|limite
+950|межа рів|lv cap|St.-Grenze|límite nv|limite nv|limit poz|sv sınırı|niv max|limite liv
+951|межа рівня {}|level cap {}|Stufengrenze {}|límite de nivel {}|limite de nível {}|limit poziomu {}|seviye sınırı {}|niveau max {}|limite di livello {}
+952|при здоров'ї нижче {}% шкода +{}|below {}% health, damage +{}|unter {}% Leben Schaden +{}|con salud por debajo del {}%, daño +{}|com vida abaixo de {}%, dano +{}|przy zdrowiu poniżej {}% obrażenia +{}|can %{}'in altındayken hasar +{}|sous {} % de vie, dégâts +{}|sotto il {}% di salute, danni +{}
+953|при здоров'ї нижче {}% — лікування {}% (раз за забіг|below {}% health — heal {}% (once per run|unter {}% Leben — Heilung {}% (einmal pro Lauf|con salud por debajo del {}%, cura el {}% (una vez por partida|com vida abaixo de {}% — cura {}% (uma vez por partida|przy zdrowiu poniżej {}% — leczenie {}% (raz na bieg|can %{}'in altındayken — %{} iyileşme (koşu başına bir kez|sous {} % de vie — soin de {} % (une fois par partie|sotto il {}% di salute: cura del {}% (una volta a partita
+954|пройдено|cleared|geschafft|superado|concluído|ukończony|geçildi|réussi|superato
+955|радіус аур +{}|aura radius +{}|Aurenradius +{}|radio de auras +{}|raio das auras +{}|zasięg aur +{}|aura yarıçapı +{}|rayon des auras +{}|raggio aure +{}
+956|радіус підбору|pickup radius|Sammelradius|radio de recogida|raio de coleta|zasięg zbierania|toplama yarıçapı|rayon de ramassage|raggio di raccolta
+957|радіус підбору +{}|pickup radius +{}|Sammelradius +{}|radio de recogida +{}|raio de coleta +{}|zasięg zbierania +{}|toplama yarıçapı +{}|rayon de ramassage +{}|raggio di raccolta +{}
+958|радіус шкоди|damage radius|Schadensradius|radio de daño|raio de dano|zasięg obrażeń|hasar yarıçapı|rayon de dégâts|raggio dei danni
+959|раз на {} с щит гасить удар повністю|once every {} s a shield blocks a hit completely|alle {} s blockt ein Schild einen Treffer komplett|cada {} s un escudo anula un golpe por completo|a cada {} s um escudo anula um golpe inteiro|raz na {} s tarcza całkowicie pochłania cios|her {} sn bir kalkan bir darbeyi tamamen söndürür|toutes les {} s, un bouclier annule un coup entier|ogni {} s uno scudo annulla un colpo intero
+960|раз за забіг: {}% шанс воскреснути з половиною здоров'я|once per run: {}% chance to revive with half health|einmal pro Lauf: {}% Chance, mit halbem Leben aufzuerstehen|una vez por partida: {}% de revivir con la mitad de salud|uma vez por partida: {}% de chance de reviver com metade da vida|raz na bieg: {}% szansy na wskrzeszenie z połową zdrowia|koşu başına bir kez: yarım canla dirilme şansı %{}|une fois par partie : {} % de chance de revivre avec la moitié de la vie|una volta a partita: {}% di probabilità di risorgere con metà salute
+961|рідкісного|rare|seltenen|raro|raro|rzadkiego|nadir|rare|raro
+962|рідкісної|rare|seltenen|rara|rara|rzadkiej|nadir|rare|rara
+963|рідкість|rarity|Seltenheit|rareza|raridade|rzadkość|nadirlik|rareté|rarità
+964|рун: {}|runes: {}|Runen: {}|runas: {}|runas: {}|run: {}|rün: {}|runes : {}|rune: {}
+965|руни|runes|Runen|runas|runas|runy|rünler|runes|rune
+966|з навичкою {}-го рівня|with a level {} skill|mit Fähigkeit auf Stufe {}|con habilidad de nivel {}|com habilidade nível {}|z umiejętnością {}. poziomu|{}. seviye yetenekle|avec une compétence de niveau {}|con abilità di livello {}
+967|сувоїв|scrolls|Schriftrollen|pergaminos|pergaminhos|zwojów|parşömen|parchemins|pergamene
+968|вільний|free|frei|libre|livre|wolny|boş|libre|libero
+969|свій комплект|own set|eigenes Set|conjunto propio|conjunto próprio|własny zestaw|kendi seti|son ensemble|set proprio
+970|сезон {}|season {}|Saison {}|temporada {}|temporada {}|sezon {}|sezon {}|saison {}|stagione {}
+971|сильна|strong|stark|fuerte|forte|silna|güçlü|forte|forte
+972|сильніше на {}|{} stronger|{} stärker|{} más fuerte|{} mais forte|silniej o {}|{} daha güçlü|plus fort de {}|più forte del {}
+973|шв. атаки +{}|atk speed +{}|Angr.-Tempo +{}|vel. ataque +{}|vel. ataque +{}|szyb. ataku +{}|sal. hızı +{}|vit. attaque +{}|vel. attacco +{}
+974|скоро|soon|bald|pronto|em breve|wkrótce|yakında|bientôt|presto
+975|швидкість +{}|speed +{}|Tempo +{}|velocidad +{}|velocidade +{}|szybkość +{}|hız +{}|vitesse +{}|velocità +{}
+976|швидкість +{}% на {} с|speed +{}% for {} s|Tempo +{}% für {} s|velocidad +{}% durante {} s|velocidade +{}% por {} s|szybkość +{}% na {} s|hız +%{}, {} sn|vitesse +{} % pendant {} s|velocità +{}% per {} s
+977|швидкість атаки +{}|attack speed +{}|Angriffstempo +{}|velocidad de ataque +{}|velocidade de ataque +{}|szybkość ataku +{}|saldırı hızı +{}|vitesse d'attaque +{}|velocità d'attacco +{}
+978|швидкість стріли|arrow speed|Pfeiltempo|velocidad de flecha|velocidade da flecha|szybkość strzały|ok hızı|vitesse de la flèche|velocità della freccia
+979|швидкість, швидкість атаки|speed, attack speed|Tempo, Angriffstempo|velocidad, velocidad de ataque|velocidade, velocidade de ataque|szybkość, szybkość ataku|hız, saldırı hızı|vitesse, vitesse d'attaque|velocità, velocità d'attacco
+980|злиття|merge|Verschmelzen|fusión|fusão|łączenie|birleştirme|fusion|fusione
+981|злиттів|merges|Verschmelzungen|fusiones|fusões|połączeń|birleştirme|fusions|fusioni
+982|злиття|merges|Verschmelzungen|fusiones|fusões|połączenia|birleştirme|fusions|fusioni
+983|слот порожній|slot empty|Platz leer|ranura vacía|espaço vazio|miejsce puste|yuva boş|emplacement vide|slot vuoto
+984|слотів {} з {}|slots {} of {}|Plätze {} von {}|ranuras {} de {}|espaços {} de {}|miejsc {} z {}|yuva {}/{}|emplacements {} sur {}|slot {} su {}
+985|зміна через {}год {}хв · завтра: {}|changes in {}h {}m · tomorrow: {}|Wechsel in {} Std {} Min · morgen: {}|cambia en {} h {} min · mañana: {}|muda em {}h {}min · amanhã: {}|zmiana za {} godz {} min · jutro: {}|{}sa {}dk sonra değişir · yarın: {}|change dans {} h {} min · demain : {}|cambia tra {} h {} min · domani: {}
+986|снаряди більші на {}|projectiles {} larger|Geschosse {} größer|proyectiles {} más grandes|projéteis {} maiores|pociski większe o {}|mermiler {} daha büyük|projectiles plus gros de {}|proiettili più grandi del {}
+987|стихія|element|Element|elemento|elemento|żywioł|element|élément|elemento
+988|стоячи на місці: захист +{}%, лікування {}% за секунду|standing still: defense +{}%, heals {}% per second|im Stillstand: Verteidigung +{}%, Heilung {}% pro Sekunde|quieto: defensa +{}%, curación del {}% por segundo|parado: defesa +{}%, cura {}% por segundo|stojąc w miejscu: obrona +{}%, leczenie {}% na sekundę|dururken: savunma +%{}, saniyede %{} iyileşme|immobile : défense +{} %, soin de {} % par seconde|da fermo: difesa +{}%, cura del {}% al secondo
+989|стріла|arrow|Pfeil|flecha|flecha|strzała|ok|flèche|freccia
+990|стріла ширша|wider arrow|breiterer Pfeil|flecha más ancha|flecha mais larga|szersza strzała|daha geniş ok|flèche plus large|freccia più larga
+991|стріли добивають ворогів, у яких менше {}% здоров'я (не босів|arrows finish off enemies below {}% health (not bosses|Pfeile erledigen Gegner unter {}% Leben (keine Bosse|las flechas rematan a enemigos con menos del {}% de salud (no jefes|flechas finalizam inimigos com menos de {}% de vida (não chefes|strzały dobijają wrogów poniżej {}% zdrowia (nie bossów|oklar canı %{}'in altındaki düşmanları bitirir (boss hariç|les flèches achèvent les ennemis sous {} % de vie (pas les boss|le frecce finiscono i nemici sotto il {}% di salute (non i boss
+992|стріли пробивають ще {} ворога|arrows pierce {} more enemy|Pfeile durchbohren {} weiteren Gegner|las flechas atraviesan {} enemigo más|flechas atravessam mais {} inimigo|strzały przebijają jeszcze {} wroga|oklar {} düşmanı daha deler|les flèches transpercent {} ennemi de plus|le frecce trafiggono altri {} nemici
+993|сфери обертаються на {}% швидше|orbs spin {}% faster|Kugeln kreisen {}% schneller|las esferas giran un {}% más rápido|as esferas giram {}% mais rápido|kule obracają się o {}% szybciej|küreler %{} daha hızlı döner|les sphères tournent {} % plus vite|le sfere ruotano il {}% più veloci
+994|така сама руна|identical rune|gleiche Rune|runa igual|runa igual|taka sama runa|aynı rün|rune identique|runa uguale
+995|таких самих предмети|identical items|gleiche Gegenstände|objetos iguales|itens iguais|takie same przedmioty|aynı eşya|objets identiques|oggetti uguali
+996|таких самих руни|identical runes|gleiche Runen|runas iguales|runas iguais|takie same runy|aynı rün|runes identiques|rune uguali
+997|такий самий предмет|identical item|gleicher Gegenstand|objeto igual|item igual|taki sam przedmiot|aynı eşya|objet identique|oggetto uguale
+998|тест|test|Test|prueba|teste|test|test|test|test
+999|убиті вороги вибухають: {}% їхнього здоров'я сусідам|slain enemies explode: {}% of their health to neighbors|besiegte Gegner explodieren: {}% ihres Lebens an Nachbarn|los enemigos muertos explotan: el {}% de su salud a los cercanos|inimigos mortos explodem: {}% da vida deles nos vizinhos|zabici wrogowie wybuchają: {}% ich zdrowia dla sąsiadów|öldürülen düşmanlar patlar: canlarının %{}'i yakındakilere|les ennemis tués explosent : {} % de leur vie aux voisins|i nemici uccisi esplodono: il {}% della loro salute ai vicini
+1000|ультимейт|ultimate|Ultimative|definitiva|suprema|superumiejętność|ultimate|ultime|suprema
+1001|рів|lv|St.|nv|nv|poz|sv|niv|liv
+1002|рів. {}|lv. {}|St. {}|nv. {}|nv. {}|poz. {}|sv. {}|niv. {}|liv. {}
+1003|рів. {}{}|lv. {}{}|St. {}{}|nv. {}{}|nv. {}{}|poz. {}{}|sv. {}{}|niv. {}{}|liv. {}{}
+1004|рівень|level|Stufe|nivel|nível|poziom|seviye|niveau|livello
+1005|рівень {}|level {}|Stufe {}|nivel {}|nível {}|poziom {}|seviye {}|niveau {}|livello {}
+1006|шкода|damage|Schaden|daño|dano|obrażenia|hasar|dégâts|danni
+1007|шкода +{}|damage +{}|Schaden +{}|daño +{}|dano +{}|obrażenia +{}|hasar +{}|dégâts +{}|danni +{}
+1008|шкода {}|damage {}|Schaden {}|daño {}|dano {}|obrażenia {}|hasar {}|dégâts {}|danni {}
+1009|шкода {} · здоров'я {}|damage {} · health {}|Schaden {} · Leben {}|daño {} · salud {}|dano {} · vida {}|obrażenia {} · zdrowie {}|hasar {} · can {}|dégâts {} · vie {}|danni {} · salute {}
+1010|шкода аур +{}|aura damage +{}|Aurenschaden +{}|daño de auras +{}|dano das auras +{}|obrażenia aur +{}|aura hasarı +{}|dégâts des auras +{}|danni aure +{}
+1011|шкода аур ×{}|aura damage ×{}|Aurenschaden ×{}|daño de auras ×{}|dano das auras ×{}|obrażenia aur ×{}|aura hasarı ×{}|dégâts des auras ×{}|danni aure ×{}
+1012|шкода криту|crit damage|Kritschaden|daño crítico|dano crítico|obrażenia kryt.|kritik hasarı|dégâts critiques|danni critici
+1013|шкода блискавки, променя і духів +{}|lightning, beam and spirit damage +{}|Schaden von Blitz, Strahl und Geistern +{}|daño de rayo, haz y espíritus +{}|dano de raio, feixe e espíritos +{}|obrażenia błyskawicy, promienia i duchów +{}|şimşek, ışın ve ruh hasarı +{}|dégâts d'éclair, de rayon et d'esprits +{}|danni di fulmine, raggio e spiriti +{}
+1014|шкода навички «{}» +{}|«{}» skill damage +{}|Schaden der Fähigkeit «{}» +{}|daño de la habilidad «{}» +{}|dano da habilidade «{}» +{}|obrażenia umiejętności «{}» +{}|«{}» yetenek hasarı +{}|dégâts de la compétence « {} » +{}|danni dell'abilità «{}» +{}
+1015|шкода вогняної кулі, склянки й метеорів +{}|fireball, vial and meteor damage +{}|Schaden von Feuerball, Phiole und Meteoren +{}|daño de bola de fuego, frasco y meteoros +{}|dano de bola de fogo, frasco e meteoros +{}|obrażenia kuli ognia, fiolki i meteorów +{}|ateş topu, şişe ve meteor hasarı +{}|dégâts de boule de feu, fiole et météores +{}|danni di palla di fuoco, fiala e meteore +{}
+1016|шкода уламків, бумеранга, вітру і струменя +{}|shard, boomerang, wind and jet damage +{}|Schaden von Splittern, Bumerang, Wind und Strahl +{}|daño de fragmentos, bumerán, viento y chorro +{}|dano de fragmentos, bumerangue, vento e jato +{}|obrażenia odłamków, bumerangu, wiatru i strumienia +{}|parça, bumerang, rüzgâr ve fışkırma hasarı +{}|dégâts d'éclats, boomerang, vent et jet +{}|danni di schegge, boomerang, vento e getto +{}
+1017|шкода по босах +{}|boss damage +{}|Schaden gegen Bosse +{}|daño a jefes +{}|dano em chefes +{}|obrażenia bossom +{}|boss'a hasar +{}|dégâts aux boss +{}|danni ai boss +{}
+1018|шкода по босах і мінібосах +{}|damage to bosses and mini-bosses +{}|Schaden gegen Bosse und Mini-Bosse +{}|daño a jefes y minijefes +{}|dano em chefes e minichefes +{}|obrażenia bossom i minibossom +{}|boss ve mini boss'a hasar +{}|dégâts aux boss et mini-boss +{}|danni a boss e miniboss +{}
+1019|шкода стихії «{}» +{}|«{}» element damage +{}|Schaden des Elements «{}» +{}|daño del elemento «{}» +{}|dano do elemento «{}» +{}|obrażenia żywiołu «{}» +{}|«{}» element hasarı +{}|dégâts de l'élément « {} » +{}|danni dell'elemento «{}» +{}
+1020|шкода стріли героя +{}|hero arrow damage +{}|Schaden des Heldenpfeils +{}|daño de la flecha del héroe +{}|dano da flecha do herói +{}|obrażenia strzały bohatera +{}|kahraman oku hasarı +{}|dégâts de la flèche du héros +{}|danni della freccia dell'eroe +{}
+1021|шкода сфер +{}|orb damage +{}|Kugelschaden +{}|daño de esferas +{}|dano das esferas +{}|obrażenia kul +{}|küre hasarı +{}|dégâts des sphères +{}|danni sfere +{}
+1022|шкода, шанс криту|damage, crit chance|Schaden, Kritchance|daño, prob. crítico|dano, chance crítica|obrażenia, szansa na kryt|hasar, kritik şansı|dégâts, chance de critique|danni, prob. critico
+1023|посилення з кожним влучанням|stronger with every hit|stärker mit jedem Treffer|más fuerte con cada impacto|mais forte a cada acerto|wzmocnienie z każdym trafieniem|her isabette güçlenir|plus fort à chaque coup|più forte a ogni colpo
+1024|ф|ф|ф|ф|ф|ф|ф|ф|ф
+1025|ц|ц|ц|ц|ц|ц|ц|ц|ц
+1026|ціна|price|Preis|precio|preço|cena|fiyat|prix|prezzo
+1027|год {}хв|h {}m|Std {}Min|h {}min|h {}min|godz {}min|sa {}dk|h {}min|h {}min
+1028|частинок|shards|Splitter|fragmentos|fragmentos|odłamków|parça|fragments|frammenti
+1029|частинки|shards|Splitter|fragmentos|fragmentos|odłamki|parça|fragments|frammenti
+1030|частіше на {}|{} more often|{} häufiger|{} más a menudo|{} mais frequente|częściej o {}|{} daha sık|plus souvent de {}|più spesso del {}
+1031|що|item|was|qué|item|co|ne|quoi|cosa
+1032|трохи м'якше, {} кадрів — менше гріється|a bit lighter, {} fps — runs cooler|etwas schonender, {} FPS — wird weniger warm|algo más suave, {} fps: se calienta menos|um pouco mais leve, {} fps — esquenta menos|trochę lżej, {} kl./s — mniej się grzeje|biraz daha hafif, {} fps — daha az ısınır|un peu plus léger, {} i/s — chauffe moins|un po' più leggero, {} fps: scalda meno
+1033|чітко, {} кадрів|sharp, {} fps|scharf, {} FPS|nítido, {} fps|nítido, {} fps|wyraźnie, {} kl./s|net, {} fps|net, {} i/s|nitido, {} fps
+1034|шанс воскреснути {}|revive chance {}|Wiederbelebungschance {}|prob. de revivir {}|chance de reviver {}|szansa na wskrzeszenie {}|dirilme şansı {}|chance de revivre {}|prob. di risorgere {}
+1035|шанс криту|crit chance|Kritchance|prob. de crítico|chance crítica|szansa na kryt|kritik şansı|chance de critique|prob. critico
+1036|шанс криту +{}%, шкода криту +{}|crit chance +{}%, crit damage +{}|Kritchance +{}%, Kritschaden +{}|prob. de crítico +{}%, daño crítico +{}|chance crítica +{}%, dano crítico +{}|szansa na kryt +{}%, obrażenia kryt. +{}|kritik şansı +%{}, kritik hasarı +{}|chance de critique +{} %, dégâts critiques +{}|prob. critico +{}%, danni critici +{}
+1037|шанс ухилитися {}|dodge chance {}|Ausweichchance {}|prob. de esquivar {}|chance de esquiva {}|szansa na unik {}|kaçınma şansı {}|chance d'esquive {}|prob. di schivata {}
+1038|щит раз на {} с|shield every {} s|Schild alle {} s|escudo cada {} s|escudo a cada {} s|tarcza raz na {} s|her {} sn kalkan|bouclier toutes les {} s|scudo ogni {} s
+1039|ы|ы|ы|ы|ы|ы|ы|ы|ы
+1040|енергії|energy|Energie|de energía|de energia|energii|enerji|énergie|energia
+1041|епічний предмет|epic item|epischer Gegenstand|objeto épico|item épico|epicki przedmiot|destansı eşya|objet épique|oggetto epico
+1042|епічних предмети|epic items|epische Gegenstände|objetos épicos|itens épicos|epickie przedmioty|destansı eşya|objets épiques|oggetti epici
+1043|епічного|epic|epischen|épico|épico|epickiego|destansı|épique|epico
+1044|епічної|epic|epischen|épica|épica|epickiej|destansı|épique|epica
+1045|етап {}|stage {}|Etappe {}|etapa {}|etapa {}|etap {}|aşama {}|étape {}|fase {}
+1046|ефект стихії сильніший на {}% (підпал, сповільнення, отрута|element effect {}% stronger (burn, slow, poison|Elementeffekt {}% stärker (Brand, Verlangsamung, Gift|efecto del elemento un {}% más fuerte (quemadura, ralentización, veneno|efeito do elemento {}% mais forte (queimadura, lentidão, veneno|efekt żywiołu silniejszy o {}% (podpalenie, spowolnienie, trucizna|element etkisi %{} daha güçlü (yakma, yavaşlatma, zehir|effet d'élément {} % plus fort (brûlure, ralentissement, poison|effetto dell'elemento più forte del {}% (bruciatura, rallentamento, veleno

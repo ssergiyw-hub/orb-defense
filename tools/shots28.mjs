@@ -1,0 +1,14 @@
+import { chromium } from 'playwright';
+const b = await chromium.launch();
+const p = await b.newPage({ viewport: { width: 390, height: 800 }, deviceScaleFactor: 2 });
+const errs = []; p.on('pageerror', e => errs.push(String(e)));
+await p.goto('file://' + process.cwd() + '/dist/index.html'); await p.waitForTimeout(3200);
+await p.evaluate(() => { document.querySelector('[data-a="startPick"][data-v="apollo"]').click(); document.querySelector('[data-a="startGo"]').click(); });
+await p.waitForTimeout(400);
+await p.evaluate(() => document.querySelector('[data-a="battle"]').click()); await p.waitForTimeout(500);
+await p.evaluate(() => document.querySelector('[data-a="battleGo"]')?.click());
+for (let i = 0; i < 60 && await p.evaluate(() => document.getElementById('cards').hidden); i++) await p.waitForTimeout(500);
+await p.waitForTimeout(700); await p.screenshot({ path: 'shots/w3-10-cards.png' });
+await p.evaluate(() => { const c = document.querySelector('#cardList .sk:nth-child(2)'); c.className = 'sk ult'; c.style.removeProperty('--c'); c.querySelector('.skh').textContent = 'Ярость стихий'; c.querySelector('.skt').textContent = 'ультимейт'; c.querySelector('.pips')?.remove(); });
+await p.waitForTimeout(300); await p.screenshot({ path: 'shots/w3-11-ult.png' });
+console.log(errs); await b.close();

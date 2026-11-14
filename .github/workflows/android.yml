@@ -1,0 +1,108 @@
+# Orb Defense: Olympus — on every push to main builds a debug APK (and the AAB for Google Play when the
+# upload key is in the secrets) and attaches them to the "latest" release: Releases -> latest -> app-debug.apk
+name: Android APK
+
+on:
+  push:
+    branches: [main]
+    # art sources and notes don't need a new APK
+    paths-ignore: ["art/**", "*.md"]
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  apk:
+    runs-on: ubuntu-latest
+    env:
+      # правка 200: the AAB for Google Play is built only after Серёга adds the upload key to the repository secrets
+      HAS_UPLOAD_KEY: ${{ secrets.UPLOAD_KEYSTORE_B64 != '' }}
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: 21
+
+      - name: Install and build web part
+        run: |
+          npm install
+          npm run check
+          npm run build
+
+      - name: Create Android project
+        run: |
+          npx cap add android
+          # portrait only
+          sed -i 's/<activity /<activity android:screenOrientation="portrait" /' android/app/src/main/AndroidManifest.xml
+          # dark status and navigation bars
+          python3 tools/android-theme.py
+          npx cap sync android
+          # правки 178, 200: SDK 36, version number = run number, debug key, upload key (if the secrets are set)
+          python3 tools/android-build.py
+        env:
+          VERSION_CODE: ${{ github.run_number }}
+
+      - name: Build APK
+        working-directory: android
+        run: |
+          chmod +x gradlew
+          # services.gradle.org is sometimes slow: longer timeout and a few retries
+          sed -i 's/^networkTimeout=.*/networkTimeout=120000/' gradle/wrapper/gradle-wrapper.properties
+          for i in 1 2 3; do ./gradlew assembleDebug --no-daemon && break; echo "retry $i"; sleep 20; done
+          test -f app/build/outputs/apk/debug/app-debug.apk
+          python3 ../tools/apk-key/check_sign.py app/build/outputs/apk/debug/app-debug.apk
+
+      - name: Build AAB for Google Play (only when the upload key is in the secrets)
+        if: env.HAS_UPLOAD_KEY == 'true'
+        working-directory: android
+        env:
+          UPLOAD_KEYSTORE_B64: ${{ secrets.UPLOAD_KEYSTORE_B64 }}
+          UPLOAD_KEYSTORE: /tmp/upload.jks
+          UPLOAD_STORE_PASSWORD: ${{ secrets.UPLOAD_STORE_PASSWORD }}
+          UPLOAD_KEY_ALIAS: ${{ secrets.UPLOAD_KEY_ALIAS }}
+          UPLOAD_KEY_PASSWORD: ${{ secrets.UPLOAD_KEY_PASSWORD }}
+        run: |
+          printf '%s' "$UPLOAD_KEYSTORE_B64" | tr -d ' \r\n' | base64 -d > /tmp/upload.jks
+          for i in 1 2 3; do ./gradlew bundleRelease --no-daemon && break; echo "retry $i"; sleep 20; done
+          rm -f /tmp/upload.jks
+          cp app/build/outputs/bundle/release/app-release.aab ../orb-defense.aab
+          ls -la ../orb-defense.aab
+
+      - name: Check that the AAB builds (no upload key yet — debug key, not published)
+        if: env.HAS_UPLOAD_KEY != 'true'
+        working-directory: android
+        env:
+          UPLOAD_KEYSTORE: ${{ github.workspace }}/tools/apk-key/debug.keystore
+          UPLOAD_STORE_PASSWORD: android
+          UPLOAD_KEY_ALIAS: androiddebugkey
+          UPLOAD_KEY_PASSWORD: android
+        run: |
+          for i in 1 2 3; do ./gradlew bundleRelease --no-daemon && break; echo "retry $i"; sleep 20; done
+          test -f app/build/outputs/bundle/release/app-release.aab
+          ls -la app/build/outputs/bundle/release/app-release.aab
+          rm -f app/build/outputs/bundle/release/app-release.aab
+
+      - name: Upload artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: app-debug
+          path: android/app/build/outputs/apk/debug/app-debug.apk
+
+      - name: Publish to "latest" release
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: latest
+          name: Orb Defense — последняя сборка
+          body: "Сборка из коммита ${{ github.sha }}. Скачай app-debug.apk на телефон и установи (разреши установку из неизвестных источников)."
+          prerelease: true
+          files: |
+            android/app/build/outputs/apk/debug/app-debug.apk
+            orb-defense.aab
+          fail_on_unmatched_files: false

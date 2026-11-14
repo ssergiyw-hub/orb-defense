@@ -1,0 +1,27 @@
+// Screenshots: shop (chests, rune chest, hero search), black market fits, scroll stays, heroes without tavern.
+import { chromium } from 'playwright';
+const b = await chromium.launch();
+const p = await b.newPage({ viewport: { width: 390, height: 800 }, deviceScaleFactor: 2, hasTouch: true });
+const errs = []; p.on('pageerror', e => errs.push(String(e))); p.on('console', m => { if (m.type() === 'error') errs.push(m.text()); });
+const shot = n => p.screenshot({ path: `shots/w-${n}.png` });
+const click = sel => p.evaluate(s => document.querySelector(s)?.click(), sel);
+const closeReward = () => p.evaluate(() => document.querySelector('.rewardov')?.click());
+await p.goto('file://' + process.cwd() + '/dist/index.html');
+await click('[data-a="startPick"]'); await click('[data-a="startGo"]'); await p.waitForTimeout(300);
+await p.evaluate(() => { const s = JSON.parse(localStorage.getItem('mw-profile-v1')); s.crystals = 20000; s.couponsSmall = 3; s.couponsBig = 2; s.seen = ['hub','chars','gear','jewel','shop','runes']; localStorage.setItem('mw-profile-v1', JSON.stringify(s)); });
+await p.reload(); await p.waitForTimeout(400);
+await click('.tab:nth-child(1)'); await p.waitForTimeout(400); await shot('01-shop');
+await p.evaluate(() => { document.querySelector('#view').scrollTop = 1000; }); await shot('02-shop-bottom');
+await click('[data-a="chest"][data-v="runes:10"]'); await p.waitForTimeout(300); await shot('03-rune-chest'); await closeReward();
+await click('[data-a="hsearch"][data-v="big:10"]'); await p.waitForTimeout(300); await shot('04-hero-search'); await closeReward();
+await click('.tab:nth-child(4)'); await click('[data-a="sub"][data-v="chars"]'); await p.waitForTimeout(400);
+await p.evaluate(() => { document.querySelector('#view').scrollTop = 1000; }); await shot('05-chars-bottom');
+await click('.tab:nth-child(3)'); await p.waitForTimeout(400);
+await click('[data-a="market"]'); await shot('06-market-day');
+await p.evaluate(() => { const b = document.querySelector('.panelbox'); b.scrollTop = 60; });
+await p.waitForTimeout(2300);
+console.log('panel scroll after 2s:', await p.evaluate(() => document.querySelector('.panelbox').scrollTop), 'scrollable:', await p.evaluate(() => { const b = document.querySelector('.panelbox'); return b.scrollHeight - b.clientHeight; }));
+await click('[data-a="mktTab"][data-v="week"]'); await shot('07-market-week');
+await click('[data-a="mktTab"][data-v="month"]'); await click('[data-a="cycHero"]'); await shot('08-market-month');
+console.log('errors', errs);
+await b.close();

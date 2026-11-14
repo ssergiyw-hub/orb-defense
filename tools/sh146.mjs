@@ -1,0 +1,31 @@
+import { chromium } from 'playwright';
+const b = await chromium.launch({ args: ['--use-gl=angle', '--use-angle=swiftshader'] });
+const p = await b.newPage({ viewport: { width: 390, height: 760 } });
+p.on('pageerror', e => console.log('err', String(e)));
+const lang = process.argv[2] || 'uk';
+await p.addInitScript(l => { try { localStorage.setItem('mw-lang', l); } catch {} }, lang);
+const click = s => p.evaluate(s => document.querySelector(s)?.click(), s);
+const shot = async n => { await p.waitForTimeout(600); await p.screenshot({ path: `/tmp/s132/i_${lang}_${n}.png` }); };
+const cyr = async () => (await p.evaluate(() => { const r = []; const w = document.createTreeWalker(document.body, NodeFilter.SHOW_TEXT); for (let n = w.nextNode(); n; n = w.nextNode()) { const e = n.parentElement; if (!e || e.closest('script,style,[translate="no"]')) continue; if (/[А-Яа-яЁё]/.test(n.nodeValue)) r.push(n.nodeValue.trim()); } return r; }));
+await p.goto('http://localhost:8766/index.html#god'); await p.waitForTimeout(2500);
+for (let i = 0; i < 10 && await p.evaluate(() => !!document.querySelector('[data-a="startPick"]')); i++) { await click('[data-a="startPick"][data-v="hydra"]'); await p.waitForTimeout(500); await click('[data-a="startGo"]'); await p.waitForTimeout(800); }
+await click('[data-a="close"]'); await click('[data-a="rewardOk"]');
+await click('[data-a="idleOpen"]'); await shot('idle');
+await click('[data-a="idleInfo"]'); await shot('idleinfo');
+if (lang !== 'uk' && lang !== 'en') { console.log(lang, JSON.stringify(await cyr())); await b.close(); process.exit(0); }
+console.log('idle cyr', JSON.stringify(await cyr()));
+await p.evaluate(() => { const s = document.querySelector('.lvscroll'); if (s) s.scrollTop = 200; }); await shot('idlescroll');
+await click('#layer [data-a="close"]'); await p.waitForTimeout(300);
+await click('[data-a="passes"]'); await shot('passes');
+await p.evaluate(() => { const s = document.querySelector('.pscroll'); if (s) s.scrollTop = 330; }); await shot('passes2');
+await click('#layer [data-a="close"]'); await p.waitForTimeout(300);
+await click('[data-a="go"][data-v="jewel"]'); await p.waitForTimeout(500);
+await click('[data-a="auto"]'); await p.waitForTimeout(2500); await click('[data-a="auto"]'); await p.waitForTimeout(300);
+await click('[data-a="rewardOk"]'); await p.waitForTimeout(200);
+console.log('new now', await p.evaluate(() => document.querySelectorAll('.gtile.new').length));
+await shot('jewel');
+await p.waitForTimeout(2500); console.log('new after 2.5s', await p.evaluate(() => document.querySelectorAll('.gtile.new').length));
+await click('[data-a="go"][data-v="shop"]'); await p.waitForTimeout(400); await click('[data-a="go"][data-v="jewel"]'); await p.waitForTimeout(300);
+console.log('new after return', await p.evaluate(() => document.querySelectorAll('.gtile.new').length));
+console.log('star colors', await p.evaluate(() => [...new Set([...document.querySelectorAll('.gfield .gtile .gst')].map(e => e.closest('.gtile').className.match(/s\d/)[0] + ':' + getComputedStyle(e).color))].join(' ')));
+await b.close();

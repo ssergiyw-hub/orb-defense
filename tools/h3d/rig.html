@@ -1,0 +1,108 @@
+<!doctype html><html><head><style>body{margin:0;background:#2a2420}</style>
+<script type="importmap">{"imports":{"three":"./node_modules/three/build/three.module.js","three/addons/":"./node_modules/three/examples/jsm/"}}</script></head><body>
+<script type="module">
+import * as THREE from 'three';
+import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
+const q = new URLSearchParams(location.search);
+const L = new GLTFLoader();
+// hero: base = actions file (mesh + skin + 5 clips), plus walk / run clips from their own files
+const H = q.get('h');
+// правка 101: `base=<file>` — one Meshy file with the mesh and its clips (Idle_02 = 0, Spear_Walk = 1), no walk/run files
+const base = await L.loadAsync(q.get('base') ? `m/${q.get('base')}.glb` : `m/${H}_act.glb`);
+const clips = [...base.animations];
+if (!q.get('base')) for (const k of ['walk', 'run']) { const g = await L.loadAsync(`m/${H}_${k}.glb`); g.animations[0].name = k; clips.push(g.animations[0]); }
+for (const e of (q.get('extra') || '').split(',').filter(Boolean)) { const g = await L.loadAsync(`m/${e}.glb`); clips.push(...g.animations); }
+// правка 125: `inplace=4,5` — these clips keep their own spot (the hips do not travel forward/sideways)
+for (const i of (q.get('inplace') || '').split(',').filter(Boolean).map(Number)) {
+  const t = clips[i]?.tracks.find(t => /Hips\.position$/.test(t.name)); if (!t) continue;
+  const x0 = t.values[0], z0 = t.values[2]; for (let k = 0; k < t.values.length; k += 3) { t.values[k] = x0; t.values[k + 2] = z0; }
+}
+window.CLIPS = clips.map(c => ({ name: c.name, dur: c.duration }));
+const root = base.scene;
+let skinned; root.traverse(o => { if (o.isSkinnedMesh) skinned = o; });
+const bones = {}; root.traverse(o => { if (o.isBone) bones[o.name] = o; });
+// materials: toon or keep
+const mode = q.get('mat') || 'toon';
+const grad = new THREE.DataTexture(new Uint8Array([150, 150, 150, 255, 215, 215, 215, 255, 255, 255, 255, 255]), 3, 1); grad.needsUpdate = true; grad.minFilter = grad.magFilter = THREE.NearestFilter;
+function toonify(o) { o.traverse(m => { if (m.isMesh) { const old = m.material; const map = old.map; if (map) map.colorSpace = THREE.SRGBColorSpace;
+  m.material = mode === 'toon' ? new THREE.MeshToonMaterial({ map, gradientMap: grad, color: 0xffffff }) : mode === 'basic' ? new THREE.MeshBasicMaterial({ map }) : old; } }); }
+toonify(root);
+// weapon in the right hand
+const wq = q.get('w');
+let TIPOBJ = null, TIPLOC = null;
+if (wq) {
+  const wg = (await L.loadAsync(`m/${wq}.glb`)).scene; toonify(wg);
+  const wb = new THREE.Box3().setFromObject(wg), ws = wb.getSize(new THREE.Vector3());
+  const len = +q.get('wl'), grip = +q.get('wg'); // weapon length in m, grip point 0..1 from the bottom
+  const k = len / ws.y; wg.scale.setScalar(k);
+  const piv = new THREE.Group(); wg.position.set(-(wb.min.x + ws.x / 2) * k, -(wb.min.y + ws.y * grip) * k, -(wb.min.z + ws.z / 2) * k); piv.add(wg);
+  // правка 104: attach in the pose of clip `wpose` (frame 0), so the weapon stands upright in the hand there (spear grip)
+  const pm = new THREE.AnimationMixer(root);
+  if (q.get('wpose')) { pm.clipAction(clips[+q.get('wpose')]).play(); pm.setTime(+q.get('wpt') || 0); }
+  root.updateMatrixWorld(true);
+  const hand = bones.RightHand, hp = hand.getWorldPosition(new THREE.Vector3());
+  // правка 107: the RightHand bone sits in the wrist; the grip goes `gp` metres further along forearm → hand, into the palm
+  //   gp=palm: the grip is the centre of the skin vertices that follow the RightHand bone most (the drawn palm)
+  const gp = q.get('gp'), fa = bones.RightForeArm.getWorldPosition(new THREE.Vector3());
+  const dir = hp.clone().sub(fa).normalize();
+  if (gp === 'palm') {
+    const acc = new THREE.Vector3(), v = new THREE.Vector3(); let n = 0;
+    root.traverse(o => { if (!o.isSkinnedMesh) return; const bi = o.skeleton.bones.indexOf(bones.RightHand); if (bi < 0) return;
+      const si = o.geometry.attributes.skinIndex, sw = o.geometry.attributes.skinWeight;
+      for (let i = 0; i < si.count; i++) { let best = -1, bw = 0; for (let c = 0; c < 4; c++) { const w = sw.getComponent(i, c); if (w > bw) { bw = w; best = si.getComponent(i, c); } }
+        if (best === bi && bw > 0.6) { o.getVertexPosition(i, v); o.localToWorld(v); acc.add(v); n++; } } });
+    window.PALM = { n, hp: hp.toArray(), palm: n ? acc.clone().divideScalar(n).toArray() : null };
+    if (n) hp.copy(acc.divideScalar(n));
+  }
+  piv.position.copy(hp).addScaledVector(dir, gp && gp !== 'palm' ? +gp : 0).add(new THREE.Vector3(+q.get('wx') || 0, +q.get('wy') || 0, +(q.get('wz') ?? (gp ? 0 : 0.03))));
+  piv.rotation.set(+q.get('rx') || 0, 0, +q.get('rz') || 0);
+  root.add(piv); hand.attach(piv);
+  TIPOBJ = wg; TIPLOC = new THREE.Vector3(wb.min.x + ws.x / 2, wb.max.y - ws.y * 0.05, wb.min.z + ws.z / 2);
+  pm.stopAllAction(); pm.uncacheRoot(root);
+}
+const scene = new THREE.Scene();
+scene.add(new THREE.HemisphereLight(0xfff4e0, 0x6a5040, mode === 'toon' ? 1.6 : 2.0));
+const d = new THREE.DirectionalLight(0xffffff, mode === 'toon' ? 1.8 : 1.4); d.position.set(-1.5, 3, 2.5); scene.add(d);
+const holder = new THREE.Group(); holder.add(root); scene.add(holder);
+const mixer = new THREE.AnimationMixer(root);
+const S = +(q.get('size') || 256);
+const r = new THREE.WebGLRenderer({ antialias: true, alpha: true, preserveDrawingBuffer: true }); r.setPixelRatio(1); r.setSize(S, S); r.outputColorSpace = THREE.SRGBColorSpace;
+r.setClearColor(0x000000, 0);
+const el = (+(q.get('el') || 35)) * Math.PI / 180, span = +(q.get('span') || 2.9), foot = +(q.get('foot') || 0.14);
+const cam = new THREE.OrthographicCamera(-span / 2, span / 2, span * (1 - foot), -span * foot, 0.1, 50);
+cam.position.set(0, Math.sin(el) * 10, Math.cos(el) * 10); cam.up.set(0, 1, 0); cam.lookAt(0, 0, 0);
+// make the camera look so that the ground point (0,0,0) lands at `foot` from the bottom: shift frustum in camera space
+const yAxisScreen = Math.cos(el); // vertical extent per metre of height
+cam.top = span * (1 - foot); cam.bottom = -span * foot; cam.updateProjectionMatrix();
+// правка 104: upper body from one clip (spear grip), legs and hips from another (calm stance)
+const LEGS = /^(Hips\.position|(LeftUpLeg|LeftLeg|LeftFoot|LeftToeBase|RightUpLeg|RightLeg|RightFoot|RightToeBase)\.)/;
+const part = (c, legs) => { const k = c.name + (legs ? '#legs' : '#upper'); return part[k] ??= new THREE.AnimationClip(k, c.duration, c.tracks.filter(t => LEGS.test(t.name) === legs)); };
+/** render one frame: clip index, time, direction angle (screen angle, 0 = right, +90° = down) → canvas; mix = [upperCi, upperT] */
+window.frame = (ci, t, a, mix) => {
+  mixer.stopAllAction();
+  if (mix) {
+    const up = mixer.clipAction(part(clips[mix[0]], false)), lg = mixer.clipAction(part(clips[ci], true));
+    up.reset().play(); lg.reset().play(); up.time = mix[1]; lg.time = t; mixer.update(0);
+  } else { const act = mixer.clipAction(clips[ci]); act.reset().play(); mixer.setTime(t); }
+  holder.rotation.y = Math.atan2(Math.cos(a), Math.sin(a));
+  r.render(scene, cam); return r.domElement;
+};
+/** where the weapon top is in the last rendered frame, 0..1 of the cell */
+window.tip = () => { if (!TIPOBJ) return [0.5, 0.3]; scene.updateMatrixWorld(true); const v = TIPOBJ.localToWorld(TIPLOC.clone()).project(cam); return [+((v.x + 1) / 2).toFixed(4), +((1 - v.y) / 2).toFixed(4)]; };
+/** whole atlas for a clip list: rows = 8 directions, columns = frames */
+window.atlas = (spec) => { // spec: [{ci, n, loop}]
+  const out = {};
+  for (const s of spec) {
+    const c = clips[s.ci], cv = document.createElement('canvas'); cv.width = S * s.n; cv.height = S * 8; const x = cv.getContext('2d');
+    const tips = [];
+    for (let dI = 0; dI < 8; dI++) { tips.push([]); for (let f = 0; f < s.n; f++) {
+      const t0 = s.t0 ?? 0, t1 = s.t1 ?? c.duration, D = t1 - t0; const t = t0 + (s.loop ? D * f / s.n : D * f / (s.n - 1) * 0.999);
+      x.drawImage(window.frame(s.ci, t, dI * Math.PI / 4, s.mix), f * S, dI * S); tips[dI].push(window.tip());
+    } }
+    out[s.key] = cv.toDataURL('image/png'); out[s.key + '.tips'] = tips;
+  }
+  return out;
+};
+window.X = { bones, mixer, root, clips, THREE, cam, holder };
+document.title = 'done ' + JSON.stringify(window.CLIPS);
+</script></body></html>

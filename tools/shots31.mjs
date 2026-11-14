@@ -1,0 +1,15 @@
+import { chromium } from 'playwright';
+const b = await chromium.launch();
+const p = await b.newPage({ viewport: { width: 390, height: 800 }, deviceScaleFactor: 2 });
+const errs = []; p.on('pageerror', e => errs.push(String(e)));
+const click = sel => p.evaluate(s => document.querySelector(s)?.click(), sel);
+await p.goto('file://' + process.cwd() + '/dist/index.html'); await p.waitForTimeout(3200);
+await click('[data-a="startPick"][data-v="apollo"]'); await click('[data-a="startGo"]'); await p.waitForTimeout(300);
+await p.evaluate(() => { const s = JSON.parse(localStorage.getItem('mw-profile-v1')); s.seen = ['hub','chars','gear','jewel','shop','runes','settings']; s.gold = 9e6; s.essSmall = 12; s.essBig = 3; localStorage.setItem('mw-profile-v1', JSON.stringify(s)); });
+await p.reload(); await p.waitForTimeout(3400);
+await click('[data-a="go"][data-v="jewel"]'); await p.waitForTimeout(300); await p.screenshot({ path: 'shots/w6-01-jewel.png' });
+await click('[data-a="go"][data-v="hub"]'); await p.waitForTimeout(300); await p.screenshot({ path: 'shots/w6-02-hub.png' });
+await click('[data-a="battle"]'); await p.waitForTimeout(600); await click('[data-a="battleGo"]');
+for (let i = 0; i < 60 && await p.evaluate(() => document.getElementById('cards').hidden); i++) await p.waitForTimeout(500);
+await p.evaluate(() => document.querySelector('#cardList .sk')?.click()); await p.waitForTimeout(2500); await p.screenshot({ path: 'shots/w6-03-hud.png' });
+console.log(errs); await b.close();

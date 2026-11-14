@@ -1,0 +1,12 @@
+import { chromium } from 'playwright';
+const b = await chromium.launch();
+const p = await b.newPage({ viewport: { width: 390, height: 800 }, deviceScaleFactor: 2 });
+await p.goto('file://' + process.cwd() + '/dist/index.html'); await p.waitForTimeout(3200);
+await p.evaluate(() => { document.querySelector('[data-a="startPick"][data-v="apollo"]').click(); document.querySelector('[data-a="startGo"]').click(); });
+await p.waitForTimeout(300);
+await p.evaluate(() => { document.querySelector('[data-a="go"][data-v="hero"]').click(); }); await p.waitForTimeout(400);
+const bb = await (await p.$('.herobig')).boundingBox(); const clip = { x: bb.x - 20, y: bb.y - 20, width: bb.width + 40, height: bb.height + 40 }; await p.screenshot({ path: '/tmp/g1.png', clip });
+await p.evaluate(() => { const i = document.querySelector('.herobig'); i.style.animation = 'none'; i.style.filter = 'none'; }); await p.waitForTimeout(100);
+await p.screenshot({ path: '/tmp/g2.png', clip });
+console.log(await p.evaluate(() => getComputedStyle(document.querySelector('.herobig')).getPropertyValue('--c')));
+await b.close();

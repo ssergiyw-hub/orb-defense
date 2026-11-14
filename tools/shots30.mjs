@@ -1,0 +1,17 @@
+import { chromium } from 'playwright';
+const b = await chromium.launch();
+const p = await b.newPage({ viewport: { width: 390, height: 800 }, deviceScaleFactor: 2, hasTouch: true });
+const errs = []; p.on('pageerror', e => errs.push(String(e))); p.on('console', m => { if (m.type() === 'error') errs.push(m.text()); });
+const shot = n => p.screenshot({ path: `shots/w5-${n}.png` });
+const click = sel => p.evaluate(s => document.querySelector(s)?.click(), sel);
+const fire = (a, v = '') => p.evaluate(([a, v]) => { const f = document.createElement('i'); f.dataset.a = a; f.dataset.v = v; document.querySelector('#layer, #ui').appendChild(f); f.click(); f.remove(); }, [a, v]);
+await p.goto('file://' + process.cwd() + '/dist/index.html'); await p.waitForTimeout(3400);
+await click('[data-a="startPick"][data-v="hydra"]'); await click('[data-a="startGo"]'); await p.waitForTimeout(300);
+await p.evaluate(() => { const s = JSON.parse(localStorage.getItem('mw-profile-v1')); s.seen = ['hub','chars','gear','jewel','shop','runes','settings']; s.maxMap = 12; localStorage.setItem('mw-profile-v1', JSON.stringify(s)); });
+await p.reload(); await p.waitForTimeout(3600);
+await fire('wheel'); await p.waitForTimeout(400); await shot('01-wheel'); await fire('close');
+await fire('tasks'); await fire('taskTab', 'login'); await p.waitForTimeout(300); await shot('02-login'); await fire('close');
+await fire('market'); await p.waitForTimeout(300); await shot('03-market'); await fire('close');
+await fire('bp'); await p.waitForTimeout(300); await shot('04-bp'); await fire('close');
+await click('[data-a="go"][data-v="shop"]'); await click('[data-a="shopTab"][data-v="topup"]'); await p.waitForTimeout(300); await shot('05-topup');
+console.log(JSON.stringify(errs)); await b.close();

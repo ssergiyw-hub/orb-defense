@@ -1,0 +1,10 @@
+import { chromium } from 'playwright';
+const b = await chromium.launch();
+const p = await b.newPage({ viewport: { width: 390, height: 800 }, deviceScaleFactor: 2 });
+const errs = []; p.on('pageerror', e => errs.push(String(e)));
+await p.goto('file://' + process.cwd() + '/dist/index.html#god-skilltest'); await p.waitForTimeout(3200);
+await p.evaluate(() => { document.querySelector('[data-a="startPick"][data-v="hydra"]').click(); document.querySelector('[data-a="startGo"]').click(); });
+await p.waitForTimeout(300); await p.evaluate(() => document.querySelector('[data-a="battle"]').click());
+await p.waitForTimeout(5000); await p.keyboard.down('d'); await p.waitForTimeout(600); await p.screenshot({ path: 'shots/v-09-trails.png' }); await p.keyboard.up('d');
+await p.waitForTimeout(2500); await p.screenshot({ path: 'shots/v-10-trails.png' });
+console.log(errs); await b.close();

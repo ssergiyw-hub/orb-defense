@@ -1,0 +1,20 @@
+// правки 83, 101: header, avatars, hero grid, «Поиск героя» card
+import { chromium } from 'playwright';
+const b = await chromium.launch();
+const p = await b.newPage({ viewport: { width: 390, height: 844 }, deviceScaleFactor: 2 });
+const errs = []; p.on('pageerror', e => errs.push(String(e)));
+const click = sel => p.evaluate(s => document.querySelector(s)?.click(), sel);
+await p.goto('file://' + process.cwd() + '/dist/index.html'); await p.waitForTimeout(3200);
+await click('[data-a="startPick"][data-v="hydra"]'); await click('[data-a="startGo"]'); await p.waitForTimeout(300);
+await p.evaluate(() => { const s = JSON.parse(localStorage.getItem('mw-profile-v1')); s.seen = ['hub','chars','gear','jewel','shop','runes','settings']; s.gold = 9e6; s.crystals = 90000;
+  for (const k of ['apollo','perun','heracles','skadi']) s.heroes[k].owned = true; localStorage.setItem('mw-profile-v1', JSON.stringify(s)); });
+await p.reload(); await p.waitForTimeout(3400);
+await p.screenshot({ path: 'shots/w14-01-hub.png' });
+await click('[data-a="go"][data-v="hero"]'); await click('[data-a="sub"][data-v="chars"]'); await p.waitForTimeout(500);
+await p.evaluate(() => document.querySelector('.hgrid2')?.scrollIntoView({ block: 'center' })); await p.waitForTimeout(200);
+await p.screenshot({ path: 'shots/w14-02-grid.png' });
+await p.evaluate(() => window.scrollTo(0, 0));
+await click('[data-a="go"][data-v="shop"]'); await p.waitForTimeout(400);
+await p.evaluate(() => document.querySelector('.th-tav')?.scrollIntoView({ block: 'center' })); await p.waitForTimeout(300);
+await p.screenshot({ path: 'shots/w14-03-tavern.png' });
+console.log(JSON.stringify(errs)); await b.close(); process.exit(0);
