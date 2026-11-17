@@ -36,3 +36,27 @@ for k, (x, y, w, h) in PIECES.items():
 save(Image.open('src/meshy-temple.png').convert('RGB'), 'temple.webp', 88)
 for c, f in (('green', 'ref/2071.png'), ('blue', 'ref/2072.png'), ('purple', 'ref/2073.png')):
     save(Image.open('src/' + f).convert('RGB'), f'portal_{c}.webp', 88)
+# Ш50: library («Шары») and treasury («Магазин») backgrounds
+save(Image.open('src/meshy-library.png').convert('RGB'), 'library.webp', 86)
+save(Image.open('src/meshy-treasury.png').convert('RGB'), 'treasury.webp', 86)
+# Ш54: the marble chest in three states (closed / light in the seam / open) on magenta
+ch = np.array(Image.open('src/meshy-chest3.png').convert('RGB')).astype(int)
+cm = (ch[:, :, 0] > 140) & (ch[:, :, 2] > 140) & (ch[:, :, 1] < 110) & (np.abs(ch[:, :, 0] - ch[:, :, 2]) < 90)
+lab, n = nd.label(cm); edge = set(np.unique(np.concatenate([lab[0], lab[-1], lab[:, 0], lab[:, -1]]))) - {0}
+bgc = np.isin(lab, list(edge))
+al = nd.gaussian_filter((~bgc).astype(float), 0.7); al = np.clip((al - 0.15) / 0.7, 0, 1)
+pk = np.minimum(ch[:, :, 0], ch[:, :, 2]) - ch[:, :, 1]  # the glow blended into magenta: fade it out
+al = al * np.clip(1 - (pk - 10) / 22, 0, 1)
+pink = (ch[:, :, 0] > ch[:, :, 1] + 40) & (ch[:, :, 2] > ch[:, :, 1] + 40)
+ch[pink, 0] = np.minimum(ch[pink, 0], ch[pink, 1] + 30); ch[pink, 2] = np.minimum(ch[pink, 2], ch[pink, 1] + 10)
+full = Image.fromarray(np.dstack([ch, al * 255]).astype(np.uint8), 'RGBA')
+fg = al > 0.3
+lab2, n2 = nd.label(nd.binary_dilation(fg, iterations=6))
+sizes = nd.sum(fg, lab2, range(1, n2 + 1))
+big = sorted(sorted(range(n2), key=lambda i: -sizes[i])[:3], key=lambda i: nd.center_of_mass(fg, lab2, i + 1)[1])
+for k, i in enumerate(big):
+    m = lab2 == i + 1
+    part = np.array(full); part[..., 3] = np.where(m, part[..., 3], 0)
+    img = Image.fromarray(part, 'RGBA'); img = img.crop(img.getchannel('A').point(lambda v: 255 if v > 20 else 0).getbbox())
+    img.thumbnail((360, 360), Image.LANCZOS)
+    save(img, f'chest{k}.webp')

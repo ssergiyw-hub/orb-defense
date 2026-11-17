@@ -4,6 +4,7 @@ import { BALLS, BIOME_NAME, ROWS, ENEMY, SPIRITS } from '../core/orbContent';
 import { OrbRenderer, preloadOrb, fmtN } from './orbRender';
 import { preload3D } from './hero3d';
 import { fatan2 } from '../core/fmath';
+import { ORB_HERO_ART } from './orbHeroArt';
 import * as sfx from './sfx';
 import { tr, trS } from './i18n';
 
@@ -17,7 +18,7 @@ export class OrbBattle {
   private r: OrbRenderer;
   private speed = 1; private auto = false; private paused = false; private quit = false; private done = false;
   private acc = 0; private last = 0; private looping = false;
-  private aiming = false; private shownCards = '';
+  private aiming = false; private shownCards = ''; private sling: boolean | null = null;
   private hintShown = false;
   constructor(private cv: HTMLCanvasElement, private onEnd: (o: Orb, cfg: OrbConfig, acts: Act[], quit: boolean) => void) {
     this.r = new OrbRenderer(cv);
@@ -26,7 +27,7 @@ export class OrbBattle {
     cv.addEventListener('pointerdown', e => this.down(e));
     cv.addEventListener('pointermove', e => this.move(e));
     cv.addEventListener('pointerup', e => this.up(e));
-    cv.addEventListener('pointercancel', () => { this.aiming = false; this.r.aimAt = null; });
+    cv.addEventListener('pointercancel', () => { this.aiming = false; this.sling = null; this.r.aimAt = null; });
     $('oPause').onclick = () => this.pause(!this.paused);
     $('oSpeed').onclick = () => { this.speed = this.speed === 1 ? 2 : this.speed === 2 ? 3 : 1; this.keep(); this.hud(true); };
     $('oAuto').onclick = () => { this.auto = !this.auto; this.keep(); this.hud(true); };
@@ -39,7 +40,7 @@ export class OrbBattle {
 
   start(cfg: OrbConfig, dprCap: number): void {
     this.cfg = cfg; this.o = new Orb(cfg); this.acts = []; this.done = false; this.quit = false; this.paused = false; this.shownCards = '';
-    preload3D(cfg.heroId); preloadOrb(this.o);
+    if (!ORB_HERO_ART[cfg.heroId]) preload3D(cfg.heroId); preloadOrb(this.o); // Ш58: a drawn hero needs no 3D atlas
     this.r.dprCap = dprCap; this.r.resize();
     $('ohud').hidden = false; $('oCards').hidden = true; $('oPauseMenu').hidden = true;
     const sd = this.o.s.sd;
@@ -55,13 +56,18 @@ export class OrbBattle {
     const rect = this.cv.getBoundingClientRect(), L = this.r.launch();
     const dx = e.clientX - rect.left - L.x, dy = e.clientY - rect.top - L.y;
     if (Math.hypot(dx, dy) < 12) return null;
-    let a = fatan2(dy, dx);
-    if (dy > 0) a = fatan2(-dy, -dx); // the finger below the hero: aim the other way (pull back like a sling)
-    return Math.max(-Math.PI + 0.12, Math.min(-0.12, a));
+    // Ш53: the mode is chosen once, at the touch — finger above the launch point aims straight, below pulls back like a
+    // sling. Crossing the line during one drag never flips the aim: it rests at the lowest angle on the same side
+    const LO = -0.12, HI = -Math.PI + 0.12;
+    if (this.sling === null) this.sling = dy > 0;
+    let a: number;
+    if (!this.sling) a = dy < 0 ? fatan2(dy, dx) : (dx >= 0 ? LO : HI);
+    else a = dy > 0 ? fatan2(-dy, -dx) : (dx >= 0 ? HI : LO);
+    return Math.max(HI, Math.min(LO, a));
   }
   private down(e: PointerEvent): void {
     if (!this.o || this.paused || this.o.s.phase !== 'aim' || this.auto) return;
-    this.aiming = true; this.cv.setPointerCapture(e.pointerId);
+    this.aiming = true; this.sling = null; this.cv.setPointerCapture(e.pointerId);
     this.r.aimAt = this.angleTo(e);
   }
   private move(e: PointerEvent): void { if (this.aiming) this.r.aimAt = this.angleTo(e) ?? this.r.aimAt; }
@@ -69,13 +75,13 @@ export class OrbBattle {
     if (!this.aiming || !this.o) return;
     this.aiming = false;
     const a = this.angleTo(e) ?? this.r.aimAt;
-    this.r.aimAt = null;
+    this.r.aimAt = null; this.sling = null;
     if (a === null || this.o.s.phase !== 'aim') return;
     this.fire(Math.round(a * 1000));
   }
   private fire(aim: number): void {
     if (!this.o) return;
-    const a = { aim }; this.acts.push(a); this.o.act(a);
+    const a = { aim }; this.acts.push(a); this.o.act(a); this.r.cast();
     this.o.s.aim = aim / 1000;
     sfx.play('shot'); $('oHint').hidden = true; this.hintShown = true;
   }
@@ -145,6 +151,7 @@ export class OrbBattle {
     $('oAuto').classList.toggle('on', this.auto);
     ($('oProgFill') as HTMLElement).style.width = (100 * o.progress).toFixed(1) + '%';
     this.set('oProgTxt', s.bossSpawned ? tr('БОСС') : Math.round(100 * o.progress) + '%');
+    if (this.cache.get('oLvl') && this.cache.get('oLvl') !== String(s.level)) { const b = $('oXpBar'); b.classList.remove('flash'); void b.offsetWidth; b.classList.add('flash'); } // Ш60
     this.set('oLvl', String(s.level));
     ($('oXpFill') as HTMLElement).style.width = (100 * s.xp / s.xpNext).toFixed(1) + '%';
     // правка Ш44: the thin wall bar at the very bottom (the shield shows as a blue part from the right)

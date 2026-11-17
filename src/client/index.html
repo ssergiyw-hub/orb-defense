@@ -2573,6 +2573,142 @@ div.rstats span{flex:1 1 auto;min-width:0}div.rstats small{letter-spacing:0;line
 #view.herofix .subtabs{background:linear-gradient(#efebe3,#ddd6c8)}
 #view.herofix .subtabs button{background:url(orb/ui/tab.webp) center/100% 100% no-repeat!important;border:0!important;color:#3a2a10!important;box-shadow:none!important;border-radius:10px}
 #view.herofix .subtabs button.on{background:linear-gradient(#ffe9a0,#e8b23a)!important;border:2px solid #fff3c0!important;box-shadow:0 0 0 1.5px #8a5a10,0 0 10px -2px #ffd23a!important;color:#3a2200!important}
+
+/* ==== Ш60: полоса опыта в бою — фиолетовая с пузырьками, как в «Призванном герое» ==== */
+.oxpbar{height:14px;border-radius:8px;background:#140a24d9;border:2px solid #e2c060;box-shadow:0 0 0 1px #3a2608,0 2px 0 #0008,inset 0 2px 4px #000;position:relative}
+.oxpbar i{position:relative;border-radius:6px;background:linear-gradient(#e2b8ff,#a24cff 45%,#6a1fc8);box-shadow:inset 0 -3px 0 #0003;overflow:hidden;min-width:6px}
+.oxpbar i::before{content:"";position:absolute;left:4px;right:4px;top:2px;height:3px;border-radius:2px;background:#ffffff70}
+.oxb{position:absolute;bottom:1px;width:5px;height:5px;border-radius:50%;background:#fffa;animation:xbub 1.8s ease-in infinite;left:20%}
+.oxb.b2{left:45%;animation-delay:.6s;width:3px;height:3px}.oxb.b3{left:70%;animation-delay:1.1s}.oxb.b4{left:88%;animation-delay:.3s;width:3px;height:3px}
+.oxpbar.flash{animation:xflash .7s ease-out}
+
+/* ==== Ш49: полоса нижнего меню — тёмная, сверху полупрозрачная ==== */
+.tabs{background:linear-gradient(rgba(6,16,11,.35),rgba(4,12,8,.8) 45%,rgba(2,8,5,.94))!important;border-top:1.5px solid #c9a24a!important;box-shadow:0 -6px 14px rgba(0,0,0,.35)!important}
+/* ==== Ш51: вкладки героя лежат на нижнем крае храма, под ними золотая линия с изумрудом ==== */
+#ui.onhero .stagebox.temple{--th:calc(388px + var(--ht) - var(--cut,0px))}
+#ui.onhero .stagebox.temple::after{background:linear-gradient(transparent calc(100% - 110px),rgba(6,14,10,.55) calc(100% - 40px),rgba(4,10,7,.85))}
+.stagebox.temple .tstats{bottom:56px!important}
+#ui.onhero .stagebox.chars.temple{padding-bottom:52px}
+#ui.onhero .stagebox.runes.temple .arc{bottom:48px}
+#view.herofix .subtabs{position:relative;z-index:3;margin-top:-50px;padding:2px 8px 10px;background:none!important}
+#view.herofix .subtabs::after{content:"";position:absolute;left:0;right:0;bottom:0;height:2px;background:linear-gradient(90deg,transparent,#e8c25a 12%,#fff1b0 50%,#e8c25a 88%,transparent)}
+#view.herofix .subtabs::before{content:"";position:absolute;left:50%;bottom:-5px;width:10px;height:10px;transform:translateX(-50%) rotate(45deg);background:linear-gradient(135deg,#7dffb0,#109a50);border:1.5px solid #fff1b0;z-index:1;box-shadow:0 0 6px #2fe080}
+#view.herofix .subtabs button{opacity:.92;box-shadow:0 3px 6px rgba(0,0,0,.45)!important}
+#view.herofix .subtabs button.on{opacity:1;transform:translateY(-3px)}
+#view.herofix .subtabs button.locked{opacity:.6;filter:grayscale(.5)}
+#view.herofix .subbody{box-shadow:none!important;padding-top:14px}
+
+/* ================= Ш46 (сборка 2): мрамор, золото и изумруд во всех окнах и вкладках ================= */
+:root{--dia:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 20 28'%3E%3Cpath d='M10 1 L19 14 L10 27 L1 14Z' fill='%23f0c44a' stroke='%232a1a06' stroke-width='1.6'/%3E%3Cpath d='M10 6 L15 14 L10 22 L5 14Z' fill='%23109a50'/%3E%3Cpath d='M10 6 L15 14 L10 14Z' fill='%237dffb0'/%3E%3C/svg%3E")}
+/* залы за вкладками вместо камня с лавой: «Шары» — библиотека, «Магазин» — сокровищница, остальное — храм */
+#ui::before{background:linear-gradient(rgba(8,18,13,.5),rgba(6,14,10,.62)),url(orb/ui/temple.webp) center 30%/cover!important}
+#ui[data-scr=balls]::before{background:linear-gradient(rgba(8,18,13,.22),rgba(6,14,10,.42)),url(orb/ui/library.webp) center/cover!important}
+#ui[data-scr=shop]::before{background:linear-gradient(rgba(8,18,13,.28),rgba(6,14,10,.48)),url(orb/ui/treasury.webp) center/cover!important}
+#ui::after{display:none!important}
+/* рамка с изумрудными ромбиками по углам — общий приём */
+.mdia{background-image:var(--dia),var(--dia),var(--dia),var(--dia);background-size:12px 17px;background-repeat:no-repeat;background-position:4px 4px,calc(100% - 4px) 4px,4px calc(100% - 4px),calc(100% - 4px) calc(100% - 4px)}
+
+/* ---- Ш50: «Шары» — мраморные ниши в золоте ---- */
+.ocrit{position:relative;background:var(--dia) 6px 6px/12px 17px no-repeat,var(--dia) calc(100% - 6px) 6px/12px 17px no-repeat,var(--dia) 6px calc(100% - 6px)/12px 17px no-repeat,var(--dia) calc(100% - 6px) calc(100% - 6px)/12px 17px no-repeat,linear-gradient(#fbf8f1,#e2dacb)!important;
+  border:2.5px solid #d9b25a!important;box-shadow:0 0 0 1.5px #5a3a10,0 4px 10px rgba(0,0,0,.4),inset 0 1px 0 #fff!important}
+.obook{background:var(--dia) 5px 5px/10px 14px no-repeat,var(--dia) calc(100% - 5px) 5px/10px 14px no-repeat,radial-gradient(ellipse at 50% 55%,color-mix(in srgb,var(--c) 22%,transparent),transparent 62%),linear-gradient(#fbf8f1,#ddd4c3)!important;
+  border:2.5px solid #d9b25a!important;box-shadow:0 0 0 1.5px #5a3a10,0 4px 8px rgba(0,0,0,.4),inset 0 1px 0 #fff,inset 0 -8px 12px rgba(120,96,60,.18)!important;color:#3a2a10}
+.obname{color:#3a2a10!important;text-shadow:0 1px 0 #fff8!important;font-weight:800}
+.obook img{filter:drop-shadow(0 4px 5px rgba(60,40,10,.45))}
+.obcards{height:14px;background:#1c160e!important;border:1.5px solid #e2c060!important;box-shadow:0 0 0 1px #5a3a10}
+.obcards i{background:linear-gradient(#7dffb0,#16a050 55%,#0a6a30)!important}
+.obcards em{color:#fff}
+.obook.ready{box-shadow:0 0 0 1.5px #5a3a10,0 0 14px #2fe080,0 4px 8px rgba(0,0,0,.4)!important}
+.obook.ready::after{content:""!important;top:-5px!important;left:auto!important;right:-5px;width:14px;height:14px;border-radius:50%;background:#e8303a;border:2px solid #fff;box-shadow:0 1px 2px #000}
+
+/* ---- Ш50: «Магазин» ---- */
+.subtabs.shop button,.subtabs.shop.two2 button{background:url(orb/ui/tab.webp) center/100% 100% no-repeat!important;border:0!important;color:#3a2a10!important;box-shadow:0 3px 6px rgba(0,0,0,.35)!important;font-family:Georgia,serif}
+.subtabs.shop button.on{background:linear-gradient(#ffe9a0,#e8b23a)!important;border:2px solid #fff3c0!important;box-shadow:0 0 0 1.5px #8a5a10,0 0 12px -2px #ffd23a!important;color:#3a2200!important}
+.giftc{background:var(--dia) 5px 5px/10px 14px no-repeat,var(--dia) calc(100% - 5px) 5px/10px 14px no-repeat,var(--dia) 5px calc(100% - 5px)/10px 14px no-repeat,var(--dia) calc(100% - 5px) calc(100% - 5px)/10px 14px no-repeat,linear-gradient(#fbf8f1,#e2dacb)!important;
+  border:2.5px solid #d9b25a!important;box-shadow:0 0 0 1.5px #5a3a10,0 4px 10px rgba(0,0,0,.4)!important}
+.giftc b{color:#3a2a10!important}.giftc small{color:#5a4a30!important}
+.giftc .gbtn{color:#fff!important;background:url(orb/ui/f_btn.webp) center/100% 100% no-repeat!important;box-shadow:none!important;-webkit-text-stroke:1.5px #063a1c;paint-order:stroke fill;padding:10px 18px}
+.giftc.got .gdone{color:#5a4a30}
+/* карточка сундука — мрамор в золоте; цвет комплекта — только свечение за сундуком и кольцо предметов */
+.ch3{--gm:#2fe080;background:radial-gradient(ellipse at 22% 30%,color-mix(in srgb,var(--ln) 35%,transparent),transparent 45%),url(orb/ui/f_oct.webp) center/cover!important;
+  border:0!important;border-image:url(orb/ui/f_oct.webp) 64 fill / 22px stretch!important;box-shadow:none!important;filter:drop-shadow(0 6px 10px rgba(0,0,0,.5))}
+.ch3.th-void{--ln:#2fd070}.ch3.th-epic{--ln:#b46cff}.ch3.th-rune{--ln:#3ae0d0}.ch3.th-tav{--ln:var(--c,#ffb43a)}
+.ch3 .corner,.ch3>i.cc,.ch3>.cgem{display:none}
+.c3title{background:none!important;-webkit-background-clip:border-box!important;background-clip:border-box!important;color:#ffe9a0!important;text-shadow:0 2px 0 #1a1006,0 0 8px rgba(255,210,90,.4)}
+.c3odds{background:rgba(250,246,236,.92)!important;color:#3a2a10!important;border:1.5px solid #d9b25a;box-shadow:none!important}
+.c3odds b{text-shadow:0 0 1px rgba(0,0,0,.25)}
+.c3b.one{background:url(orb/ui/f_btn.webp) center/100% 100% no-repeat!important;box-shadow:none!important;filter:drop-shadow(0 3px 3px rgba(0,0,0,.45))}
+.c3b.one span,.c3b.one b{-webkit-text-stroke:1.5px #063a1c;paint-order:stroke fill;text-shadow:0 2px 0 #04260f}
+.c3sets button{background:url(orb/ui/tab.webp) center/100% 100% no-repeat!important;color:#3a2a10!important;box-shadow:0 2px 4px rgba(0,0,0,.4)!important}
+.c3sets button.on{background:linear-gradient(#ffe9a0,#e8b23a)!important;color:#3a2200!important;box-shadow:0 0 0 2px #fff3c0,0 0 0 3.5px #8a5a10,0 0 12px #ffd23a!important}
+.c3bonus{color:#e8e0cc!important}
+.c3circ{border-color:color-mix(in srgb,var(--ln) 70%,#fff)!important;box-shadow:0 0 18px -2px var(--ln),inset 0 0 22px -4px var(--ln)!important}
+.adbtn{background:url(orb/ui/f_btn.webp) center/100% 100% no-repeat!important;border:0!important;box-shadow:none!important;padding:10px 16px;filter:drop-shadow(0 3px 3px rgba(0,0,0,.4))}
+.adbtn b{-webkit-text-stroke:1.5px #063a1c;paint-order:stroke fill;text-shadow:none}.adbtn .adi{background:#fff3c0;color:#0a5a2a}
+.offer,.offer.cpk{background:var(--dia) 4px 4px/9px 13px no-repeat,var(--dia) calc(100% - 4px) 4px/9px 13px no-repeat,linear-gradient(#fbf8f1,#ddd4c3)!important;border:2px solid #d9b25a!important;color:#3a2a10;box-shadow:0 0 0 1.5px #5a3a10,0 3px 6px rgba(0,0,0,.4)!important}
+.offer small,.offer .cpold{color:#3a2a10!important}
+
+/* ---- окна «лавового набора» (задания, вход, сундук накопления, награды, рынок, события) ---- */
+.mbox.lvpanel{background:linear-gradient(rgba(30,36,33,.93),rgba(16,20,18,.97)),url(orb/ui/f_oct.webp) center/cover!important;filter:drop-shadow(0 0 18px rgba(47,224,128,.18)) drop-shadow(0 8px 10px #000)!important}
+.modal:has(.lvpanel){background:radial-gradient(ellipse at 50% 55%,rgba(30,120,70,.25),transparent 60%),rgba(3,8,6,.84)!important}
+.lvbanner,.rbanner{filter:drop-shadow(0 3px 4px rgba(0,0,0,.55))!important}
+.lvbanner span,.rbanner span{background:none!important;-webkit-background-clip:border-box!important;background-clip:border-box!important;color:#3a2a10!important;filter:none!important;text-shadow:0 1px 0 #fff8;font-weight:900}
+.lvbtn{filter:drop-shadow(0 4px 4px rgba(0,0,0,.5)) drop-shadow(0 0 10px rgba(47,224,128,.35))!important;animation:none!important}
+.lvbtn b{-webkit-text-stroke:2px #063a1c!important;text-shadow:0 2px 0 #04260f!important}
+.lvbtn small{-webkit-text-stroke:1.5px #063a1c!important}
+.lvtrough>i{background:linear-gradient(#c8ffe0 0,#5dff9a 25%,#16a050 65%,#0a5a2a 100%)!important;box-shadow:0 0 8px #2fe080,inset 0 1px 0 #fff8!important;animation:none!important}
+.lvtrough>em{text-shadow:0 1px 2px #000}
+.lvtabs>button.on{color:#ffe9a0!important;text-shadow:0 0 8px #2fe080,0 1px 1px #000!important}
+.lvtabs>button.on::after{border-color:#ffd96a!important;box-shadow:0 0 10px #2fe080,inset 0 0 6px #2fe08088!important}
+.tclaim.on{filter:drop-shadow(0 0 8px #2fe080)!important;-webkit-text-stroke:1.5px #063a1c!important}
+.task2.ready{filter:drop-shadow(0 0 8px rgba(47,224,128,.6)) drop-shadow(0 3px 0 #000a)!important}
+.pchest2 .chestimg{filter:drop-shadow(0 3px 2px #000)!important}
+.pchest2.ready .chestimg{filter:drop-shadow(0 0 10px #2fe080) drop-shadow(0 3px 2px #000)!important}
+.pchest2.taken .chestimg{filter:brightness(.55) saturate(.4)!important}
+.pchest2 small{border-color:#d9b25a!important}
+.seal{background:radial-gradient(circle at 40% 35%,#fff3c0,#e8b23a 55%,#8a5a10)!important;box-shadow:0 0 0 2px #5a3a10,0 2px 3px #000!important}
+/* календарь: мраморные плитки в золоте, сегодня — изумруд, 7-й день крупнее, в золоте */
+.cday2{border:0!important;border-image:none!important;border-radius:9px;background:linear-gradient(#f7f3ea,#d9d0bf)!important;box-shadow:inset 0 0 0 1.5px #d9b25a,0 0 0 1px #5a3a10,0 2px 3px rgba(0,0,0,.5);filter:none!important}
+.cday2 small{color:#fff3c0!important;background:#2a3a30!important;border-color:#d9b25a!important}
+.cday2 em{color:#3a2a10!important;text-shadow:none!important;font-weight:800}
+.cday2.today{box-shadow:inset 0 0 0 2px #2fe080,0 0 0 1.5px #0a6a30,0 0 12px #2fe080!important;animation:none!important}
+.cday2.today::before{border-color:#7dffb0!important;box-shadow:0 0 12px #2fe080!important}
+.cday2.sp{box-shadow:inset 0 0 0 2.5px #ffd96a,0 0 0 1.5px #8a5a10,0 0 10px #ffd23a!important;background:linear-gradient(#fffaf0,#efdcb0)!important;transform:scale(1.06);z-index:1}
+.cday2.sp::before{border-color:#ffd96a!important;box-shadow:0 0 8px #ffd23a!important}
+/* Ш54: сундук накопления — мраморный сундук, изумрудная полоса, быстрый сбор на мраморных плашках с ромбиком */
+.ichest2 .chestimg.st0{filter:drop-shadow(0 8px 6px #000c)!important}
+.ichest2 .chestimg.st1{filter:drop-shadow(0 8px 6px #000c) drop-shadow(0 0 14px rgba(47,224,128,.7))!important}
+.ichest2 .chestimg.st2{filter:drop-shadow(0 8px 6px #000c) drop-shadow(0 0 18px rgba(255,210,90,.9))!important}
+.ichest2.st1 .icglow{background:radial-gradient(circle,rgba(47,224,128,.3),transparent 62%)!important;-webkit-mask:none!important;mask:none!important}
+.lvfast{border:0!important;border-image:none!important;border-radius:12px;background:linear-gradient(#fbf8f1,#ddd4c3)!important;box-shadow:inset 0 0 0 2px #d9b25a,0 0 0 1px #5a3a10,0 3px 4px rgba(0,0,0,.5)!important;filter:none!important}
+.lvfast small{border:0!important;border-image:none!important;background:#2a3a30;border-radius:7px;box-shadow:0 0 0 1.5px #d9b25a;color:#fff3c0!important}
+.lvfast b{-webkit-text-stroke:0!important;filter:none!important;color:#3a2a10!important}
+.lvfast .lvgem{background:linear-gradient(135deg,#fff,var(--g) 45%,color-mix(in srgb,var(--g) 50%,#000))!important;border-color:#d9b25a!important;box-shadow:0 0 8px var(--g)!important}
+.lvfast.v{--g:#b46cff}.lvfast.r{--g:#ff4a5a}.lvfast.g{--g:#2fe080}
+.lvfast[disabled]{filter:grayscale(.85) brightness(.75)!important}
+.lvsub{color:#d8e8dc!important}
+.lvinfo{color:#f0ecd8!important}
+/* Ш52: окно наград — затемнённый мраморный храм, изумрудно-золотые лучи */
+.rewardov{background:radial-gradient(ellipse at 50% 40%,color-mix(in srgb,var(--rc) 16%,transparent),transparent 60%),linear-gradient(rgba(4,12,8,.6),rgba(3,9,6,.86)),url(orb/ui/temple.webp) center/cover!important}
+.rgrid{background:linear-gradient(rgba(26,32,29,.9),rgba(12,16,14,.95))!important;border:2px solid #d9b25a!important;box-shadow:0 0 0 1.5px #5a3a10,inset 0 0 16px #000!important}
+.rtile{filter:drop-shadow(0 3px 2px #000) drop-shadow(0 0 8px color-mix(in srgb,var(--c) 70%,transparent))!important}
+.rq,.rgrid .rq{background:rgba(10,14,12,.85);border:1.5px solid #d9b25a;border-radius:7px;padding:0 4px;-webkit-text-stroke:0!important;font-size:13px!important;line-height:17px;right:-4px!important;bottom:-4px!important;color:#fff}
+.lvq{background:rgba(10,14,12,.85);border:1.5px solid #d9b25a;border-radius:7px;padding:0 4px;-webkit-text-stroke:0!important;font-size:13px!important;line-height:17px}
+/* окна на тёмном мраморе: таверна, стены, карточки, подтверждения */
+.mbox{background:linear-gradient(rgba(34,40,37,.96),rgba(18,22,20,.98)),url(orb/ui/f_oct.webp) center/cover;border-color:#d9b25a;box-shadow:0 0 0 1.5px #5a3a10,0 0 24px -6px var(--r,#2fe080),inset 0 1px 0 #ffffff14}
+.btn{background:linear-gradient(#4a524c,#262c28);border-color:#d9b25a;color:#f4eedc}
+.btn.big2,.pill{background:linear-gradient(#ffe9a0,#e8b23a)!important;color:#3a2200!important;border:1.5px solid #fff3c0!important;box-shadow:0 0 0 1px #8a5a10,0 3px 0 #6a3e0c!important}
+.qbtn{background:url(orb/ui/btn_stone.webp) center/100% 100% no-repeat;border:0;color:#3a2a10}
+.room-head h2{color:#ffe9a0;text-shadow:0 2px 0 #1a1006,0 0 10px rgba(47,224,128,.35);font-family:Georgia,serif}
+/* мастерская ювелира и кузнец: тёмная сетка в золоте */
+.gfield{background:linear-gradient(rgba(22,28,25,.92),rgba(12,16,14,.95))!important;border-color:#d9b25a!important;box-shadow:0 0 0 1.5px #5a3a10,inset 0 0 16px #000!important}
+.ch3 .cor{display:none!important}
+.rband{background:linear-gradient(rgba(26,32,29,.9),rgba(12,16,14,.95))!important;border-top:2px solid #d9b25a!important;border-bottom:2px solid #d9b25a!important;box-shadow:0 0 0 1px #000,0 -3px 12px -2px rgba(47,224,128,.5),0 3px 12px -2px rgba(47,224,128,.5),0 0 30px -6px var(--rc)!important}
+.rlabel span{background:linear-gradient(#2a3a30,#141c18)!important;box-shadow:inset 0 1px 0 #d9b25a,inset 0 -1px 0 #d9b25a!important;color:#fff3c0!important}
+.rlabel::before,.rlabel::after{background:linear-gradient(90deg,transparent,#d9b25a)!important}
+.rbrays{background:repeating-conic-gradient(rgba(255,214,110,.22) 0 7deg,transparent 7deg 13deg,rgba(47,224,128,.18) 13deg 20deg,transparent 20deg 26deg)!important}
+.lvfasts{margin-top:16px!important}
+.rstats b{color:#ffe9a0}.rstats span+span{border-left-color:#d9b25a88}
 </style>
 </head>
 <body>
@@ -2600,7 +2736,7 @@ div.rstats span{flex:1 1 auto;min-width:0}div.rstats small{letter-spacing:0;line
   </div>
   <div id="ohud" hidden>
     <div class="otop"><button id="oPause" class="obtn">II</button><div class="omid"><div id="oTitle"></div><div class="oprog"><i id="oProgFill"></i><em id="oProgTxt"></em></div></div><button id="oSpeed" class="obtn">×1</button><button id="oAuto" class="obtn oauto">Авто</button></div>
-    <div class="oxp"><span id="oLvl">1</span><div class="oxpbar"><i id="oXpFill"></i></div></div>
+    <div class="oxp"><span id="oLvl">1</span><div class="oxpbar" id="oXpBar"><i id="oXpFill"><b class="oxb"></b><b class="oxb b2"></b><b class="oxb b3"></b><b class="oxb b4"></b></i></div></div>
     <div id="oBoss" hidden><b id="oBossName"></b><div class="obossbar"><i id="oBossFill"></i></div></div>
     <div id="oBanner" hidden></div>
     <div id="oHint" hidden>Проведи пальцем вверх — прицелься и отпусти</div>

@@ -123,7 +123,7 @@ export function portalColor(n: number): PortalC { return (['green', 'blue', 'pur
 
 /** rune chest of dark stone (Meshy, правка 89): 0 closed, 1 light in the seam, 2 open with gold */
 export function chestSvg(state: number, size = 74): string {
-  return `<img class="chestimg st${state}" src="${UI2['chest' + Math.max(0, Math.min(2, state))]}" style="width:${size}px" alt="" draggable="false">`;
+  return `<img class="chestimg st${state}" src="orb/ui/chest${Math.max(0, Math.min(2, state))}.webp" style="width:${size}px" alt="" draggable="false">`; // Ш54: the marble chest
 }
 
 
@@ -278,6 +278,8 @@ export class Hub {
     st.setProperty('--stone', `url(${STONE})`); st.setProperty('--lava', `url(${LAVA})`); st.setProperty('--portal', `url(${PORTAL_BG.blue})`);
     // lava-stone kit from Meshy (правки 87–91)
     for (const [k, v] of [['banner', 'banner'], ['oct', 'octframe'], ['plate', 'plate'], ['lavab', 'lavabtn'], ['trough', 'trough'], ['sq', 'sqbtn'], ['cave', 'cave'], ['wheelimg', 'wheel'], ['hall', 'hall']]) st.setProperty('--u-' + k, `url(${UI2[v]})`);
+    // Ш46 (сборка 2): the lava-stone kit gives way to marble, gold and emerald (art/orb/frames.py, art/orb/ui.py)
+    for (const [k, v] of [['oct', 'f_oct'], ['plate', 'f_plate'], ['lavab', 'f_btn'], ['trough', 'f_trough'], ['sq', 'btn_stone'], ['cave', 'temple'], ['banner', 'tab']]) st.setProperty('--u-' + k, `url(orb/ui/${v}.webp)`);
     root.addEventListener('click', e => this.click(e));
     root.addEventListener('input', e => { // справочник: search as you type, without losing the keyboard
       const t = e.target as HTMLInputElement;
@@ -838,9 +840,10 @@ export class Hub {
     if (hs0 && view.dataset.s) this.hscroll[view.dataset.s] = hs0.scrollTop; // правка 134: each tab keeps its place in the list
     const keepField = field ? field.scrollTop : 0;
     view.dataset.s = this.screen + this.sel.heroSub;
-    view.className = 'scroll' + (this.screen === 'hub' ? ' mainbg' : '') + (this.screen === 'jewel' ? ' fixed' : '') + (this.screen === 'hero' ? ' fixed herofix' : '');
+    view.className = 'scroll scr-' + this.screen + (this.screen === 'hub' ? ' mainbg' : '') + (this.screen === 'jewel' ? ' fixed' : '') + (this.screen === 'hero' ? ' fixed herofix' : '');
     this.root.classList.toggle('onhub', this.screen === 'hub');
-    this.root.classList.toggle('onhero', this.screen === 'hero'); // правка 136: the temple goes up under the header
+    this.root.classList.toggle('onhero', this.screen === 'hero');
+    this.root.dataset.scr = this.screen; // Ш46: the hall behind each tab // правка 136: the temple goes up under the header
     this.root.classList.toggle('fadetop', !['hub', 'hero', 'jewel'].includes(this.screen)); // правка 139: the list fades away under the header
     const art = this.root.querySelector('.hubart') as HTMLElement | null;
     if (art && this.screen === 'hub') { art.dataset.pc = portalColor(Math.min(this.sel.map, p.maxMap + 1)); art.querySelector('.fightbtn')!.classList.toggle('off', p.energy < ENERGY.run); }

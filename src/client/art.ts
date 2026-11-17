@@ -345,14 +345,14 @@ function hairFront(c: C, id: string, hair: string, x: number, y: number, r: numb
  *  glow — the magic point of the weapon; face — head centre and size (share of height) for avatars */
 interface ImgMeta { glow: [number, number]; face: [number, number, number]; smoke?: [number, number][]; float?: boolean }
 const IMG_META: Record<string, ImgMeta> = {
-  apollo: { glow: [0.2, 0.33], face: [0.63, 0.26, 0.44] },
+  apollo: { glow: [0.08, 0.33], face: [0.5, 0.25, 0.46] }, // Ш58: new drawn picture
   perun: { glow: [0.2, 0.15], face: [0.58, 0.3, 0.44] },
   prometheus: { glow: [0.14, 0.19], face: [0.62, 0.3, 0.42] },
   heracles: { glow: [0.15, 0.15], face: [0.56, 0.33, 0.36] },
   stribog: { glow: [0.8, 0.45], face: [0.52, 0.27, 0.36] },
   poseidon: { glow: [0.12, 0.05], face: [0.5, 0.22, 0.36] }, // правка 101: on legs now
-  skadi: { glow: [0.13, 0.17], face: [0.52, 0.24, 0.34] },
-  veles: { glow: [0.86, 0.25], face: [0.56, 0.27, 0.36] },
+  skadi: { glow: [0.87, 0.08], face: [0.42, 0.18, 0.36] },
+  veles: { glow: [0.15, 0.15], face: [0.48, 0.19, 0.36] },
   hades: { glow: [0.82, 0.62], face: [0.46, 0.26, 0.34] },
   hydra: { glow: [0.88, 0.42], face: [0.5, 0.27, 0.5], smoke: [[0.88, 0.42], [0.1, 0.33], [0.8, 0.7]] },
 };

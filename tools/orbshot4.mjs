@@ -37,6 +37,7 @@ await click('[data-a="go"][data-v="smith"]'); await shot('smith'); await click('
 await click('[data-a="go"][data-v="balls"]'); await shot('balls');
 await click('[data-a="o:ball"][data-v="beam"]'); await shot('ball'); await click('.x');
 await click('[data-a="go"][data-v="shop"]'); await shot('shop');
-await click('[data-a="chest"][data-v="runes:10"]'); await shot('reward', 1500); await click('.rok');
+await click('[data-a="chest"][data-v="set:1"]'); await shot('reward', 1500); await click('.rok'); await p.waitForTimeout(300);
+await click('[data-a="go"][data-v="hub"]'); await p.waitForTimeout(300); await click('[data-a="idleOpen"]'); await shot('idle'); await click('.x');
 await click('[data-a="go"][data-v="hub"]'); await p.waitForTimeout(300); await click('#hTask'); await shot('tasks'); await click('.x');
 console.log(JSON.stringify(errs.slice(0, 8))); await b.close();

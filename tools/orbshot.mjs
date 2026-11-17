@@ -15,9 +15,16 @@ await click('[data-a="battle"]'); await p.waitForTimeout(600); await click('[dat
 await p.waitForTimeout(2500);
 await p.screenshot({ path: `shots/o-${tag}-start.png` });
 // aim by hand: drag up-left and release
-await p.mouse.move(195, 640); await p.mouse.down(); await p.mouse.move(120, 300, { steps: 6 }); await p.waitForTimeout(400);
+await p.mouse.move(195, 560); await p.mouse.down();
+// правка Ш53: low to the right, then below the launch line — the aim must stay on the right
+await p.mouse.move(385, 600, { steps: 6 }); await p.mouse.move(385, 760, { steps: 6 }); await p.waitForTimeout(300);
+await p.screenshot({ path: `shots/o-${tag}-aimlow.png` });
+await p.mouse.move(40, 520, { steps: 8 }); await p.waitForTimeout(300);
+await p.screenshot({ path: `shots/o-${tag}-aimleft.png` });
+await p.mouse.move(120, 300, { steps: 6 }); await p.waitForTimeout(400);
 await p.screenshot({ path: `shots/o-${tag}-aim.png` });
-await p.mouse.up(); await p.waitForTimeout(900);
+await p.mouse.up(); await p.waitForTimeout(120);
+await p.screenshot({ path: `shots/o-${tag}-cast.png` }); await p.waitForTimeout(780);
 await p.screenshot({ path: `shots/o-${tag}-fly.png` });
 await p.evaluate(() => document.getElementById('oAuto').click());
 await p.evaluate(() => document.getElementById('oSpeed').click());

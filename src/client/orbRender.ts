@@ -6,6 +6,9 @@ import { COLS, ROWS, BALL_R, ENEMY_T, BALLS, ENEMY, BIOME_SET, lookOf, SPIRITS }
 import { WALL_ART, EN_ART } from './orbArt';
 import { drawHero3D } from './hero3d';
 import { fcos, fsin } from '../core/fmath';
+import { ORB_HERO_ART, HERO_POSE_H } from './orbHeroArt';
+import { HEROES } from '../core/content';
+import { EL_HEX } from './art';
 
 const imgs = new Map<string, HTMLImageElement>();
 export function orbImg(src: string): HTMLImageElement | null {
@@ -18,6 +21,7 @@ export function preloadOrb(o: Orb): void {
   orbImg(`orb/bg/${s.sd.biome}.webp`); orbImg(wallSrc(o));
   for (const k of Object.keys(EN_ART)) if (k.startsWith(set + '_')) orbImg(`orb/en/${k}.webp`);
   if (s.cfg.spirit) orbImg(`orb/spirit/${s.cfg.spirit.id}${lookOf(s.cfg.spirit.rarity)}b.webp`);
+  for (const k of Object.keys(ORB_HERO_ART[s.cfg.heroId] ?? {})) orbImg(`orb/hero/${s.cfg.heroId}_${k}.webp`); // Ш58
 }
 function wallKey(o: Orb): string { const w = o.s.cfg.wall; return w.id === 'start' ? 'start' : w.id + lookOf(w.rarity); }
 function wallSrc(o: Orb): string { return `orb/wall/${wallKey(o)}.webp`; }
@@ -262,7 +266,7 @@ export class OrbRenderer {
     // a golden ring under the hero
     c.save(); c.globalAlpha = 0.5; c.strokeStyle = '#ffd36a'; c.lineWidth = 2; c.beginPath(); c.ellipse(x, gy, C * 0.55, C * 0.2, 0, 0, 6.283); c.stroke(); c.restore();
     if (this.heroRed > 0) c.globalAlpha = 0.6 + 0.4 * Math.sin(this.t * 40);
-    const ok = drawHero3D(c, s.cfg.heroId, x, gy, sc, { fx: fx * 0.2, fy: -1, t: this.t, moving: false, wx: x, wy: gy });
+    const ok = ORB_HERO_ART[s.cfg.heroId] ? this.drawHero2D(o, x, gy, aim) : drawHero3D(c, s.cfg.heroId, x, gy, sc, { fx: fx * 0.2, fy: -1, t: this.t, moving: false, wx: x, wy: gy });
     c.globalAlpha = 1;
     if (!ok) { c.fillStyle = '#e8d6a8'; c.beginPath(); c.arc(x, gy - C * 0.6, C * 0.35, 0, 6.283); c.fill(); }
     // hero hp
@@ -288,24 +292,58 @@ export class OrbRenderer {
     c.strokeStyle = col; c.lineWidth = 2.5; c.beginPath(); c.arc(rx, ry, rr, -Math.PI / 2, -Math.PI / 2 + 6.283 * (1 - (left - 1) / every(sp.rarity))); c.stroke();
     c.fillStyle = '#fff'; c.font = `700 ${Math.round(rr * 1.1)}px system-ui, sans-serif`; c.textAlign = 'center'; c.textBaseline = 'middle'; c.fillText(String(left), rx, ry + 1); c.textBaseline = 'alphabetic';
   }
+  /** Ш55, Ш56, Ш58: the drawn hero from behind — turns after the aim (up / diagonal / side, the left side mirrored, a small
+   *  lean in between), a short cast pose on each volley, the weapon tip glows. 40% bigger than the 3D hero; over a bottom row
+   *  with enemies it goes half see-through so the aim stays readable */
+  private castT = -1;
+  cast(): void { this.castT = this.t; }
+  private drawHero2D(o: Orb, x: number, gy: number, aim: number): boolean {
+    const c = this.c, C = this.cell, s = o.s, art = ORB_HERO_ART[s.cfg.heroId];
+    const right = Math.cos(aim) >= 0, d = Math.abs(aim + Math.PI / 2);
+    const pi = d < 0.45 ? 0 : d < 1.0 ? 1 : 2, nat = [0.22, 0.75, 1.25][pi];
+    const casting = this.castT >= 0 && this.t - this.castT < 0.28;
+    const key = (casting ? 'cast_' : 'idle_') + ['up', 'diag', 'side'][pi], P = art[key];
+    const im = orbImg(`orb/hero/${s.cfg.heroId}_${key}.webp`);
+    if (!im || !P) { orbImg(`orb/hero/${s.cfg.heroId}_idle_up.webp`); return false; }
+    const k = (C * 1.65) / HERO_POSE_H, w = P.w * k, h = P.h * k;
+    const lean = Math.max(-0.12, Math.min(0.12, (d - nat) * 0.35)) * (right ? 1 : -1);
+    const breath = casting ? 1 : 1 + 0.012 * Math.sin(this.t * 2.4);
+    const low = s.enemies.some(e => e.hp > 0 && e.r + e.h >= ROWS - 0.01);
+    // shadow at the feet
+    c.save(); c.fillStyle = 'rgba(0,0,0,.28)'; c.beginPath(); c.ellipse(x, gy, C * 0.42, C * 0.12, 0, 0, 6.283); c.fill(); c.restore();
+    c.save();
+    c.globalAlpha *= low ? 0.72 : 1;
+    c.translate(x, gy); c.rotate(lean); c.scale(right ? 1 : -1, breath);
+    c.drawImage(im, -P.fx * w, -P.fy * h, w, h);
+    // the weapon tip: a soft pulse while aiming, a flash on the cast
+    const el = HEROES.find(hd => hd.id === s.cfg.heroId)?.element, col = el ? EL_HEX[el] : '#fff3b0';
+    const tx = (P.tx - P.fx) * w, ty = (P.ty - P.fy) * h, rr = C * (casting ? 0.55 : 0.28 + 0.05 * Math.sin(this.t * 5));
+    const g = c.createRadialGradient(tx, ty, 0, tx, ty, rr);
+    g.addColorStop(0, hexA('#ffffff', casting ? 0.95 : 0.6)); g.addColorStop(0.35, hexA(col, casting ? 0.7 : 0.4)); g.addColorStop(1, hexA(col, 0));
+    c.globalCompositeOperation = 'lighter'; c.fillStyle = g; c.beginPath(); c.arc(tx, ty, rr, 0, 6.283); c.fill();
+    c.restore();
+    return true;
+  }
   private drawBall(b: Ball): void {
     const c = this.c, C = this.cell, x = this.px(b.x), y = this.py(b.y);
     const def = b.kind === 'normal' || b.kind === 'shard' ? null : BALLS[b.kind];
-    const r = BALL_R * C * (b.kind === 'shard' ? 0.85 : 1.45);
+    const r = BALL_R * C * (b.kind === 'shard' ? 0.75 : 1.15); // Ш59: drawn smaller and crisper (the hit size is the same)
     const col = def?.color ?? '#f4f0e6', glow = def?.glow ?? '#ffffff';
     // trail
     const v = Math.hypot(b.vx, b.vy) || 1, tx = -b.vx / v, ty = -b.vy / v;
-    const tl = r * (def ? 5 : 3.2);
+    const tl = r * (def ? 3.4 : 2.1);
     const g = c.createLinearGradient(x, y, x + tx * tl, y + ty * tl);
-    g.addColorStop(0, hexA(glow, 0.55)); g.addColorStop(1, hexA(glow, 0));
-    c.strokeStyle = g; c.lineWidth = r * 1.5; c.lineCap = 'round'; c.beginPath(); c.moveTo(x, y); c.lineTo(x + tx * tl, y + ty * tl); c.stroke();
+    g.addColorStop(0, hexA(glow, 0.5)); g.addColorStop(1, hexA(glow, 0));
+    c.strokeStyle = g; c.lineWidth = r * 1.3; c.lineCap = 'round'; c.beginPath(); c.moveTo(x, y); c.lineTo(x + tx * tl, y + ty * tl); c.stroke();
     // glow
-    if (def) { const gg = c.createRadialGradient(x, y, r * 0.3, x, y, r * 2.4); gg.addColorStop(0, hexA(glow, 0.55)); gg.addColorStop(1, hexA(glow, 0)); c.fillStyle = gg; c.beginPath(); c.arc(x, y, r * 2.4, 0, 6.283); c.fill(); }
+    if (def) { const gg = c.createRadialGradient(x, y, r * 0.6, x, y, r * 1.7); gg.addColorStop(0, hexA(glow, 0.45)); gg.addColorStop(1, hexA(glow, 0)); c.fillStyle = gg; c.beginPath(); c.arc(x, y, r * 1.7, 0, 6.283); c.fill(); }
     // core
     const cg = c.createRadialGradient(x - r * 0.35, y - r * 0.35, r * 0.1, x, y, r);
     cg.addColorStop(0, '#ffffff'); cg.addColorStop(0.35, glow); cg.addColorStop(1, col);
     c.fillStyle = cg; c.beginPath(); c.arc(x, y, r, 0, 6.283); c.fill();
-    c.strokeStyle = 'rgba(0,0,0,.45)'; c.lineWidth = 1; c.stroke();
+    c.strokeStyle = 'rgba(20,14,8,.85)'; c.lineWidth = 1.5; c.stroke();
+    // a crisp highlight, top left
+    c.fillStyle = 'rgba(255,255,255,.9)'; c.beginPath(); c.ellipse(x - r * 0.35, y - r * 0.4, r * 0.28, r * 0.18, -0.6, 0, 6.283); c.fill();
     // a little mark of the element
     if (def) {
       c.save(); c.translate(x, y); c.rotate(this.t * 4);
