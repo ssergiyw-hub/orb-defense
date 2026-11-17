@@ -41,8 +41,8 @@ export class OrbRenderer {
     this.dpr = Math.min(this.dprCap, window.devicePixelRatio || 1);
     this.W = this.cv.clientWidth || window.innerWidth; this.H = this.cv.clientHeight || window.innerHeight;
     this.cv.width = Math.round(this.W * this.dpr); this.cv.height = Math.round(this.H * this.dpr);
-    // the wall line at 79% of the screen; the field above it up to the HUD (≈ 13%)
-    this.wallY = Math.round(this.H * 0.785);
+    // правка Ш43: the wall line at 83% of the screen (was 78.5%); the field above it up to the HUD (≈ 12%)
+    this.wallY = Math.round(this.H * 0.83);
     const top = Math.max(92, this.H * 0.12);
     this.cell = Math.min(this.W / COLS, (this.wallY - top) / ROWS);
     this.fx0 = (this.W - this.cell * COLS) / 2; this.fy0 = this.wallY - this.cell * ROWS;
@@ -194,20 +194,28 @@ export class OrbRenderer {
     const im = orbImg(`orb/en/${key}.webp`);
     c.save();
     c.globalAlpha = born;
-    // shadow
-    c.fillStyle = 'rgba(0,0,0,.28)'; c.beginPath(); c.ellipse(x0 + w / 2, y0 + h - C * 0.1, w * 0.42, C * 0.12, 0, 0, 6.283); c.fill();
+    // правка Ш41: the sprites have no pedestal and no painted bar — the game draws the shadow and the health bar
     const small = e.kind === 'smallslime' || e.kind === 'split3' ? 0.72 : 1;
+    const bh = Math.max(4, C * 0.08), foot = y0 + h - bh - C * 0.1; // the feet stand just above the bar
+    // the figure fills the cell: full width, and it may rise a little above the cell's top edge (as a body above its feet)
+    const pad = C * 0.02;
+    let iw = w * 0.7, ih = h * 0.7;
     if (im) {
-      const sc = Math.min(w * 0.94 / im.naturalWidth, h * 0.98 / im.naturalHeight) * small;
-      const iw = im.naturalWidth * sc, ih = im.naturalHeight * sc;
-      const bob = d.tier === 'boss' ? Math.sin(this.t * 2 + e.id) * C * 0.02 : 0;
-      c.drawImage(im, x0 + (w - iw) / 2, y0 + h - ih - C * 0.03 + bob, iw, ih);
-      if (e.flash > 0) { c.globalCompositeOperation = 'lighter'; c.globalAlpha = born * e.flash / 12; c.drawImage(im, x0 + (w - iw) / 2, y0 + h - ih - C * 0.03, iw, ih); c.globalCompositeOperation = 'source-over'; c.globalAlpha = born; }
-      if (e.freeze > 0) { c.fillStyle = 'rgba(150,220,255,.28)'; roundRect(c, x0 + (w - iw) / 2, y0 + h - ih, iw, ih, C * 0.12); c.fill(); }
-    } else { c.fillStyle = '#d9cfb8'; roundRect(c, x0 + C * 0.08, y0 + C * 0.08, w - C * 0.16, h - C * 0.16, C * 0.14); c.fill(); }
-    // hp bar (and the boss shield above it)
-    const bw = Math.min(w * 0.82, C * (e.w > 1 ? 1.8 : 0.82)), bx = x0 + (w - bw) / 2, by = y0 + h - C * 0.13, bh = Math.max(4, C * 0.075);
-    c.fillStyle = 'rgba(20,10,8,.8)'; roundRect(c, bx - 1, by - 1, bw + 2, bh + 2, 2); c.fill();
+      const sc = Math.min((w - 2 * pad) / im.naturalWidth, (foot - y0 + C * 0.1) / im.naturalHeight) * small;
+      iw = im.naturalWidth * sc; ih = im.naturalHeight * sc;
+    }
+    const bob = d.tier === 'boss' ? Math.sin(this.t * 2 + e.id) * C * 0.02 : 0;
+    const ix = x0 + (w - iw) / 2, iy = foot - ih + bob;
+    // shadow under the feet
+    c.fillStyle = 'rgba(0,0,0,.3)'; c.beginPath(); c.ellipse(x0 + w / 2, foot - C * 0.02, Math.min(w * 0.44, iw * 0.5), C * 0.1, 0, 0, 6.283); c.fill();
+    if (im) {
+      c.drawImage(im, ix, iy, iw, ih);
+      if (e.flash > 0) { c.globalCompositeOperation = 'lighter'; c.globalAlpha = born * e.flash / 12; c.drawImage(im, ix, iy, iw, ih); c.globalCompositeOperation = 'source-over'; c.globalAlpha = born; }
+      if (e.freeze > 0) { c.fillStyle = 'rgba(150,220,255,.28)'; roundRect(c, ix, iy, iw, ih, C * 0.12); c.fill(); }
+    } else { c.fillStyle = '#d9cfb8'; roundRect(c, ix, iy, iw, ih, C * 0.14); c.fill(); }
+    // hp bar under the feet (and the boss shield above it)
+    const bw = Math.min(w * 0.82, C * (e.w > 1 ? 1.8 : 0.82)), bx = x0 + (w - bw) / 2, by = foot + C * 0.04;
+    c.fillStyle = 'rgba(20,10,8,.85)'; roundRect(c, bx - 1, by - 1, bw + 2, bh + 2, 2); c.fill();
     c.fillStyle = d.tier === 'boss' ? '#ff3a3a' : d.tier === 'mini' ? '#ff8a2a' : '#e8463a'; roundRect(c, bx, by, bw * Math.max(0, e.hp / e.max), bh, 2); c.fill();
     if (e.shieldMax > 0 && e.shield > 0) { c.fillStyle = '#7fd0ff'; roundRect(c, bx, by - bh - 2, bw * e.shield / e.shieldMax, bh, 2); c.fill(); }
     if (d.tier !== 'normal' || C > 34) {
@@ -249,7 +257,7 @@ export class OrbRenderer {
   private deckY(): number { return this.wallY + (this.H - this.wallY) * 0.5; }
   private drawHero(o: Orb): void {
     const c = this.c, C = this.cell, s = o.s, x = this.W / 2, gy = this.deckY() + C * 0.15;
-    const sc = (1.75 * C) / 140;
+    const sc = (1.95 * C) / 140; // правка Ш43: the hero is 40% bigger than before (the cell itself grew ~26%)
     const aim = this.aimAt ?? s.aim, fx = fcos(aim), fy = fsin(aim);
     // a golden ring under the hero
     c.save(); c.globalAlpha = 0.5; c.strokeStyle = '#ffd36a'; c.lineWidth = 2; c.beginPath(); c.ellipse(x, gy, C * 0.55, C * 0.2, 0, 0, 6.283); c.stroke(); c.restore();
@@ -266,7 +274,7 @@ export class OrbRenderer {
     const s = o.s; if (!s.cfg.spirit) return;
     const c = this.c, C = this.cell, sp = s.cfg.spirit, im = orbImg(`orb/spirit/${sp.id}${lookOf(sp.rarity)}b.webp`);
     const x = this.W * 0.22, y = this.deckY() - C * 0.35 + Math.sin(this.t * 2.2) * C * 0.08;
-    const size = C * (0.95 + 0.18 * (lookOf(sp.rarity) - 1));
+    const size = C * 1.11 * (0.95 + 0.18 * (lookOf(sp.rarity) - 1)); // правка Ш43: +40% with the bigger cell
     const col = SPIRITS[sp.id].color;
     // aura in the colour of the rarity
     const g = c.createRadialGradient(x, y + size * 0.35, 1, x, y + size * 0.35, size * 0.75);

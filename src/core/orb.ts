@@ -488,8 +488,10 @@ export class Orb {
       const starts = free.filter(c => c + w <= COLS && [...Array(w).keys()].every(k => free.includes(c + k) && !occ[COLS + c + k]));
       if (starts.length) { const c0 = starts[this.rng.int(starts.length)]; s.enemies.push(this.makeEnemy(kind, c0, 0)); for (let k = 0; k < w; k++) free.splice(free.indexOf(c0 + k), 1); }
     }
-    // density grows through the stage: 2–3 at first, up to 4–6
-    const n = Math.min(free.length, 2 + Math.floor(t / 6) + this.rng.int(2) + (sd.stage >= 5 ? 1 : 0));
+    // density grows through the stage: 2–3 at first, up to 4–6 on a 9-wide field; правка Ш42 — the field is 7 wide,
+    // so the count is scaled to it and at least two cells of a row stay free for the balls to pass
+    const want = 2 + Math.floor(t / 6) + this.rng.int(2) + (sd.stage >= 5 ? 1 : 0);
+    const n = Math.min(free.length, COLS - 2, Math.max(2, Math.round(want * COLS / 9)));
     for (let i = 0; i < n; i++) {
       const c = free.splice(this.rng.int(free.length), 1)[0];
       const kind = sd.pool[this.rng.int(sd.pool.length)];

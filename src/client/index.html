@@ -972,7 +972,7 @@ button.gslot,button.rslot{border-style:solid;border-color:var(--g)}
 .rrow.n1 .rname{font-size:16px}
 .rsub{font-size:11px;font-style:normal;font-weight:800;color:var(--c);text-shadow:0 1px 2px #000;text-transform:uppercase;letter-spacing:.5px}
 .rdet{font-size:12px;color:#e8dcc8;line-height:1.3;margin-top:2px;max-width:170px}
-.rgrid{position:relative;display:grid;grid-template-columns:repeat(4,1fr);gap:12px 6px;padding:16px 8px 12px;margin:0 -2px 6px;border-radius:12px;
+.rgrid{position:relative;display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:12px 6px;padding:16px 8px 12px;margin:0 -2px 6px;border-radius:12px;
   background:linear-gradient(rgba(30,24,20,.85),rgba(14,11,9,.92)),var(--stone) 0 0/240px;border:2px solid #b8893a;box-shadow:0 0 0 2px #000,inset 0 0 20px #000}
 .rgrid .rcell{width:auto;animation-delay:calc(.25s + var(--i) * .08s)}
 .rgrid .rtile{width:62px;height:62px;border-radius:12px}.rgrid .rti svg{width:46px;height:46px}.rgrid .rti{font-size:32px}
@@ -2332,6 +2332,26 @@ div.rstats span{flex:1 1 auto;min-width:0}div.rstats small{letter-spacing:0;line
 .ocard b{font:700 13px Georgia,serif;text-align:center}
 .ocard span{font:12px system-ui,sans-serif;text-align:center;color:#4a3a24;line-height:1.25}
 .opips{display:flex;gap:4px;margin-top:auto}.opips i{width:12px;height:12px;border-radius:50%;border:1.5px solid #8a6a20;background:#e6dfcf}.opips i.on{background:var(--c)}
+/* правка Ш44: wall health — a thin bar at the very bottom, gold frame */
+.owbar{position:absolute;left:6px;right:6px;bottom:calc(env(safe-area-inset-bottom,0px) + 5px);height:11px;border-radius:7px;background:rgba(14,10,8,.88);border:1.5px solid #e6c56a;box-shadow:0 0 0 1px #5a3f12,0 2px 5px #000,inset 0 1px 0 #fff3;overflow:hidden}
+.owbar i{position:absolute;left:0;top:0;bottom:0;background:linear-gradient(#7ee89a,#1f9a48);transition:width .3s}
+.owbar i.mid{background:linear-gradient(#ffd36a,#c98a10)}.owbar i.low{background:linear-gradient(#ff7a6a,#c0261a)}
+.owbar i.sh{background:linear-gradient(#bfe8ff,#4aa8ee);opacity:.85;left:auto;right:0}
+.owbar em{position:absolute;inset:0;text-align:center;font:800 9.5px/8.5px system-ui,sans-serif;color:#fff;text-shadow:0 0 2px #000,0 0 2px #000,0 1px 1px #000;font-style:normal;letter-spacing:.2px}
+/* правка Ш45: skills and damage in the pause */
+.opbox{width:100%;max-width:400px;max-height:58vh;display:flex;flex-direction:column;margin:6px 0 12px;padding:8px;border-radius:14px;background:linear-gradient(rgba(46,39,35,.97),rgba(22,18,16,.98));border:2px solid #c9a24a;box-shadow:0 0 0 2px #0c0908,0 6px 24px #000}
+.optabs{display:flex;gap:4px;background:#0007;border-radius:10px;padding:3px;margin-bottom:6px}
+.optabs button{flex:1;padding:7px 4px;border-radius:8px;font:700 14px Georgia,serif;color:#e8dcc0}
+.optabs button.on{background:linear-gradient(#ffd98a,#d0902e);color:#2a1a08;box-shadow:inset 0 1px 0 #fff8}
+#oPauseBody{overflow-y:auto;overscroll-behavior:contain;padding:0 2px}
+.osk{display:flex;align-items:center;gap:9px;padding:6px;border-radius:10px;background:#ffffff0c;border:1px solid #ffffff14;margin:4px 0;color:#f0e6cc;font:12.5px/1.3 system-ui,sans-serif}
+.osk img{width:38px;height:48px;object-fit:contain;flex:none;filter:drop-shadow(0 2px 2px #000)}
+.osk .onb{width:34px;height:34px;margin:0 2px;flex:none;border-radius:50%;background:radial-gradient(circle at 35% 30%,#fff,#ddd6c8 60%,#8a8478);box-shadow:0 2px 4px #000}
+.osk .opw{width:38px;text-align:center;font-size:28px;flex:none}
+.osk div{flex:1}.osk b{display:block;font:700 13.5px Georgia,serif;color:#ffe9b0}
+.osk .opips{margin:3px 0 0}.osk .opips i{width:10px;height:10px}
+.osk em{font-style:normal;color:#cbbba0}
+.osp{margin:6px 2px 2px;text-align:center;color:#cbbba0;font:12px system-ui}
 #oPauseMenu{z-index:9}
 .odr{display:grid;grid-template-columns:1fr 1fr auto;gap:8px;align-items:center;margin:6px 0;color:#f0e6cc;font:13px system-ui}
 .odr i{display:block;height:8px;border-radius:4px;background:linear-gradient(90deg,#e2a92c,#ffe08a)}
@@ -2376,7 +2396,7 @@ div.rstats span{flex:1 1 auto;min-width:0}div.rstats small{letter-spacing:0;line
 .ouse{align-self:center;font:700 12px system-ui;color:#1f8a4a;padding:0 6px}
 .gearhall .tstats{display:flex!important;flex-direction:row!important;align-items:center;justify-content:center;gap:8px}
 .obtside{display:flex;flex-direction:column;align-items:center;width:58px;padding:2px;border-radius:10px;border:2px solid #c9a24a;background:linear-gradient(#f6f2e8,#cfc6b4);box-shadow:0 2px 0 #6a5420}
-.obtside .obpic{display:block;width:44px;height:40px;background:center/contain no-repeat}.obtside .obpic.wimg{background-size:cover;background-position:top;height:30px;margin:5px 0;border-radius:4px}.obtside small{font:700 10px system-ui;color:#3a2a10}.obtside i{font-size:28px;font-style:normal}
+.obtside .obpic{display:block;width:44px;height:40px;background:center/contain no-repeat}.obtside .obpic.obwall{background-size:auto 165%;background-position:21% 8%;width:48px;height:34px;margin:3px 0;border-radius:5px;box-shadow:inset 0 0 0 1px #0004}.obtside small{font:700 10px system-ui;color:#3a2a10}.obtside i{font-size:28px;font-style:normal}
 
 /* ================= Orb Defense: серо-золотая тема (Ш12) — мрамор, золото, изумруд поверх старой каменной ================= */
 .tabs{background:linear-gradient(#efebe3,#c9c0b0)!important;border-top:3px solid #c9a24a!important;box-shadow:0 -4px 12px rgba(0,0,0,.45)!important}
@@ -2448,6 +2468,9 @@ div.rstats span{flex:1 1 auto;min-width:0}div.rstats small{letter-spacing:0;line
 .orchtabs button.on{background:linear-gradient(#ffd98a,#d0902e);box-shadow:inset 0 1px 0 #fff8}
 .orchtabs button svg{width:26px;height:26px}
 .orchtap{margin-top:8px;text-align:center;font-size:12px;color:#a8988a}
+/* правка Ш40: a long reward name wraps inside its column instead of widening it past the screen */
+.rgrid .rcell{min-width:0}.rgrid .rname{white-space:normal;overflow-wrap:break-word;max-width:100%;font-size:9px;letter-spacing:-.3px;padding:0 1px}
+@media (max-width:370px){.rgrid{grid-template-columns:repeat(3,minmax(0,1fr))}}
 </style>
 </head>
 <body>
@@ -2479,7 +2502,7 @@ div.rstats span{flex:1 1 auto;min-width:0}div.rstats small{letter-spacing:0;line
     <div id="oBoss" hidden><b id="oBossName"></b><div class="obossbar"><i id="oBossFill"></i></div></div>
     <div id="oBanner" hidden></div>
     <div id="oHint" hidden>Проведи пальцем вверх — прицелься и отпусти</div>
-    <div class="obottom"><div class="owall"><i id="oWallFill"></i><em id="oWallTxt"></em></div><div id="oBalls"></div></div>
+    <div class="owbar"><i id="oWallFill"></i><em id="oWallTxt"></em></div>
   </div>
   <div id="oCards" class="overlay" hidden>
     <div class="oribbon"><span>Новый уровень</span></div>
@@ -2488,10 +2511,9 @@ div.rstats span{flex:1 1 auto;min-width:0}div.rstats small{letter-spacing:0;line
   </div>
   <div id="oPauseMenu" class="overlay" hidden>
     <h2>Пауза</h2>
+    <div class="opbox"><div class="optabs"><button id="oTabSk" class="on">Навыки</button><button id="oTabDmg">Урон</button></div><div id="oPauseBody"></div></div>
     <button id="oResume" class="big">Продолжить</button>
-    <button id="oDmgBtn" class="btn">Урон по шарам</button>
     <button id="oQuit" class="btn danger">Сдаться и выйти</button>
-    <div id="oDmgWin" hidden><div class="dmgbox"><div class="dmghead"><b>Урон по шарам</b><button onclick="this.closest('#oDmgWin').hidden=true">✕</button></div><div id="oDmgBody"></div></div></div>
   </div>
   <div id="joyBase"></div><div id="joyKnob"></div>
   <div id="cards" class="overlay" hidden>

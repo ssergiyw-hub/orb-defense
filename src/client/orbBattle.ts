@@ -32,7 +32,8 @@ export class OrbBattle {
     $('oAuto').onclick = () => { this.auto = !this.auto; this.keep(); this.hud(true); };
     $('oResume').onclick = () => this.pause(false);
     $('oQuit').onclick = () => { if (this.o && !this.done) { this.quit = true; this.o.s.phase = 'lose'; this.pause(false); this.finish(); } };
-    $('oDmgBtn').onclick = () => this.dmgTable();
+    $('oTabSk').onclick = () => this.pauseTab('sk');
+    $('oTabDmg').onclick = () => this.pauseTab('dmg');
   }
   private keep(): void { try { localStorage.setItem('od-auto', this.auto ? '1' : '0'); localStorage.setItem('od-speed', String(this.speed)); } catch { /* storage unavailable */ } }
 
@@ -87,7 +88,8 @@ export class OrbBattle {
   }
   private pause(v: boolean): void {
     if (!this.o || this.done) return;
-    this.paused = v; $('oPauseMenu').hidden = !v; $('oDmgWin').hidden = true;
+    this.paused = v; $('oPauseMenu').hidden = !v;
+    if (v) this.pauseTab(this.ptab);
   }
 
   // ---------------- loop ----------------
@@ -145,11 +147,11 @@ export class OrbBattle {
     this.set('oProgTxt', s.bossSpawned ? tr('БОСС') : Math.round(100 * o.progress) + '%');
     this.set('oLvl', String(s.level));
     ($('oXpFill') as HTMLElement).style.width = (100 * s.xp / s.xpNext).toFixed(1) + '%';
+    // правка Ш44: the thin wall bar at the very bottom (the shield shows as a blue part from the right)
     const wf = Math.max(0, s.wallHp / s.wallMax);
     ($('oWallFill') as HTMLElement).style.width = (100 * wf).toFixed(1) + '%';
     $('oWallFill').className = wf > 0.5 ? '' : wf > 0.25 ? 'mid' : 'low';
     this.set('oWallTxt', `${tr('Стена')} ${fmtN(Math.max(0, s.wallHp))}${s.wallShield > 0 ? ' +' + fmtN(s.wallShield) : ''}`);
-    this.set('oBalls', s.specials.map(b => `<i style="--c:${BALLS[b.id].color}"><img src="${BOOK(b.id)}" alt="">${b.lv > 1 ? `<b>${b.lv}</b>` : ''}</i>`).join('') + `<i class="nb"><span></span><b>×${s.normals}</b></i>`, true);
     const boss = s.enemies.find(e => ENEMY[e.kind].tier === 'boss');
     $('oBoss').hidden = !boss;
     if (boss) { this.set('oBossName', tr(ENEMY[boss.kind].name)); ($('oBossFill') as HTMLElement).style.width = (100 * boss.hp / boss.max).toFixed(1) + '%'; }
@@ -176,12 +178,27 @@ export class OrbBattle {
     $('oCards').hidden = false;
     sfx.vibrate('level');
   }
+  // правка Ш45: the pause shows the run's skills (balls, normal balls, cards) and the damage table
+  private ptab: 'sk' | 'dmg' = 'sk';
+  private pauseTab(t: 'sk' | 'dmg'): void {
+    this.ptab = t;
+    $('oTabSk').classList.toggle('on', t === 'sk'); $('oTabDmg').classList.toggle('on', t === 'dmg');
+    if (t === 'dmg') this.dmgTable(); else this.skills();
+  }
+  private skills(): void {
+    const o = this.o; if (!o) return; const s = o.s;
+    const pips = (lv: number) => `<span class="opips">${[1, 2, 3].map(k => `<i class="${k <= lv ? 'on' : ''}"></i>`).join('')}</span>`;
+    const rows = s.specials.map(b => `<div class="osk" style="--c:${BALLS[b.id].color}"><img src="${BOOK(b.id)}" alt=""><div><b>${tr(BALLS[b.id].name)}</b><span>${trS(BALLS[b.id].desc(b.lv))}</span>${pips(b.lv)}</div></div>`);
+    rows.push(`<div class="osk"><span class="onb"></span><div><b>${tr('Обычные шары')} ×${s.normals}</b><em>${tr('Шаров в залпе')}: ${s.normals + s.specials.length}</em></div></div>`);
+    const pw = Math.round(s.power / 0.12);
+    if (pw > 0) rows.push(`<div class="osk"><span class="opw">⚡</span><div><b>${tr('Сила Олимпа')} ×${pw}</b><em>${tr('Урон всех шаров')} +${Math.round(s.power * 100)}%</em></div></div>`);
+    $('oPauseBody').innerHTML = rows.join('') + `<p class="osp">${tr('Свободных мест для шаров')}: ${4 - s.specials.length}</p>`;
+  }
   private dmgTable(): void {
     const o = this.o; if (!o) return;
     const rows = Object.entries(o.s.dmgBy).sort((a, b) => b[1] - a[1]);
     const total = rows.reduce((a, r) => a + r[1], 0) || 1;
     const name = (k: string) => k === 'normal' ? 'Обычные шары' : k === 'shard' ? 'Осколки гранаты' : k === 'spirit' ? 'Дух' : k === 'wall' ? 'Стена' : BALLS[k as keyof typeof BALLS]?.name ?? k;
-    $('oDmgBody').innerHTML = rows.map(([k, v]) => `<div class="odr"><span>${tr(name(k))}</span><i style="width:${(100 * v / total).toFixed(1)}%"></i><b>${fmtN(v)}</b></div>`).join('') || `<p>${tr('Пока нет урона')}</p>`;
-    $('oDmgWin').hidden = false;
+    $('oPauseBody').innerHTML = rows.map(([k, v]) => `<div class="odr"><span>${tr(name(k))}</span><i style="width:${(100 * v / total).toFixed(1)}%"></i><b>${fmtN(v)}</b></div>`).join('') || `<p class="osp">${tr('Пока нет урона')}</p>`;
   }
 }

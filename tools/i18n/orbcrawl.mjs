@@ -51,7 +51,7 @@ for (let i = 0; i < ng; i++) { await p.evaluate(i => document.querySelectorAll('
 await click('[data-a="go"][data-v="hub"]'); await p.waitForTimeout(300); await click('[data-a="battle"]'); await p.waitForTimeout(400); await scan(); await click('[data-a="battleGo"]');
 await p.waitForTimeout(1500); await scan(); await click('#oAuto'); await click('#oSpeed'); await click('#oSpeed');
 for (let t = 0; t < 40; t++) { await p.waitForTimeout(600); await scan(); }
-await click('#oPause'); await p.waitForTimeout(200); await scan(); await click('#oDmgBtn'); await p.waitForTimeout(200); await scan();
+await click('#oPause'); await p.waitForTimeout(200); await scan(); await click('#oTabDmg'); await p.waitForTimeout(200); await scan(); await click('#oTabSk'); await p.waitForTimeout(200); await scan();
 await click('#oQuit'); await p.waitForTimeout(1500); await scan();
 const miss = await p.evaluate(() => [...window.__i18nMissing]);
 fs.writeFileSync(`/tmp/orb_missing_${lang}.json`, JSON.stringify([...new Set([...miss, ...left])], null, 1));

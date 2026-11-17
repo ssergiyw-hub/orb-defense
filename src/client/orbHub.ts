@@ -17,7 +17,7 @@ export function spiritBtnPic(p: P.Profile): string {
   const o = OM.orb(p), s = o.spirit && o.spirits[o.spirit].owned ? o.spirit : null;
   return s ? `<span class="obpic" style="background-image:url(${spiritPic(s, o.spirits[s].lv)})"></span>` : '<i>✨</i>';
 }
-export function wallBtnPic(p: P.Profile): string { const o = OM.orb(p); return `<span class="obpic wimg" style="background-image:url(${wallPic(o.wall, o.walls[o.wall].lv)})"></span>`; }
+export function wallBtnPic(p: P.Profile): string { const o = OM.orb(p); return `<span class="obpic obwall" style="background-image:url(${wallPic(o.wall, o.walls[o.wall].lv)})"></span>`; }
 
 /** the «Шары» tab: books on shelves, 3 in a row */
 export function orbBalls(p: P.Profile): string {

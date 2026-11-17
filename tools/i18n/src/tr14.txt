@@ -1,0 +1,3 @@
+1488|Куль у залпі|Orbs per volley|Kugeln pro Salve|Orbes por ráfaga|Orbes por rajada|Kul w salwie|Yaylımdaki küre|Orbes par salve|Sfere per raffica
+1489|Шкода всіх куль|Damage of all orbs|Schaden aller Kugeln|Daño de todos los orbes|Dano de todos os orbes|Obrażenia wszystkich kul|Tüm kürelerin hasarı|Dégâts de tous les orbes|Danni di tutte le sfere
+1490|Вільних місць для куль|Free orb slots|Freie Kugelplätze|Huecos libres para orbes|Espaços livres para orbes|Wolne miejsca na kule|Boş küre yeri|Places libres pour orbes|Posti liberi per sfere

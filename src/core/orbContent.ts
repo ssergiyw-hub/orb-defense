@@ -1,7 +1,7 @@
 // Orb Defense: Olympus — content of the ball battle (balls, enemies, spirits, walls, stages).
 // Numbers here are the first balance pass; the bot (tools/orbbot.ts) checks them.
 
-export const COLS = 9;          // columns of the field
+export const COLS = 7;          // columns of the field (правка Ш42: было 9)
 export const ROWS = 11;         // rows from the top of the field to the wall line
 export const TICK = 1 / 60;     // one simulation step
 export const BALL_V = 0.3;      // cells per tick
@@ -128,6 +128,8 @@ export const BIOME_NAME: Record<Biome, string> = { nature: 'Священная �
 export const BIOME_SET: Record<Biome, 'olymp' | 'stone'> = { nature: 'stone', earth: 'stone', water: 'stone', ice: 'stone', air: 'stone', fire: 'olymp', poison: 'olymp', dark: 'olymp', lightning: 'olymp', light: 'stone' };
 export const stageBiome = (s: number): Biome => BIOMES[(s - 1) % BIOMES.length];
 export interface StageDef { stage: number; biome: Biome; turns: number; hpUnit: number; dmgUnit: number; miniAt: number[]; boss: EnemyId; pool: EnemyId[] }
+/** правка Ш42: on the 7-wide field a row holds fewer enemies, so each one is tougher (checked by tools/orbbot.ts) */
+export const FIELD_HP = 1.15;
 export function stageDef(s: number): StageDef {
   const k = Math.pow(1.17, s - 1);
   const pool: EnemyId[] = ['base', 'base2', 'fast'];
@@ -136,7 +138,7 @@ export function stageDef(s: number): StageDef {
   if (s >= 4) pool.push('talos');
   return {
     stage: s, biome: stageBiome(s), turns: Math.min(34, 22 + 2 * Math.floor((s - 1) / 2)),
-    hpUnit: Math.round(800 * k * (s === 1 ? 0.55 : s === 2 ? 0.8 : 1)), dmgUnit: Math.round(22 * Math.pow(1.12, s - 1)),
+    hpUnit: Math.round(800 * FIELD_HP * k * (s === 1 ? 0.55 : s === 2 ? 0.8 : 1)), dmgUnit: Math.round(22 * Math.pow(1.12, s - 1)),
     miniAt: s <= 1 ? [12] : [9, 17], boss: BOSSES[(s - 1) % BOSSES.length], pool,
   };
 }
