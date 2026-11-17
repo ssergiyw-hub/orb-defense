@@ -1,0 +1,6 @@
+1495|Точно здатися?|Give up for sure?|Wirklich aufgeben?|¿Seguro que te rindes?|Desistir mesmo?|Na pewno się poddać?|Gerçekten pes mi?|Abandonner vraiment ?|Arrendersi davvero?
+1496|Нагород не буде|There will be no rewards|Es gibt keine Belohnungen|No habrá recompensas|Não haverá recompensas|Nie będzie nagród|Ödül olmayacak|Aucune récompense|Nessuna ricompensa
+1497|Ні|No|Nein|No|Não|Nie|Hayır|Non|No
+1498|Здатися|Give up|Aufgeben|Rendirse|Desistir|Poddaj się|Pes et|Abandonner|Arrendersi
+1499|чітко, {} кадрів — менше гріється|sharp, {} fps — runs cooler|scharf, {} FPS — wird weniger warm|nítido, {} fps — se calienta menos|nítido, {} fps — esquenta menos|ostro, {} kl./s — mniej się grzeje|net, {} fps — daha az ısınır|net, {} ips — chauffe moins|nitido, {} fps — scalda meno
+1500|Закрити день ({} очок|Complete the day ({} points|Tag abschließen ({} Punkte|Completa el día ({} puntos|Conclua o dia ({} pontos|Zamknij dzień ({} pkt|Günü tamamla ({} puan|Terminer la journée ({} points|Completa la giornata ({} punti

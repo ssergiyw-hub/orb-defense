@@ -4,9 +4,9 @@
 export const COLS = 7;          // columns of the field (правка Ш42: было 9)
 export const ROWS = 11;         // rows from the top of the field to the wall line
 export const TICK = 1 / 60;     // one simulation step
-export const BALL_V = 0.3;      // cells per tick
+export const BALL_V = 0.15;     // cells per tick (Ш74: was 0.3 — twice slower)
 export const BALL_R = 0.15;     // ball radius in cells
-export const VOLLEY_GAP = 5;    // ticks between two balls of a volley
+export const VOLLEY_GAP = 10;   // ticks between two balls of a volley (Ш74: ×2 — the same gap in cells)
 export const ENEMY_T = 26;      // ticks of the enemy step animation
 
 export type BallId = 'fire' | 'ice' | 'beam' | 'ghost' | 'poison' | 'lightning' | 'quake' | 'cluster' | 'wet' | 'spike';

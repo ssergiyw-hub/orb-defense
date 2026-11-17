@@ -25,8 +25,8 @@ def keycut(f,key,lo=60,hi=150):
 def bbox(arr,th=20):
     ys,xs=np.where(arr[...,3]>th); return xs.min(),ys.min(),xs.max()+1,ys.max()+1
 # --- biomes
-BG={'water':'f8e48531','light':'b6e89a3e','fire':'836985c6','lightning':'fbc27b75','dark':'a2564f2c','poison':'58833f35','air':'4bb151b7','ice':'4f33ec8c','nature':'a2caeb88','earth':'2dce8598'}
-for k,f in BG.items(): save(Image.open(U+f+'.png').convert('RGB'),f'bg/{k}.webp',86)
+BG={'water':'f8e48531','light':'b6e89a3e','fire':'836985c6','lightning':'fbc27b75','dark':'a2564f2c','poison':'58833f35','air':'4bb151b7','ice':'4f33ec8c','nature':'meshy-nature2','earth':'2dce8598'}
+for k,f in BG.items(): save(Image.open(U+f+'.png').convert('RGB'),f'bg/{k}.webp',95)
 # --- walls
 W={'start':'ec3e6780','heal1':'bfd788c1','heal2':'8b2a4ede','heal3':'fa28829f','counter1':'1edec63d','counter2':'00ca79c7','counter3':'6334e48c','shield1':'5c2d1559','shield2':'fd460b52','shield3':'bad140de','reinf1':'beb9927e','reinf2':'38c91af9','reinf3':'85648e4a'}
 meta['wall']={}
@@ -38,7 +38,7 @@ for k,f in W.items():
     top=int(np.where((a[...,3]>20).mean(1)>0.02)[0].min())
     solid=int(np.where((a[...,3]>200).mean(1)>0.97)[0].min())
     a=a[top:]; solid-=top
-    img=Image.fromarray(a,'RGBA'); save(img,f'wall/{k}.webp',88)
+    img=Image.fromarray(a,'RGBA'); save(img,f'wall/{k}.webp',95)
     meta['wall'][k]={'w':img.width,'h':img.height,'solid':solid}
 # --- spirits
 SP={'healer':(['f558347a','d2ba839a','c32b23a6'],['750a591c','d6f55119','e4e20bea']),

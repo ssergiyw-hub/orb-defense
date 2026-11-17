@@ -70,9 +70,9 @@ export interface Profile {
   tut?: number;  // правка 164: сколько обычных боёв сыграно с подсказками (подсказки — в первых 3)
 }
 export const GFX = {
-  high: { name: 'Высокое', dpr: 2, fps: 60, note: 'чётко, 60 кадров' },
-  mid: { name: 'Среднее', dpr: 1.5, fps: 60, note: 'чуть мягче, 60 кадров — меньше греется' },
-  eco: { name: 'Экономия', dpr: 1.25, fps: 30, note: 'мягче, 30 кадров — бережёт батарею' },
+  high: { name: 'Высокое', dpr: 3, fps: 60, note: 'чётко, 60 кадров' }, // Ш73: the battle in the screen's full resolution
+  mid: { name: 'Среднее', dpr: 3, fps: 45, note: 'чётко, 45 кадров — меньше греется' },
+  eco: { name: 'Экономия', dpr: 2, fps: 30, note: 'мягче, 30 кадров — бережёт батарею' },
 } as const;
 
 /** правка 185: the input record of a best run lives beside the profile (its own key on the phone), not inside it:
@@ -1163,7 +1163,7 @@ export const DAILY_CHESTS: ChestDef[] = [
   { at: 100, label: '10💎 + 5 энергии', give: p => { p.crystals += 10; p.energy += 5; } },
 ];
 export const WEEKLY: TaskDef[] = [
-  { id: 'days', key: 'days', need: 7, pts: 20, text: 'Закрыть день (100 очков) — +20 за каждый' },
+  { id: 'days', key: 'days', need: 7, pts: 20, text: 'Закрыть день (100 очков)' }, // Ш76: shorter, the +20 is in the diamond
   { id: 'wruns', key: 'runs', need: 15, pts: 30, text: 'Сыграть 15 забегов' },
   { id: 'wwins', key: 'wins', need: 5, pts: 30, text: 'Пройти 5 этапов' },
   { id: 'wkills', key: 'kills', need: 5000, pts: 30, text: 'Убить 5 000 врагов' },

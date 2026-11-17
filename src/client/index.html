@@ -2841,7 +2841,6 @@ div.rstats span{flex:1 1 auto;min-width:0}div.rstats small{letter-spacing:0;line
 .odmg{font:900 13px system-ui;font-style:normal;color:#3a2200;background:linear-gradient(#fff3c0,#e8b23a);border:1.5px solid #8a5a10;border-radius:8px;padding:1px 8px}
 .modal.tasksbg{top:calc(var(--ht,44px) + env(safe-area-inset-top,0px))!important;padding:10px 14px 4px!important}
 #ui:has(.tasksbg) .hdr{background:#06100b}
-.modal.tasksbg>.mbox::before{content:"";position:absolute;left:-14px;right:-14px;top:-10px;height:36px;background:linear-gradient(#06100b,transparent);pointer-events:none;z-index:-1}
 .tasks2 .lvtabs>.lvsq{position:static!important;flex:none;width:38px;height:38px}
 .tasks2 .t2body{padding-bottom:64px!important}
 .otk2 img{width:18px;height:18px;object-fit:contain}
@@ -2851,6 +2850,44 @@ div.rstats span{flex:1 1 auto;min-width:0}div.rstats small{letter-spacing:0;line
 .obook .obico{position:absolute;left:8px;bottom:26px;width:30px!important;height:30px!important;object-fit:contain;filter:drop-shadow(0 2px 2px rgba(0,0,0,.5));z-index:2}
 .obbig{position:relative}.obbig .obico.big{position:absolute;left:-6px;bottom:10px;width:44px!important;height:44px!important;object-fit:contain;filter:drop-shadow(0 2px 3px rgba(0,0,0,.6))}
 .ocard .oballpic{width:84px;height:84px;object-fit:contain;margin:4px 0}
+
+/* ==== Ш75: пауза в нашем дизайне ==== */
+#oPauseMenu{background:rgba(4,10,7,.78)!important;backdrop-filter:blur(4px);-webkit-backdrop-filter:blur(4px)}
+#oPauseMenu>h2{padding:10px 40px 12px;background:url(orb/ui/tab.webp) center/100% 100% no-repeat;color:#3a2a10;font:900 22px/1 Georgia,serif;text-shadow:0 1px 0 #fff8;filter:drop-shadow(0 3px 4px rgba(0,0,0,.5))}
+.opbox{background:var(--dia) 6px 6px/11px 15px no-repeat,var(--dia) calc(100% - 6px) 6px/11px 15px no-repeat,var(--dia) 6px calc(100% - 6px)/11px 15px no-repeat,var(--dia) calc(100% - 6px) calc(100% - 6px)/11px 15px no-repeat,linear-gradient(rgba(30,36,33,.96),rgba(16,20,18,.98))!important;
+  border:2px solid #d9b25a!important;box-shadow:0 0 0 1.5px #5a3a10,0 8px 18px rgba(0,0,0,.6)!important;padding:14px 12px 12px!important}
+.optabs{background:none!important;gap:8px!important;padding:0!important}
+.optabs button{background:url(orb/ui/tab.webp) center/100% 100% no-repeat!important;color:#3a2a10!important;box-shadow:0 2px 4px rgba(0,0,0,.45)}
+.optabs button.on{background:linear-gradient(#ffe9a0,#e8b23a)!important;box-shadow:0 0 0 2px #fff3c0,0 0 0 3.5px #8a5a10,0 0 10px #ffd23a!important;color:#3a2200!important}
+.osk{background:rgba(18,26,22,.62)!important;border:0!important;box-shadow:inset 0 0 0 1.5px rgba(217,178,90,.8)}
+.osk img{width:42px!important;height:42px!important}
+.odr{display:grid!important;grid-template-columns:26px minmax(0,1fr) 1.2fr auto;align-items:center;gap:8px;padding:5px 2px;color:#f0e6cc}
+.odr .odi{width:24px;height:24px;object-fit:contain;font-size:18px;text-align:center}
+.odr i{height:10px;border-radius:6px;background:var(--c)!important;box-shadow:0 0 6px -1px var(--c),inset 0 -2px 0 rgba(0,0,0,.25)}
+.odr b{text-align:right;font:800 13px system-ui}.odr b small{display:block;font:600 10px system-ui;color:#b9c7c0}
+#oResume{background:url(orb/ui/f_btn.webp) center/100% 100% no-repeat!important;border:0!important;box-shadow:none!important;color:#fff!important;-webkit-text-stroke:1.5px #063a1c;paint-order:stroke fill;filter:drop-shadow(0 4px 4px rgba(0,0,0,.5))}
+#oQuit{background:linear-gradient(#4a524c,#262c28)!important;border:1.5px solid #8a7a50!important;color:#d8cfb8!important;box-shadow:none!important;opacity:.85}
+.oqask{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;background:rgba(0,0,0,.55);z-index:3}
+.oqbox{width:78%;max-width:300px;padding:16px;border-radius:14px;text-align:center;background:linear-gradient(rgba(30,36,33,.98),rgba(16,20,18,.99));border:2px solid #d9b25a;box-shadow:0 0 0 1.5px #5a3a10;color:#f0e6cc}
+.oqbox b{font:800 17px Georgia,serif;color:#ffe9a0}.oqbox p{margin:6px 0 12px;font:13px system-ui;color:#c8bba0}
+.oqbox div{display:flex;gap:10px;justify-content:center}.oqbox .btn{min-width:96px}
+
+/* ==== Ш76: задания — без резких переходов, медальоны внутри строки ==== */
+.modal.tasksbg{bottom:0!important;padding-bottom:calc(84px + env(safe-area-inset-bottom,0px))!important}
+.modal.tasksbg::after{height:150px!important;background:linear-gradient(transparent,rgba(2,8,5,.75) 55%,rgba(2,8,5,.95))!important}
+#ui:has(.tasksbg)>#tabs{z-index:40!important;background:transparent!important;border-top-color:transparent!important;box-shadow:none!important}
+.tasks2 .t2head,.tasks2 .t2body,.tasks2 .panelbox{background:none!important;box-shadow:none!important;border:0!important}
+.tasks2 .t2body{-webkit-mask:linear-gradient(transparent,#000 18px,#000 calc(100% - 50px),transparent)!important;mask:linear-gradient(transparent,#000 18px,#000 calc(100% - 50px),transparent)!important;padding-top:10px!important;padding-bottom:56px!important}
+.t2floor{bottom:calc(88px + env(safe-area-inset-bottom,0px))!important;z-index:41}
+.tasks2 .t2body>.lvsub{position:sticky;bottom:0}
+.tasks2 .tmed{width:38px!important;height:38px!important}
+.tasks2 .tmed img{width:28px!important;height:28px!important;margin:5px!important}
+.tasks2 .tmed::after{inset:-5px!important}
+.tasks2 .task2{padding:7px 8px!important;min-height:52px}
+/* Ш75: damage rows — name to the left, bar in a dark track, longest bar = full track */
+.odr>span{text-align:left!important;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.odr .odtr{display:block;height:10px;border-radius:6px;background:rgba(0,0,0,.45);box-shadow:inset 0 1px 2px rgba(0,0,0,.6);overflow:hidden}
+.odr .odtr i{display:block}
 </style>
 </head>
 <body>
@@ -2896,6 +2933,7 @@ div.rstats span{flex:1 1 auto;min-width:0}div.rstats small{letter-spacing:0;line
     <div class="opbox"><div class="optabs"><button id="oTabSk" class="on">Навыки</button><button id="oTabDmg">Урон</button></div><div id="oPauseBody"></div></div>
     <button id="oResume" class="big">Продолжить</button>
     <button id="oQuit" class="btn danger">Сдаться и выйти</button>
+    <div id="oQuitAsk" class="oqask" hidden><div class="oqbox"><b>Точно сдаться?</b><p>Наград не будет</p><div><button id="oQuitNo" class="btn">Нет</button><button id="oQuitYes" class="btn danger">Сдаться</button></div></div></div>
   </div>
   <div id="joyBase"></div><div id="joyKnob"></div>
   <div id="cards" class="overlay" hidden>

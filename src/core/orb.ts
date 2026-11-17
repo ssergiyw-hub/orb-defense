@@ -149,7 +149,7 @@ export class Orb {
   private moveBall(b: Ball): void {
     const s = this.s, SUB = 3;
     b.age++;
-    if (b.age > 540) b.vy += 0.004; // правка: no endless loops — after 9 s the ball sinks back
+    if (b.age > 1080) b.vy += 0.001; // no endless loops — after 18 s the ball sinks back (Ш74: slower balls, ×2 time)
     for (let k = 0; k < SUB && b.alive; k++) {
       b.x += b.vx / SUB; b.y += b.vy / SUB;
       if (b.x < BALL_R) { b.x = BALL_R; b.vx = Math.abs(b.vx); b.bounces++; }
@@ -178,7 +178,7 @@ export class Orb {
           b.bounces++;
           this.keepAngle(b);
         }
-        if ((b.hit[e.id] ?? -99) > b.age - (pierce ? 40 : 3)) continue;
+        if ((b.hit[e.id] ?? -99) > b.age - (pierce ? 80 : 6)) continue;
         b.hit[e.id] = b.age;
         this.ballHit(b, e);
         if (b.kind === 'shard') { b.alive = false; return; }

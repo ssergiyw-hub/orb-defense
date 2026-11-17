@@ -35,7 +35,10 @@ export class OrbBattle {
     $('oSpeed').onclick = () => { this.speed = this.speed === 1 ? 2 : this.speed === 2 ? 3 : 1; this.keep(); this.hud(true); };
     $('oAuto').onclick = () => { this.auto = !this.auto; this.keep(); this.hud(true); };
     $('oResume').onclick = () => this.pause(false);
-    $('oQuit').onclick = () => { if (this.o && !this.done) { this.quit = true; this.o.s.phase = 'lose'; this.pause(false); this.finish(); } };
+    // Ш75: giving up asks first — it is right under «Продолжить» and costs the rewards
+    $('oQuit').onclick = () => { if (this.o && !this.done) { $('oQuitAsk').hidden = false; } };
+    $('oQuitNo').onclick = () => { $('oQuitAsk').hidden = true; };
+    $('oQuitYes').onclick = () => { $('oQuitAsk').hidden = true; if (this.o && !this.done) { this.quit = true; this.o.s.phase = 'lose'; this.pause(false); this.finish(); } };
     $('oTabSk').onclick = () => this.pauseTab('sk');
     $('oTabDmg').onclick = () => this.pauseTab('dmg');
   }
@@ -217,6 +220,9 @@ export class OrbBattle {
     const rows = Object.entries(o.s.dmgBy).sort((a, b) => b[1] - a[1]);
     const total = rows.reduce((a, r) => a + r[1], 0) || 1;
     const name = (k: string) => k === 'normal' ? 'Обычные шары' : k === 'shard' ? 'Осколки гранаты' : k === 'spirit' ? 'Дух' : k === 'wall' ? 'Стена' : BALLS[k as keyof typeof BALLS]?.name ?? k;
-    $('oPauseBody').innerHTML = rows.map(([k, v]) => `<div class="odr"><span>${tr(name(k))}</span><i style="width:${(100 * v / total).toFixed(1)}%"></i><b>${fmtN(v)}</b></div>`).join('') || `<p class="osp">${tr('Пока нет урона')}</p>`;
+    // Ш75: a picture of who dealt it, a bar in the ball's colour, the number and the share
+    const pic = (k: string) => k === 'spirit' || k === 'wall' ? `<span class="odi">${k === 'spirit' ? '✨' : '🧱'}</span>` : `<img class="odi" src="${BALLPIC(k === 'shard' ? 'cluster' : k)}" alt="">`;
+    const col = (k: string) => (BALLS[k as keyof typeof BALLS]?.color) ?? (k === 'shard' ? BALLS.cluster.color : k === 'normal' ? '#f4efe4' : k === 'spirit' ? '#7be0a0' : '#c9a24a');
+    $('oPauseBody').innerHTML = rows.map(([k, v]) => `<div class="odr">${pic(k)}<span>${tr(name(k))}</span><em class="odtr"><i style="width:${Math.max(2, 100 * v / rows[0][1]).toFixed(1)}%;--c:${col(k)}"></i></em><b>${fmtN(v)}<small>${Math.round(100 * v / total)}%</small></b></div>`).join('') || `<p class="osp">${tr('Пока нет урона')}</p>`;
   }
 }

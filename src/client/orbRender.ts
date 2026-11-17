@@ -30,6 +30,12 @@ interface Txt { x: number; y: number; s: string; c: string; age: number; life: n
 interface Flash { t: string; age: number; life: number; a: number; b: number; c: number; d: number; col: string }
 interface Puff { x: number; y: number; vx: number; vy: number; age: number; life: number; r: number; col: string }
 
+// Ш77: clean clearing of each background as fractions of the picture: left, right, top
+const BG_FIT: Record<string, [number, number, number]> = {
+  nature: [0.125, 0.875, 0.242], earth: [0.106, 0.866, 0.232], water: [0.153, 0.847, 0.125], ice: [0.157, 0.824, 0.211],
+  air: [0.111, 0.861, 0.221], fire: [0.12, 0.884, 0.089], poison: [0.144, 0.875, 0.193], dark: [0.148, 0.861, 0.177],
+  lightning: [0.13, 0.884, 0.185], light: [0.074, 0.87, 0.242],
+};
 export class OrbRenderer {
   private c: CanvasRenderingContext2D;
   W = 0; H = 0; dpr = 1; dprCap = 2;
@@ -144,11 +150,17 @@ export class OrbRenderer {
     const c = this.c, im = orbImg(`orb/bg/${o.s.sd.biome}.webp`);
     c.fillStyle = '#16131c'; c.fillRect(-20, -20, this.W + 40, this.H + 40);
     if (!im) return;
-    // scale to cover the width; the field centre (the floor oval) sits at the field centre
-    const sc = Math.max(this.W / im.naturalWidth, (this.wallY + this.cell) / im.naturalHeight);
-    const w = im.naturalWidth * sc, h = im.naturalHeight * sc;
-    const y = Math.min(0, (this.fy0 + this.wallY) / 2 - h * 0.5);
-    c.drawImage(im, (this.W - w) / 2, y, w, h);
+    // Ш77: each background is fitted so its clean clearing matches the field (enemies stand on the clearing, not on bushes)
+    const f = BG_FIT[o.s.sd.biome] ?? [0.12, 0.88, 0.2];
+    const nw = im.naturalWidth, nh = im.naturalHeight, FW = this.cell * COLS;
+    const cover = Math.max(this.W / nw, (this.wallY + this.cell) / nh);
+    const sc = Math.max(cover, FW / ((f[1] - f[0] - 0.06) * nw));
+    const w = nw * sc, h = nh * sc;
+    let x = this.W / 2 - (f[0] + f[1]) / 2 * w;
+    x = Math.min(0, Math.max(this.W - w, x));
+    let y = this.fy0 - (f[2] + 0.015) * h;
+    y = Math.min(0, Math.max(this.wallY + this.cell - h, y));
+    c.drawImage(im, x, y, w, h);
     // light floors are darkened a little so the white enemies read (риск читаемости из документа)
     const dim: Record<string, number> = { light: 0.22, air: 0.2, ice: 0.16, water: 0.1, earth: 0.06 };
     const d = dim[o.s.sd.biome] ?? 0;
@@ -157,6 +169,13 @@ export class OrbRenderer {
     const g = c.createLinearGradient(0, 0, 0, this.fy0 + 10);
     g.addColorStop(0, 'rgba(10,8,14,.75)'); g.addColorStop(1, 'rgba(10,8,14,0)');
     c.fillStyle = g; c.fillRect(0, 0, this.W, this.fy0 + 10);
+    // Ш77: soft edge vignette so the eye stays on the field
+    const ew = this.W * 0.14;
+    for (const [x0, x1] of [[0, ew], [this.W, this.W - ew]]) {
+      const v = c.createLinearGradient(x0, 0, x1, 0);
+      v.addColorStop(0, 'rgba(10,8,14,.42)'); v.addColorStop(1, 'rgba(10,8,14,0)');
+      c.fillStyle = v; c.fillRect(Math.min(x0, x1), 0, ew, this.wallY);
+    }
   }
   private drawGrid(o: Orb): void {
     const c = this.c, C = this.cell;
@@ -164,9 +183,9 @@ export class OrbRenderer {
     c.save();
     for (let r = 0; r < ROWS; r++) for (let q = 0; q < COLS; q++) {
       const edge = Math.min(1, (r + 1) / 2.5); // fades away towards the top
-      if ((r + q) % 2 === 0) { c.fillStyle = dark ? `rgba(255,240,220,${0.05 * edge})` : `rgba(30,20,10,${0.085 * edge})`; c.fillRect(this.px(q), this.py(r), C, C); }
+      if ((r + q) % 2 === 0) { c.fillStyle = dark ? `rgba(255,240,220,${0.075 * edge})` : `rgba(30,20,10,${0.12 * edge})`; c.fillRect(this.px(q), this.py(r), C, C); }
     }
-    c.strokeStyle = dark ? 'rgba(255,245,225,.16)' : 'rgba(40,28,14,.18)'; c.lineWidth = 1;
+    c.strokeStyle = dark ? 'rgba(255,245,225,.24)' : 'rgba(40,28,14,.28)'; c.lineWidth = 1;
     c.beginPath();
     for (let q = 1; q < COLS; q++) { c.moveTo(this.px(q) + 0.5, this.py(0.8)); c.lineTo(this.px(q) + 0.5, this.wallY); }
     for (let r = 1; r < ROWS; r++) { c.moveTo(this.fx0, this.py(r) + 0.5); c.lineTo(this.fx0 + C * COLS, this.py(r) + 0.5); }

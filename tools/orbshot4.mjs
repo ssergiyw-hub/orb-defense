@@ -40,5 +40,5 @@ await click('[data-a="go"][data-v="shop"]'); await shot('shop');
 await click('[data-a="chest"][data-v="set:1"]'); await shot('reward', 1500); await click('.rok'); await p.waitForTimeout(300);
 await click('[data-a="go"][data-v="hub"]'); await p.waitForTimeout(300); await click('[data-a="idleOpen"]'); await shot('idle'); await click('.x');
 await p.waitForTimeout(300); await click('[data-a="wheel"]'); await shot('wheel', 900); await click('.whtop .x');
-await click('[data-a="go"][data-v="hub"]'); await p.waitForTimeout(300); await click('#hTask'); await click('[data-a="taskTab"][data-v="day"]'); await shot('tasks'); await click('.x');
+await click('[data-a="go"][data-v="hub"]'); await p.waitForTimeout(300); await click('#hTask'); await click('[data-a="taskTab"][data-v="week"]'); await shot('tasks'); await click('.x');
 console.log(JSON.stringify(errs.slice(0, 8))); await b.close();
