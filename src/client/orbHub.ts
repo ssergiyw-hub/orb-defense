@@ -17,6 +17,21 @@ export function spiritBtnPic(p: P.Profile): string {
   const o = OM.orb(p), s = o.spirit && o.spirits[o.spirit].owned ? o.spirit : null;
   return s ? `<span class="obpic" style="background-image:url(${spiritPic(s, o.spirits[s].lv)})"></span>` : '<i>✨</i>';
 }
+/** Ш48: the chosen spirit floats in the temple, alive (bob, sway, breath, rarity aura, its element's sparks, a flash now and
+ *  then); a tap opens the tavern. With no spirit — a faint silhouette «Призови духа» */
+export function spiritFloat(p: P.Profile): string {
+  const o = OM.orb(p), s = o.spirit && o.spirits[o.spirit].owned ? o.spirit : null;
+  if (!s) return `<button class="osfloat none" data-a="o:spirits"><span class="osbody"><img src="${spiritPic('healer', 1)}" alt=""></span><small>Призови духа</small></button>`;
+  const lv = o.spirits[s].lv, r = OM.rarityOf(lv);
+  const parts = Array.from({ length: 8 }, (_, i) => `<i style="--i:${i};--x:${((i * 37) % 9 - 4) * 5}px;--d:${(i * 0.43).toFixed(2)}s"></i>`).join('');
+  return `<button class="osfloat" data-a="o:spirits" style="--c:${SPIRITS[s].color};--q:${RARITY_COLOR[r]}" aria-label="${SPIRITS[s].name}">
+    <span class="osaura"></span><span class="ospart">${parts}</span><span class="osbody"><img src="${spiritPic(s, lv)}" alt=""></span><i class="osflash"></i></button>`;
+}
+/** Ш47: the 7th equipment cell — the current wall in its rarity frame; a tap opens the walls window (no runes, no gems) */
+export function wallSlot(p: P.Profile): string {
+  const o = OM.orb(p), lv = o.walls[o.wall].lv, r = OM.rarityOf(lv), start = o.wall === 'start';
+  return `<button class="gslotcard owslot" data-a="o:walls" style="--r:${start ? '#b89a5a' : RARITY_COLOR[r]}">${start ? '' : `<span class="lv">Ур. ${lv}</span>`}<span class="owimg" style="background-image:url(${wallPic(o.wall, lv)})"></span><small>Стена</small></button>`;
+}
 export function wallBtnPic(p: P.Profile): string { const o = OM.orb(p); return `<span class="obpic obwall" style="background-image:url(${wallPic(o.wall, o.walls[o.wall].lv)})"></span>`; }
 
 /** the «Шары» tab: books on shelves, 3 in a row */

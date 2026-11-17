@@ -16,7 +16,7 @@ import { ICONS } from './iconImages';
 import { wikiSections, WikiSection } from './wiki';
 import * as P from '../meta/profile';
 import * as OM from '../meta/orbMeta';
-import { orbBalls, orbModal, spiritBtnPic, wallBtnPic } from './orbHub';
+import { orbBalls, orbModal, spiritFloat, wallSlot } from './orbHub';
 import { BIOME_NAME, stageBiome, BALLS, HERO_BALL } from '../core/orbContent';
 import type { BallId, SpiritId, WallId } from '../core/orbContent';
 import * as cloud from './cloud';
@@ -97,7 +97,7 @@ const PEDESTAL = `<svg class="pedestal" viewBox="0 0 200 70"><defs>
 /** правки 109, 110: the temple — one picture with a stone dais built into the floor; the hero stands on its top plate
  *  (feet at the rune circle, 50% / 66.5% of the picture), a soft shadow under the feet, the floor runes pulse, the
  *  braziers flicker. The same picture serves all three tabs; «Персонажи» shows it closer (CSS --z) */
-const FIRES: [number, number, number][] = [[18.4, 52.6, 1], [81.8, 52.6, 1], [30.8, 49.6, 0.6], [68.9, 49.6, 0.6]];
+const FIRES: [number, number, number][] = [[10.9, 26, 1], [89.1, 26, 1], [31.8, 23.5, 0.7], [68.2, 23.5, 0.7]]; // Ш46: the braziers of the marble temple
 const templeBg = (heroHtml: string): string => `<div class="hbg"><i class="dglow" aria-hidden="true"></i>${FIRES.map(([x, y, k], n) =>
   `<i class="fire${n > 1 ? ' far' : ''}" style="left:${x}%;top:${y}%;--k:${k}" aria-hidden="true"><s></s><b>${'<i></i>'.repeat(n > 1 ? 3 : 6)}</b></i>`).join('')}
   <span class="hstand">${heroHtml}</span></div>`;
@@ -117,7 +117,9 @@ function padCells(cells: string[], cols = 5, min = 20): string[] {
 }
 
 /** portal colour of a stage: meadow green, desert red, every fifth stage blue */
-export function portalColor(n: number): 'green' | 'red' | 'blue' { void n; return 'green'; } // Orb Defense (Ш12): the portal is always emerald
+export type PortalC = 'green' | 'blue' | 'purple';
+/** Ш46: the portal colour by chapter — stages 1–10 emerald, 11–20 blue, 21–30 purple, then again */
+export function portalColor(n: number): PortalC { return (['green', 'blue', 'purple'] as const)[Math.floor((Math.max(1, n) - 1) / 10) % 3]; }
 
 /** rune chest of dark stone (Meshy, правка 89): 0 closed, 1 light in the seam, 2 open with gold */
 export function chestSvg(state: number, size = 74): string {
@@ -925,14 +927,14 @@ export class Hub {
       <div class="res"><span id="hGold"></span><span id="hCr"></span></div>
       <div class="corner right" id="hEn">
         <svg class="ering" viewBox="0 0 100 100"><defs><clipPath id="eClip"><circle cx="50" cy="50" r="45"/></clipPath>
-          <linearGradient id="eLiq" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#8ff0ff"/><stop offset=".5" stop-color="#2fa8ff"/><stop offset="1" stop-color="#1546b8"/></linearGradient></defs>
-          <circle cx="50" cy="50" r="46" fill="#0b1230e6"/>
+          <linearGradient id="eLiq" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#b8ffd0"/><stop offset=".5" stop-color="#2fd07a"/><stop offset="1" stop-color="#0b6a3a"/></linearGradient></defs>
+          <circle cx="50" cy="50" r="46" fill="#06241ae6"/>
           <g clip-path="url(#eClip)"><g id="hLiq">
-            <path class="wv w2" d="M0,2 Q12.5,-3 25,2 T50,2 T75,2 T100,2 T125,2 T150,2 T175,2 T200,2 V120 H0 Z" fill="#2fa8ff" opacity=".45"/>
+            <path class="wv w2" d="M0,2 Q12.5,-3 25,2 T50,2 T75,2 T100,2 T125,2 T150,2 T175,2 T200,2 V120 H0 Z" fill="#2fd07a" opacity=".45"/>
             <path class="wv w1" d="M0,0 Q12.5,-5 25,0 T50,0 T75,0 T100,0 T125,0 T150,0 T175,0 T200,0 V120 H0 Z" fill="url(#eLiq)"/>
             <circle class="bub b1" cx="34" cy="70" r="2.2"/><circle class="bub b2" cx="58" cy="80" r="1.6"/><circle class="bub b3" cx="46" cy="76" r="2.6"/></g></g>
           <ellipse cx="34" cy="28" rx="16" ry="8" fill="#ffffff22" transform="rotate(-30 34 28)"/>
-          <circle cx="50" cy="50" r="46" fill="none" stroke="#cfeaff66" stroke-width="2"/>
+          <circle cx="50" cy="50" r="46" fill="none" stroke="#d0ffe066" stroke-width="2"/>
           <circle id="hRim" cx="50" cy="50" r="47.5" fill="none" stroke-width="4.5"/></svg>
         <span class="eval"><b id="hEv"></b><small id="hEt"></small></span></div>`;
   }
@@ -967,20 +969,25 @@ export class Hub {
   }
 
 
-  /** the portal screen: three coloured pictures cross-fade; swirl, bubbles, runes and sparks move on top */
+  /** Ш46: the portal screen — marble temple with the portal (Meshy, refs 2071–2073), colour by chapter. On top: the painted
+   *  vortex turns slowly inside the arch, a glow breathes, bubbles and sparks rise. Points are in picture pixels (864 × 1536) */
   private portalArt(): string {
-    const rune = [[352, 572], [262, 600], [442, 600], [196, 668], [508, 668], [186, 790], [518, 790], [190, 880], [514, 880]];
-    const px = (x: number) => (100 * x / 704).toFixed(2) + '%', py = (y: number) => (100 * y / 1524).toFixed(2) + '%';
+    const W = 864, H = 1536, R = 150, OX = 290, OY = 440, OW = 286, OH = 565;
+    const CEN: Record<PortalC, [number, number]> = { green: [432, 742], blue: [430, 700], purple: [418, 735] }; // the eye of each painted vortex
+    const px = (x: number) => (100 * x / W).toFixed(2) + '%', py = (y: number) => (100 * y / H).toFixed(2) + '%';
     const bub = Array.from({ length: 9 }, (_, i) => `<i class="pbub" style="left:${10 + (i * 37) % 80}%;--d:${(i * 0.53).toFixed(2)}s;--s:${4 + (i % 3) * 3}px"></i>`).join('');
-    const emb = Array.from({ length: 16 }, (_, i) => `<i class="pemb" style="left:${px(180 + (i * 97) % 350)};top:${py(560 + (i * 53) % 440)};--d:${(i * 0.37).toFixed(2)}s;--x:${((i % 5) - 2) * 9}px"></i>`).join('');
+    const emb = Array.from({ length: 14 }, (_, i) => `<i class="pemb" style="left:${px(300 + (i * 97) % 270)};top:${py(760 + (i * 53) % 300)};--d:${(i * 0.41).toFixed(2)}s;--x:${((i % 5) - 2) * 9}px"></i>`).join('');
+    const vort = (Object.keys(CEN) as PortalC[]).map(c => { const [cx, cy] = CEN[c];
+      return `<span class="pvort pv-${c}" style="left:${((cx - OX - R) / OW * 100).toFixed(2)}%;width:${(100 * 2 * R / OW).toFixed(2)}%;top:${((cy - OY - R) / OH * 100).toFixed(2)}%;height:${(100 * 2 * R / OH).toFixed(2)}%">`
+        + `<i class="pl-${c}" style="left:${(-100 * (cx - R) / (2 * R)).toFixed(2)}%;top:${(-100 * (cy - R) / (2 * R)).toFixed(2)}%;width:${(100 * W / (2 * R)).toFixed(2)}%;height:${(100 * H / (2 * R)).toFixed(2)}%"></i></span>`; }).join('');
     return `<div class="hubart" data-pc="green">
-      ${(['green', 'red', 'blue'] as const).map(c => `<div class="pl pl-${c}" style="background-image:url(${PORTAL_BG[c]})"></div>`).join('')}
-      <div class="pglow" style="left:${px(150)};top:${py(470)};width:${px(404)};height:${py(600)}"></div>
-      <div class="popen" style="left:${px(226)};top:${py(610)};width:${px(266)};height:${py(394)}"><i class="psw s1"></i><i class="psw s2"></i>${bub}<i class="pflash"></i></div>
-      ${rune.map(([x, y], i) => `<i class="prune" style="left:${px(x)};top:${py(y)};--d:${(i * 0.45).toFixed(2)}s"></i>`).join('')}
+      ${(['green', 'blue', 'purple'] as const).map(c => `<div class="pl pl-${c}"></div>`).join('')}
+      <div class="pglow" style="left:${px(250)};top:${py(430)};width:${px(364)};height:${py(620)}"></div>
+      <div class="popen" style="left:${px(OX)};top:${py(OY)};width:${px(OW)};height:${py(OH)}">${vort}
+        <i class="psw s1"></i>${bub}<i class="pflash"></i></div>
       ${emb}
-      <button class="phit" data-a="battle" aria-label="В бой" style="left:${px(210)};top:${py(560)};width:${px(300)};height:${py(440)}"></button>
-      <button class="fightbtn lv" data-a="battle" style="top:${py(1010)}"><span class="fb-cr"></span><span class="fb-sp">${'<i></i>'.repeat(8)}</span><b>В бой</b><small>${ENERGY.run}${resImg('energy')}</small></button>
+      <button class="phit" data-a="battle" aria-label="В бой" style="left:${px(280)};top:${py(430)};width:${px(304)};height:${py(580)}"></button>
+      <button class="fightbtn lv" data-a="battle" style="top:${py(1088)}"><b>В бой</b><small>${ENERGY.run}${resImg('energy')}</small></button>
     </div>`;
   }
 
@@ -1146,9 +1153,10 @@ export class Hub {
     if (sub === 'gear') {
       const st = P.statSheet(p);
       top = `<div class="stagebox temple gearhall" style="--c:${EL_HEX[hd.element]}">${templeBg(this.heroBig(p.active, 164))}
-        <div class="gcol l">${this.slotCard(p, 'book')}${this.slotCard(p, 'amulet')}${this.slotCard(p, 'ring')}</div>
-        <div class="gcol r">${this.slotCard(p, 'mantle')}${this.slotCard(p, 'gloves')}${this.slotCard(p, 'boots')}</div>
-        <div class="tstats"><button class="obtside" data-a="o:spirits">${spiritBtnPic(p)}<small>Духи</small></button><div class="atkhp"><span>⚔️ ${P.statNum(st.atk)}</span><span>❤️ ${P.statNum(st.hp)}</span></div><button class="obtside" data-a="o:walls">${wallBtnPic(p)}<small>Стены</small></button></div></div>`; // правка 143: no «Сила» here; правка 155: plain attack and health
+        ${spiritFloat(p)}
+        <div class="gcol l">${this.slotCard(p, 'book')}${this.slotCard(p, 'amulet')}${this.slotCard(p, 'ring')}${wallSlot(p)}</div>
+        <div class="gcol r">${this.slotCard(p, 'mantle')}${this.slotCard(p, 'gloves')}${this.slotCard(p, 'boots')}<span class="gslotcard glock" aria-label="Скоро"><span class="si">🔒</span><small>Скоро</small></span></div>
+        <div class="tstats"><div class="atkhp"><span>⚔️ ${P.statNum(st.atk)}</span><span>❤️ ${P.statNum(st.hp)}</span></div></div></div>`; // Ш47: 8 cells (the wall is the 7th, the 8th locked); Ш48: the spirit floats in the hall // правка 143: no «Сила» here; правка 155: plain attack and health
       const free = p.items.filter(i => !Object.values(p.equipped).includes(i.uid));
       const sorted = free.sort(this.sel.sortSlot
         ? (a, b) => SLOTS.indexOf(a.slot) - SLOTS.indexOf(b.slot) || b.rarity - a.rarity || b.level - a.level

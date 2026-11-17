@@ -2471,6 +2471,108 @@ div.rstats span{flex:1 1 auto;min-width:0}div.rstats small{letter-spacing:0;line
 /* правка Ш40: a long reward name wraps inside its column instead of widening it past the screen */
 .rgrid .rcell{min-width:0}.rgrid .rname{white-space:normal;overflow-wrap:break-word;max-width:100%;font-size:9px;letter-spacing:-.3px;padding:0 1px}
 @media (max-width:370px){.rgrid{grid-template-columns:repeat(3,minmax(0,1fr))}}
+
+/* ================= Ш46 (сборка 1): мрамор и золото по образцам 2064–2073 — портал, шапка, нижние вкладки, герой ================= */
+/* портал: храм с порталом цвета главы (1–10 изумруд, 11–20 синий, 21–30 фиолетовый) */
+.hubart{--w:max(100cqw,calc(100cqh * 0.5625));height:calc(var(--w) * 1.7778);transform:translate(-50%,-50%)}
+.pl{background-size:100% 100%}
+.pl-green{background-image:url(orb/ui/portal_green.webp)}.pl-blue{background-image:url(orb/ui/portal_blue.webp)}.pl-purple{background-image:url(orb/ui/portal_purple.webp)}
+.hubart[data-pc=purple] .pl-purple{opacity:1}
+.hubart{--pc:#3dff8a;--pc2:#c8ffdc;--pimg:url(orb/ui/portal_green.webp)}
+.hubart[data-pc=blue]{--pc:#3ab8ff;--pc2:#c8ecff;--pimg:url(orb/ui/portal_blue.webp)}
+.hubart[data-pc=purple]{--pc:#b46cff;--pc2:#ecd2ff;--pimg:url(orb/ui/portal_purple.webp)}
+.hubart .pglow{filter:none;opacity:.7}
+.popen{border-radius:50% 50% 4% 4% / 30% 30% 2% 2%;mix-blend-mode:normal}
+.pvort{position:absolute;border-radius:50%;overflow:hidden;animation:pvort 16s linear infinite;
+  -webkit-mask:radial-gradient(circle,#000 0,#000 52%,transparent 70%);mask:radial-gradient(circle,#000 0,#000 52%,transparent 70%)}
+.pvort>i{position:absolute;background-size:100% 100%;background-repeat:no-repeat}
+.pvort{display:none}.hubart[data-pc=green] .pv-green,.hubart[data-pc=blue] .pv-blue,.hubart[data-pc=purple] .pv-purple{display:block}
+@keyframes pvort{to{transform:rotate(-360deg)}}
+.popen .psw{mix-blend-mode:screen;opacity:.3}
+.pemb{background:var(--pc2);box-shadow:0 0 6px 2px var(--pc)}
+.fightbtn.lv{width:64%;max-width:262px;height:70px;border:0!important;border-image:none!important;background:url(orb/ui/btn_green.webp) center/100% 100% no-repeat!important;
+  filter:drop-shadow(0 6px 8px rgba(0,0,0,.55))!important;gap:10px;padding:0 0 4px}
+.fightbtn.lv b{color:#fff;-webkit-text-stroke:2.5px #063a1c;text-shadow:0 3px 0 #04260f,0 0 12px #6effa8;font-size:27px}
+.fightbtn.lv small{background:#06301acc;border:1.5px solid #e2c060;color:#fff}
+.fightbtn.lv small .ri{filter:none}
+.fightbtn.lv.off{filter:grayscale(.75) brightness(.8) drop-shadow(0 5px 0 #000)!important}
+/* этап: мраморная табличка, стрелки — каменные квадраты в золоте */
+#ui.onhub .stage{gap:6px}
+#ui.onhub .stage h2{min-width:150px;padding:6px 18px 8px;background:url(orb/ui/tab.webp) center/100% 100% no-repeat;text-align:center;font:900 26px/1 Georgia,serif;
+  color:#3a2a10;text-shadow:0 1px 0 #fff8;letter-spacing:.5px;filter:drop-shadow(0 3px 4px rgba(0,0,0,.5))}
+#ui.onhub .arrow{background:url(orb/ui/btn_stone.webp) center/100% 100% no-repeat;border:0;box-shadow:none;filter:drop-shadow(0 3px 3px rgba(0,0,0,.5));width:44px;height:44px}
+#ui.onhub .arrow .chev path:first-child{stroke:#5a3a08}#ui.onhub .arrow .chev path:last-child{stroke:#ffe08a}
+#ui.onhub .main>.muted{display:inline-block;margin:6px auto 0;padding:2px 12px;border-radius:9px;background:rgba(20,30,24,.55);color:#f2ecd8}
+/* боковые кнопки: каменный квадрат в золотой рамке */
+.side .setbtn{background:url(orb/ui/btn_stone.webp) center/100% 100% no-repeat!important;border:0!important;box-shadow:none!important;filter:drop-shadow(0 3px 3px rgba(0,0,0,.55));width:48px;height:48px;color:#3a2a10}
+.side .setbtn.hot{filter:drop-shadow(0 0 6px #ffd23a) drop-shadow(0 3px 3px rgba(0,0,0,.55))}
+.side .sbl{color:#fff;text-shadow:0 1px 2px #000,0 0 4px #000,0 0 2px #000}
+/* шапка: лавровые венки вокруг аватара и изумрудного шара энергии */
+.corner.left::after,.corner.right::after{inset:-22%;background:url(orb/ui/wreath.webp) center/100% 100% no-repeat!important}
+.corner.left .ring{border-width:2px!important}
+/* нижние вкладки: мраморные плитки; открытая — золотая, портал — изумрудный */
+.tabs{background:linear-gradient(#ece7dd,#c4bba9)!important}
+.tab{background:url(orb/ui/tile.webp) center/100% 100% no-repeat!important;border:0!important;box-shadow:none!important;filter:drop-shadow(0 2px 2px rgba(60,40,10,.45))}
+.tab.on{background:radial-gradient(ellipse at 50% 45%,#fff3b8 0,#f2c64a 55%,#b9821c 100%)!important;border:2px solid #fff1b0!important;border-radius:12px!important;
+  box-shadow:0 0 0 2px #8a5a10,inset 0 2px 0 #fffbe0,inset 0 -4px 6px rgba(140,70,0,.45)!important;filter:drop-shadow(0 0 8px #ffd34a)!important}
+.tab.on small{color:#3a2200!important}
+.tab.on[data-v=hub]{background:radial-gradient(ellipse at 50% 40%,#3be08a 0,#108a48 55%,#06401f 100%)!important;box-shadow:0 0 0 2px #c9a24a,inset 0 2px 0 #9fffc8,inset 0 -4px 6px rgba(0,40,10,.5)!important;filter:drop-shadow(0 0 9px #2fe080)!important}
+.tab.on[data-v=hub] small{color:#fff!important;text-shadow:0 1px 2px #000}
+/* герой: мраморный храм; помост — центр круга на 44% картинки */
+.stagebox.temple>.hbg{background:url(orb/ui/temple.webp) 0 0/100% 100% no-repeat;transform:translate(-50%,-44%)}
+.stagebox.temple{background:#cfc8bb!important}
+.stagebox.temple::after{background:linear-gradient(transparent 82%,rgba(40,34,26,.35))}
+#ui.onhero .stagebox.temple::before{background:linear-gradient(rgba(10,24,18,.55),transparent)}
+.hbg .dglow,.hbg .hstand{top:44%}
+.hbg .dglow{background:radial-gradient(ellipse,rgba(120,255,190,.45) 0,rgba(60,220,150,.18) 45%,transparent 70%)}
+.hbg .hstand .herobig{filter:drop-shadow(0 4px 8px rgba(0,40,20,.35))}
+.stagebox.gearhall{--z:1.22}
+.stagebox.runes.temple{--z:1.22}
+.stagebox.chars.temple{--z:1.7}
+/* Ш47: 8 ячеек, по 4 с каждой стороны */
+#ui.onhero .stagebox.gearhall .gcol{gap:10px;padding:0;background:none!important;border:0!important;box-shadow:none!important}
+#ui.onhero .stagebox.gearhall .gslotcard{width:60px;height:60px;border-radius:11px}
+.stagebox.gearhall .gslotcard .lv{top:-7px!important;font-size:10px;padding:0 5px;line-height:14px}
+.stagebox.gearhall .gslotcard.empty,.stagebox.gearhall .gslotcard.glock{background:url(orb/ui/slot.webp) center/100% 100% no-repeat!important;border:0!important;box-shadow:0 3px 5px rgba(0,0,0,.35)!important;border-radius:11px}
+.stagebox.gearhall .gslotcard.empty .si{opacity:.45;filter:grayscale(1) brightness(.6)}
+.stagebox.gearhall .gslotcard.empty small,.stagebox.gearhall .gslotcard small{position:absolute;bottom:7px;left:5px;right:5px;text-align:center;font:800 9px/1.1 system-ui,sans-serif;color:#fff;text-shadow:0 1px 1px #000,0 0 3px #000;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.stagebox.gearhall .gslotcard.empty .si,.gslotcard.glock .si{margin-top:-10px}
+.stagebox.gearhall .gslotcard:not(.empty):not(.glock){outline:2px solid #e8c25a;outline-offset:-1px}
+.gslotcard.glock{display:flex;flex-direction:column;align-items:center;justify-content:center;opacity:.8}
+.gslotcard.glock .si{font-size:20px;filter:grayscale(1) drop-shadow(0 1px 0 #fff8);margin-bottom:8px}
+.gslotcard.owslot{display:block;overflow:hidden;padding:0;border:2.5px solid var(--r)!important;outline:2px solid #e8c25a;background:#2a2620!important;box-shadow:0 0 10px -2px var(--r),0 3px 5px rgba(0,0,0,.35)!important}
+.gslotcard.owslot .owimg{position:absolute;inset:0;background-size:auto 210%;background-position:16% 2%;background-repeat:no-repeat}
+.gslotcard.owslot small{bottom:0!important;padding:2px 0 1px;background:linear-gradient(transparent,rgba(0,0,0,.7));color:#fff!important;text-shadow:0 1px 1px #000!important}
+.gslotcard.owslot .lv{z-index:3}
+.stagebox.temple .atkhp span{background:linear-gradient(#4a4238,#24201b)!important;border:1.5px solid #d9b25a!important;color:#fff}
+/* Ш48: живой дух парит слева над колонной */
+.osfloat{position:absolute;z-index:3;left:calc(20% + 2px);top:calc(var(--ht,44px) + 10px);width:68px;height:82px;padding:0;background:none;border:0;
+  animation:osbob 3.6s ease-in-out infinite}
+.osfloat .osbody{position:absolute;inset:0;display:block;animation:ossway 5.2s ease-in-out infinite,osbreath 2.4s ease-in-out infinite;transform-origin:50% 80%}
+.osfloat .osbody img{width:100%;height:100%;object-fit:contain;filter:drop-shadow(0 0 6px var(--c)) drop-shadow(0 6px 6px rgba(0,0,0,.35))}
+.osfloat .osaura{position:absolute;left:50%;top:52%;width:130%;aspect-ratio:1;transform:translate(-50%,-50%);border-radius:50%;
+  background:radial-gradient(circle,color-mix(in srgb,var(--q) 55%,transparent) 0,color-mix(in srgb,var(--q) 20%,transparent) 40%,transparent 68%);animation:osaura 2.4s ease-in-out infinite}
+.osfloat .ospart{position:absolute;left:50%;top:60%;width:0;height:0}
+.osfloat .ospart i{position:absolute;left:0;top:0;width:4px;height:4px;border-radius:50%;background:var(--c);box-shadow:0 0 6px 2px var(--c);opacity:0;animation:ospart 2.8s ease-out infinite;animation-delay:var(--d)}
+.osfloat .osflash{position:absolute;left:50%;top:45%;width:150%;aspect-ratio:1;transform:translate(-50%,-50%) scale(.4);border-radius:50%;background:radial-gradient(circle,#fff 0,color-mix(in srgb,var(--c) 60%,transparent) 35%,transparent 65%);opacity:0;mix-blend-mode:screen;animation:osflash 7s ease-out infinite}
+.osfloat::after{content:"";position:absolute;left:50%;bottom:-16px;width:56%;height:8px;transform:translateX(-50%);border-radius:50%;background:radial-gradient(ellipse,rgba(0,0,0,.35),transparent 70%);animation:osshadow 3.6s ease-in-out infinite}
+.osfloat.none{animation-duration:5s}
+.osfloat.none .osbody img{filter:brightness(0) opacity(.28) drop-shadow(0 0 3px #fff) drop-shadow(0 0 8px #bfffd8)}
+.osfloat.none small{position:absolute;left:50%;top:100%;transform:translateX(-50%);white-space:nowrap;font:800 10px system-ui,sans-serif;color:#fff;text-shadow:0 1px 2px #000,0 0 4px #000}
+@keyframes osbob{0%,100%{transform:translateY(0)}50%{transform:translateY(-9px)}}
+@keyframes ossway{0%,100%{rotate:-4deg}50%{rotate:4deg}}
+@keyframes osbreath{0%,100%{scale:1}50%{scale:1.03 .97}}
+@keyframes osaura{0%,100%{opacity:.75;transform:translate(-50%,-50%) scale(.92)}50%{opacity:1;transform:translate(-50%,-50%) scale(1.06)}}
+@keyframes ospart{0%{opacity:0;transform:translate(0,0) scale(1)}15%{opacity:1}100%{opacity:0;transform:translate(var(--x),-58px) scale(.3)}}
+@keyframes osflash{0%,88%{opacity:0;transform:translate(-50%,-50%) scale(.4)}92%{opacity:.85}100%{opacity:0;transform:translate(-50%,-50%) scale(1.2)}}
+@keyframes osshadow{0%,100%{opacity:1;transform:translateX(-50%) scale(1)}50%{opacity:.55;transform:translateX(-50%) scale(.8)}}
+/* нижняя панель героя: светлый мрамор, ячейки — серый камень в золоте */
+#view.herofix .subbody{background:linear-gradient(#efebe3,#ddd6c8);margin:0 -12px;padding-left:12px;padding-right:12px;box-shadow:inset 0 3px 0 #c9a24a}
+#view.herofix .subbody .muted,#view.herofix .subbody p{color:#5a4a30}
+#view.herofix .isock{background:url(orb/ui/slot.webp) center/100% 100% no-repeat!important;border:0!important;box-shadow:none!important;border-radius:10px;filter:drop-shadow(0 2px 2px rgba(60,40,10,.3))}
+#view.herofix .subtabs{background:linear-gradient(#efebe3,#ddd6c8)}
+#view.herofix .subtabs button{background:url(orb/ui/tab.webp) center/100% 100% no-repeat!important;border:0!important;color:#3a2a10!important;box-shadow:none!important;border-radius:10px}
+#view.herofix .subtabs button.on{background:linear-gradient(#ffe9a0,#e8b23a)!important;border:2px solid #fff3c0!important;box-shadow:0 0 0 1.5px #8a5a10,0 0 10px -2px #ffd23a!important;color:#3a2200!important}
 </style>
 </head>
 <body>
