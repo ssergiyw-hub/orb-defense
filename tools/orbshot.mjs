@@ -37,4 +37,13 @@ await p.evaluate(() => document.getElementById('oPause').click()); await p.waitF
 await p.screenshot({ path: `shots/o-${tag}-pause.png` });
 await p.evaluate(() => document.getElementById('oTabDmg').click()); await p.waitForTimeout(300);
 await p.screenshot({ path: `shots/o-${tag}-pause2.png` });
+// Ш79: surrender → the end-of-battle reward window
+await p.evaluate(() => document.getElementById('oQuit')?.click()); await p.waitForTimeout(300);
+await p.evaluate(() => document.getElementById('oQuitYes')?.click()); await p.waitForTimeout(2500);
+await p.screenshot({ path: `shots/o-${tag}-end.png` });
+// the 4-item band layout of the same window (a fight with 4 rewards)
+await p.evaluate(() => { const g = document.querySelector('.rgrid'); if (!g) return; const cells = [...g.querySelectorAll('.rcell')].slice(0, 4);
+  const band = document.createElement('div'); band.className = 'rband'; band.innerHTML = '<div class="rrays"></div><div class="rflash"></div><div class="rrow n4"></div>';
+  cells.forEach(c => band.lastElementChild.appendChild(c)); g.replaceWith(band); document.querySelector('.rewardov').classList.replace('grid', 'band'); });
+await p.waitForTimeout(2200); await p.screenshot({ path: `shots/o-${tag}-end4.png` });
 console.log(JSON.stringify(errs.slice(0, 8))); await b.close();

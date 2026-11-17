@@ -217,7 +217,7 @@ export function gemSvg(type: GemType, size = 46, stars = 3): string {
 
 /** one thing in a reward: icon, name, the number in the corner (count), a coloured caption under it (sub),
  *  rarity tier 0..4 (frame glow and sparks), a ribbon (badge), one more line for single rewards (detail) */
-export interface RewardItem { icon: string; name: string; count?: string; sub?: string; color?: string; tier?: number; badge?: string; detail?: string; altar?: boolean }
+export interface RewardItem { icon: string; name: string; count?: string; sub?: string; color?: string; tier?: number; badge?: string; detail?: string; altar?: boolean; xp?: boolean }
 /** again: buttons to repeat what gave the reward (hero search, chests); reveal: new heroes shown one by one first */
 interface Reward { title: string; items: RewardItem[]; note?: string; chest?: { kind: P.StageChest; items: RewardItem[]; open: boolean }; again?: { label: string; sub: string; a: string; v: string; off?: boolean }[]; reveal?: string[];
   /** правка 172: «удвоить награду за бой» за рекламу — what the fight gave, and whether it is already doubled */
@@ -354,7 +354,7 @@ export class Hub {
       if (hb.level > ha.level || hb.xp > ha.xp) {
         const at = (h: { level: number; xp: number }) => h.level + Math.min(1, h.xp / heroXpFor(h.level));
         const g = Math.max(0.1, Math.round((at(hb) - at(ha)) * 10) / 10), up = hb.level > ha.level;
-        out.push({ icon: this.heroSvg(id), name: hero(id).name, count: `+${Number.isInteger(g) ? g : g.toFixed(1)} ур.`, sub: up ? 'новый уровень' : undefined, color: up ? '#5cd68c' : EL_HEX[hero(id).element], tier: up ? 2 : 1 });
+        out.push({ icon: this.heroSvg(id), name: hero(id).name, xp: true, count: `+${Number.isInteger(g) ? g : g.toFixed(1)} ур.`, sub: up ? 'новый уровень' : undefined, color: up ? '#5cd68c' : EL_HEX[hero(id).element], tier: up ? 2 : 1 });
       }
     }
     for (const id of Object.keys(b.heroes)) { // particles of one hero summed into one tile
@@ -1698,15 +1698,7 @@ export class Hub {
       }).join('') + `<div class="lvsub">${weekly ? 'Сброс в понедельник' : 'Сброс в 00:00'}</div>`;
     }
     return `<div class="modal tasksbg pc-${portalColor(Math.min(this.sel.map, p.maxMap + 1))}" data-a="close"><div class="mbox lvpanel tasks2">
-      <div class="lvtabs">${tb('day', 'День', dDot)}${tb('week', 'Неделя', wDot)}${tb('login', 'Вход', P.loginClaimable(p))}<button class="lvsq x" data-a="close">✕</button></div>${head ? `<div class="t2head">${head}</div>` : ''}<div class="t2body panelbox" data-k="t${tab}">${body}</div>${this.tasksFloor(p)}</div></div>`;
-  }
-
-  /** Ш67: the marble floor of the tasks arch — the idle chest with its timer on the left, the week's chest on the right */
-  private tasksFloor(p: P.Profile): string {
-    const hrs = P.idleHours(p), t = P.taskState(p), wp = P.weeklyPoints(p);
-    const wNext = P.WEEKLY_CHESTS.find(c => !t.wChest.includes(c.at)), wReady = !!wNext && wp >= wNext.at;
-    void t; void wp; void wReady; // Ш69: no week chest on the floor
-    return `<div class="t2floor"><button class="t2fl" data-a="idleOpen">${chestSvg(hrs < IDLE.capH / 2 ? 0 : hrs < IDLE.capH ? 1 : 2, 56)}<small>${hrs >= IDLE.capH ? 'полон' : `${Math.floor(IDLE.capH - hrs)}ч ${Math.floor(((IDLE.capH - hrs) % 1) * 60)}м`}</small></button></div>`;
+      <div class="lvtabs">${tb('day', 'День', dDot)}${tb('week', 'Неделя', wDot)}${tb('login', 'Вход', P.loginClaimable(p))}<button class="lvsq x" data-a="close">✕</button></div>${head ? `<div class="t2head">${head}</div>` : ''}<div class="t2body panelbox" data-k="t${tab}">${body}</div></div></div>`; // Ш78: no idle chest in the tasks window
   }
 
   // ---------------- правка 202: mail — letters from the developer (rewards, greetings) ----------------
@@ -2080,8 +2072,8 @@ export class Hub {
     const tile = (it: RewardItem, k: number) => {
       const t = it.tier ?? 0, c = it.color ?? (t ? RC[t] : '#c9a24a');
       return `<div class="rcell" style="--c:${c};--i:${k}">
-        <div class="rtile t${t}${it.altar && r.items.length === 1 ? ' alt' : ''}">${it.altar && r.items.length === 1 ? PEDESTAL : ''}<span class="rti">${it.icon}</span>${it.count ? `<b class="rq${it.count.length > 5 ? ' sm' : ''}">${it.count}</b>` : ''}${it.badge ? `<i class="rnew">${it.badge}</i>` : ''}</div>
-        <small class="rname">${it.name}</small>${it.sub ? `<em class="rsub">${it.sub}</em>` : ''}${it.detail && r.items.length <= 2 ? `<span class="rdet">${it.detail}</span>` : ''}</div>`;
+        <div class="rtile t${t}${it.altar && r.items.length === 1 ? ' alt' : ''}">${it.altar && r.items.length === 1 ? PEDESTAL : ''}<span class="rti">${it.icon}</span>${it.count && !it.xp ? `<b class="rq${it.count.length > 5 ? ' sm' : ''}">${it.count}</b>` : ''}${it.badge ? `<i class="rnew">${it.badge}</i>` : ''}</div>
+        <small class="rname">${it.name}</small>${it.xp && it.count ? `<span class="rxp">${it.count}</span>` : ''}${it.sub ? `<em class="rsub">${it.sub}</em>` : ''}${it.detail && r.items.length <= 2 ? `<span class="rdet">${it.detail}</span>` : ''}</div>`;
     };
     const tiles = r.items.map(tile).join('');
     const again = r.again?.length ? `<div class="ragain">${r.again.map(g => `<button class="stonebtn" data-a="${g.a}" data-v="${g.v}" ${g.off ? 'disabled' : ''}><b>${g.label}</b><small>${g.sub}</small></button>`).join('')}</div>` : '';
