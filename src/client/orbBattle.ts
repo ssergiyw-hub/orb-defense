@@ -182,10 +182,10 @@ export class OrbBattle {
     const cells = Array.from({ length: 4 }, (_, k) => { const x = s.specials[k];
       return x ? `<span class="otk" style="--c:${BALLS[x.id].color}"><img src="${BALLPIC(x.id)}" alt="">${pipsOf(x.lv, o.maxLv(x.id))}</span>` : '<span class="otk empty"></span>'; }).join('');
     const pw = Math.round(s.power / 0.12);
-    $('oTaken').innerHTML = `<div class="otkrow">${cells}</div><div class="otkb"><span class="otk2"><i class="onorm"></i>×${s.normals}</span><span class="otk2"><i>⚡</i>×${pw}</span></div>`;
+    $('oTaken').innerHTML = `<div class="otkrow">${cells}</div><div class="otkb"><span class="otk2"><img src="${BALLPIC('normal')}" alt="">×${s.normals}</span><span class="otk2"><i>⚡</i>×${pw}</span></div>`;
     $('oLvNum').textContent = String(s.level);
     $('oCardList').innerHTML = s.cards.map((c, i) => {
-      const pic = c.ball ? `<img class="obook oballpic" src="${BALLPIC(c.ball)}" alt="">` : c.k === 'normal' ? '<span class="onorm"></span>' : c.k === 'power' ? '<span class="opow">⚡</span>' : '<span class="opow">🧱</span>';
+      const pic = c.ball ? `<img class="oballpic" src="${BALLPIC(c.ball)}" alt="">` : c.k === 'normal' ? `<img class="oballpic" src="${BALLPIC('normal')}" alt="">` : c.k === 'power' ? '<span class="opow">⚡</span>' : '<span class="opow">🧱</span>';
       const tag = c.k === 'new' ? tr('новый шар') : c.k === 'up' ? `${tr('уровень')} ${(c.lv ?? 2) - 1} → ${c.lv}` : c.k === 'normal' ? tr('залп') : tr('усиление');
       const col = c.ball ? BALLS[c.ball].color : '#ffd36a';
       const pips = c.ball && (c.k === 'up' || c.k === 'new') ? pipsOf(c.lv ?? 1, o.maxLv(c.ball)) : '';

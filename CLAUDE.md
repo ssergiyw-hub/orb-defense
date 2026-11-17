@@ -98,7 +98,7 @@ python3 art/orb/enemies.py && python3 art/orb/process.py   # пересобра�
 - Задания (Ш69): `.modal.tasksbg.pc-<цвет>` — фон портала главы, затемнён и размыт; без арки и рун, слева внизу сундук накопления.
 - Прокачка героя (Ш70): умение — старт со своим шаром 1-го ур. (`HERO_BALL`); ★1–5 — шар героя +15%/★ (`cfg.stars`, `Orb.heroMul`), ★3 — шар героя до 4-го ур. в забеге (`Orb.maxLv`); ★6–10 — +4%/★ всем шарам (через `rune.allBalls` в `makeConfig`).
 - Луч (Ш71): тонкий бело-голубой, вылетает от врага (`fx.beam.from`).
-- Экран нового уровня (Ш72): полоса уровня, взятые шары (`#oTaken`), урон на карточке (`Orb.hitOf`). Картинки шаров — `orb/ball/<id>.webp`, включаются флагом `HAS_BALL_ART` в `src/client/orbBallArt.ts` (пока false — показываются книги). Листы Meshy: `Documents/meshy-game/meshy-balls1.png` (fire, ice, beam, ghost, poison, lightning) и `meshy-balls2.png` (quake, cluster, wet, spike, обычный).
+- Экран нового уровня (Ш72): полоса уровня, взятые шары (`#oTaken`), урон на карточке (`Orb.hitOf`). Картинки шаров — `orb/ball/<id>.webp`, режет `art/orb/balls.py`, флаг `HAS_BALL_ART` в `src/client/orbBallArt.ts` (включён). Листы Meshy: `Documents/meshy-game/meshy-balls1.png` (fire, ice, beam, ghost, poison, lightning) и `meshy-balls2.png` (quake, cluster, wet, spike, обычный).
 
 ## Не сделано (на 17.11, вечер)
 Остальные 6 рисованных героев (ждут позы спиной), батл пасс / рынок / колесо / события — только через общие рамки, без отдельной доводки. События, итерация 2 (слияния, пассивки), баланс живой игрой.

@@ -40,7 +40,7 @@ export function orbBalls(p: P.Profile): string {
   const cards = BALL_IDS.map(b => {
     const x = o.balls[b], c = OM.ballCost(x.lv), ready = x.cards >= c.cards;
     return `<button class="obook${ready ? ' ready' : ''}" data-a="o:ball" data-v="${b}" style="--c:${BALLS[b].color}">
-      <span class="obname">${BALLS[b].name}</span><img src="${book(b)}" alt=""><span class="oblv">Ур. ${x.lv}</span>
+      <span class="obname">${BALLS[b].name}</span><img src="${book(b)}" alt=""><img class="obico" src="orb/ball/${b}.webp" alt=""><span class="oblv">Ур. ${x.lv}</span>
       <span class="obcards"><i style="width:${Math.min(100, 100 * x.cards / c.cards).toFixed(0)}%"></i><em>${x.cards}/${c.cards}</em></span></button>`;
   }).join('');
   return `<div class="oballs"><div class="ocrit"><b>Общий крит-урон шаров</b><span>+${pct(crit)}</span><small>растёт от улучшения любого шара</small></div>
