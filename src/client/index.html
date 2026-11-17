@@ -2801,6 +2801,44 @@ div.rstats span{flex:1 1 auto;min-width:0}div.rstats small{letter-spacing:0;line
 .tasks2 .lvtabs>.lvsq{top:calc(var(--ht,44px) + 12px)!important}
 .t2floor{margin:4px 0 0!important}
 .wbtns>*:only-child{grid-column:1/-1;justify-self:center;max-width:62%}
+
+/* ==== Ш69: задания — фон портала главы, затемнённый и размытый, от самого верха; без арки, пола и рун ==== */
+.modal.tasksbg{top:0!important;bottom:74px!important;padding:calc(var(--ht,44px) + 14px) 14px 4px!important;background:#06100b!important;overflow:hidden}
+.modal.tasksbg::before{content:"";position:absolute;inset:-12px;background:center 38%/cover no-repeat;filter:blur(4px) brightness(.32) saturate(.9);z-index:-1}
+.modal.tasksbg.pc-green::before{background-image:url(orb/ui/portal_green.webp)}.modal.tasksbg.pc-blue::before{background-image:url(orb/ui/portal_blue.webp)}.modal.tasksbg.pc-purple::before{background-image:url(orb/ui/portal_purple.webp)}
+.modal.tasksbg::after{content:"";position:absolute;left:0;right:0;bottom:0;height:70px;background:linear-gradient(transparent,rgba(2,8,5,.94));pointer-events:none}
+#ui:has(.tasksbg) .hdr{z-index:12}
+.modal.tasksbg{isolation:isolate}
+.tasks2 .lvtabs>.lvsq{position:absolute!important;top:-46px!important;right:0!important}
+.tasks2 .lvtrough::after{content:none!important}
+.tasks2 .t2body{-webkit-mask:linear-gradient(#000 calc(100% - 40px),transparent);mask:linear-gradient(#000 calc(100% - 40px),transparent)}
+.t2floor{position:absolute;left:10px;bottom:6px;margin:0!important;padding:0;z-index:2}
+.t2floor .chestimg{width:56px!important}
+.tasks2 .pchest2.ready .chestimg{filter:drop-shadow(0 0 6px #fff7b0) drop-shadow(0 0 14px #2fe080) brightness(1.15)!important;animation:wob 1s ease-in-out infinite}
+.tasks2 .tpts2{width:30px;height:30px}
+.tasks2 .tpts2::before{-webkit-text-stroke:0;text-shadow:none;color:#3a2200}
+.tasks2 .mbox,.mbox.lvpanel.tasks2{position:relative}
+
+/* ==== Ш72: экран нового уровня — полоса уровня, взятые шары, карточки с шаром и уроном ==== */
+#oCards{justify-content:flex-start!important;padding-top:calc(env(safe-area-inset-top,0px) + 70px)!important;background:radial-gradient(ellipse at 50% 40%,rgba(14,30,22,.8),rgba(4,10,7,.94))!important}
+.olvtop{position:relative;width:86%;max-width:340px;margin-bottom:14px}
+.olvtop .oxpbar{height:18px}
+.olvnum{position:absolute;right:-14px;top:50%;transform:translateY(-50%);width:36px;height:36px;display:flex;align-items:center;justify-content:center;background:url(orb/ui/btn_stone.webp) center/100% 100% no-repeat;font:900 18px Georgia,serif;color:#3a2200}
+.oribbon span{background:url(orb/ui/tab.webp) center/100% 100% no-repeat!important;color:#3a2a10!important;text-shadow:0 1px 0 #fff8!important;border:0!important;box-shadow:none!important;padding:10px 34px!important}
+.otaken{display:flex;align-items:center;gap:10px;margin:10px 0 2px;padding:8px 10px;border-radius:12px;background:rgba(18,26,22,.7);box-shadow:inset 0 0 0 1.5px #d9b25a}
+.otkrow{display:flex;gap:6px}
+.otk{position:relative;width:46px;height:46px;display:flex;align-items:center;justify-content:center;background:url(orb/ui/slot.webp) center/100% 100% no-repeat}
+.otk img{width:34px;height:34px;object-fit:contain;filter:drop-shadow(0 0 4px var(--c))}
+.otk .opips{position:absolute;bottom:-5px;left:50%;transform:translateX(-50%);gap:2px}
+.otk .opips i{width:6px!important;height:6px!important}
+.otk.empty{opacity:.55}
+.otkb{display:flex;flex-direction:column;gap:4px}
+.otk2{display:flex;align-items:center;gap:4px;font:800 12px system-ui;color:#fff3c0}
+.otk2 i{font-style:normal;width:16px;height:16px;display:flex;align-items:center;justify-content:center;font-size:13px}
+.otk2 .onorm{margin:0!important;width:14px!important;height:14px!important}
+.ocard{background:var(--dia) 6px 6px/10px 14px no-repeat,var(--dia) calc(100% - 6px) 6px/10px 14px no-repeat,linear-gradient(#fbf8f1,#e2dacb)!important;border:2.5px solid #d9b25a!important;box-shadow:0 0 0 1.5px #5a3a10,0 0 16px -4px var(--c),0 6px 10px rgba(0,0,0,.5)!important}
+.ocard .oballpic{width:78px;height:78px;margin:4px 0;filter:drop-shadow(0 0 10px var(--c)) drop-shadow(0 4px 4px rgba(0,0,0,.4))}
+.odmg{font:900 13px system-ui;font-style:normal;color:#3a2200;background:linear-gradient(#fff3c0,#e8b23a);border:1.5px solid #8a5a10;border-radius:8px;padding:1px 8px}
 </style>
 </head>
 <body>
@@ -2835,7 +2873,9 @@ div.rstats span{flex:1 1 auto;min-width:0}div.rstats small{letter-spacing:0;line
     <div class="owbar"><i id="oWallFill"></i><em id="oWallTxt"></em></div>
   </div>
   <div id="oCards" class="overlay" hidden>
+    <div class="olvtop"><div class="oxpbar full"><i style="width:100%"><b class="oxb"></b><b class="oxb b2"></b><b class="oxb b3"></b><b class="oxb b4"></b></i></div><span class="olvnum" id="oLvNum">2</span></div>
     <div class="oribbon"><span>Новый уровень</span></div>
+    <div id="oTaken" class="otaken"></div>
     <h3 class="opickh">Выбери шар или усиление</h3>
     <div id="oCardList"></div>
   </div>

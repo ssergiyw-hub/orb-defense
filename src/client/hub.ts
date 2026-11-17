@@ -1172,9 +1172,11 @@ export class Hub {
       const id = this.sel.heroView && p.heroes[this.sel.heroView] ? this.sel.heroView : p.active;
       const vd = hero(id), h = p.heroes[id];
       const perks = [
-        `Стрела с начала забега: ${ELEMENT_EFFECT[vd.element]}`,
-        `★1–5: сила эффекта стрелы +20% за звезду (сейчас +${20 * Math.min(5, h.stars)}%)`,
-        `★6–10: урон стихии «${ELEMENT_NAME[vd.element]}» +5% за звезду (сейчас +${5 * Math.max(0, h.stars - 5)}%)`,
+        // Ш70: what the hero does in the orb game — his ball from the start, stars for that ball and for all balls
+        `Умение: начинает забег с шаром «${BALLS[HERO_BALL[id] ?? 'fire'].name}» 1-го уровня`,
+        `★1–5: урон шара героя +15% за звезду (сейчас +${15 * Math.min(5, h.stars)}%)`,
+        `★3: шар героя в забеге качается до 4-го уровня${h.stars >= 3 ? ' ✓' : ''}`,
+        `★6–10: урон всех шаров +4% за звезду (сейчас +${4 * Math.max(0, h.stars - 5)}%)`,
         `Уровень: атака +${HERO_STAT.atkLv}, здоровье +${HERO_STAT.hpLv} за уровень (сейчас +${P.statNum(HERO_STAT.atkLv * (h.level - 1))} / +${P.statNum(HERO_STAT.hpLv * (h.level - 1))})`,
       ];
       const need = h.stars < 10 ? STAR_PARTICLES[h.stars] : 0, lvl = h.stars < 10 ? STAR_LEVEL[h.stars] : 0;
@@ -1695,7 +1697,7 @@ export class Hub {
           <span class="tpts2" data-p="+${d.pts}">+${d.pts}</span>${auto ? '<span class="tauto">авто</span>' : taken ? '<i class="seal"></i>' : lock ? '' : `<button class="tclaim${ok ? ' on' : ''}" data-a="taskClaim" data-v="${weekly ? 'w' : 'd'}:${d.id}" ${ok ? '' : 'disabled'}>Забрать</button>`}</div>`;
       }).join('') + `<div class="lvsub">${weekly ? 'Сброс в понедельник' : 'Сброс в 00:00'}</div>`;
     }
-    return `<div class="modal" data-a="close"><div class="mbox lvpanel tasks2">
+    return `<div class="modal tasksbg pc-${portalColor(Math.min(this.sel.map, p.maxMap + 1))}" data-a="close"><div class="mbox lvpanel tasks2">
       <div class="lvtabs">${tb('day', 'День', dDot)}${tb('week', 'Неделя', wDot)}${tb('login', 'Вход', P.loginClaimable(p))}<button class="lvsq x" data-a="close">✕</button></div>${head ? `<div class="t2head">${head}</div>` : ''}<div class="t2body panelbox" data-k="t${tab}">${body}</div>${this.tasksFloor(p)}</div></div>`;
   }
 
@@ -1703,8 +1705,8 @@ export class Hub {
   private tasksFloor(p: P.Profile): string {
     const hrs = P.idleHours(p), t = P.taskState(p), wp = P.weeklyPoints(p);
     const wNext = P.WEEKLY_CHESTS.find(c => !t.wChest.includes(c.at)), wReady = !!wNext && wp >= wNext.at;
-    return `<div class="t2floor"><button class="t2fl" data-a="idleOpen">${chestSvg(hrs < IDLE.capH / 2 ? 0 : hrs < IDLE.capH ? 1 : 2, 64)}<small>${hrs >= IDLE.capH ? 'полон' : `${Math.floor(IDLE.capH - hrs)}ч ${Math.floor(((IDLE.capH - hrs) % 1) * 60)}м`}</small></button>
-      <button class="t2fr${wReady ? ' ready' : ''}" data-a="taskTab" data-v="week">${chestSvg(wReady ? 1 : 0, 64)}${wReady ? '<i class="rdot"></i>' : ''}</button></div>`;
+    void t; void wp; void wReady; // Ш69: no week chest on the floor
+    return `<div class="t2floor"><button class="t2fl" data-a="idleOpen">${chestSvg(hrs < IDLE.capH / 2 ? 0 : hrs < IDLE.capH ? 1 : 2, 56)}<small>${hrs >= IDLE.capH ? 'полон' : `${Math.floor(IDLE.capH - hrs)}ч ${Math.floor(((IDLE.capH - hrs) % 1) * 60)}м`}</small></button></div>`;
   }
 
   // ---------------- правка 202: mail — letters from the developer (rewards, greetings) ----------------

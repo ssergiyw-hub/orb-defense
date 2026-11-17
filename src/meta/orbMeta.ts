@@ -107,9 +107,12 @@ export function makeConfig(p: P.Profile, stage: number, heroId: string, seed: nu
     impact: rt.impact, area: rt.area, beamLight: rt.beamlight, pierce: rt.pierce, dot: rt.dot, wetFrozen: rt.wetfrozen,
     repair: rt.repair, gold: rt.gold, elite: rt.elite, wallPct: rt.wallhp,
   };
+  // Ш70: hero stars 6–10 — +4% to every ball a star
+  const stars = p.heroes[heroId]?.stars ?? 0;
+  if (stars > 5) rune.allBalls = (rune.allBalls ?? 0) + 0.04 * (stars - 5);
   for (const k of Object.keys(rune) as (keyof typeof rune)[]) if (!rune[k]) delete rune[k];
   return {
-    seed, stage, heroId, heroBall: HERO_BALL[heroId] ?? 'fire',
+    seed, stage, heroId, heroBall: HERO_BALL[heroId] ?? 'fire', ...(stars ? { stars } : {}),
     atk: Math.round(st.atk), hp: Math.round(st.hp * 3),
     crit: Math.min(0.75, 0.05 + mods.crit + (rt.crit ?? 0)), critDmg: mods.critDmg + ballCritTotal(p) + (rt.critdmg ?? 0), boss: mods.boss,
     ballLv: Object.fromEntries(BALL_IDS.map(b => [b, o.balls[b].lv])),

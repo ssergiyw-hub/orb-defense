@@ -9,6 +9,8 @@ import {
 
 export interface OrbConfig {
   seed: number; stage: number; heroId: string; heroBall: BallId;
+  /** Ш70: hero stars — ★1–5: the hero's ball +15% a star (★3: it grows to level 4 in the run) */
+  stars?: number;
   atk: number; hp: number; crit: number; critDmg: number; boss: number;
   /** level of every ball in the menu (books); 0 = not owned */
   ballLv: Partial<Record<BallId, number>>;
@@ -45,7 +47,7 @@ export interface Card { k: 'new' | 'up' | 'normal' | 'power' | 'repair'; ball?: 
 export type Fx =
   | { t: 'hit'; x: number; y: number; dmg: number; crit: boolean; kind: string }
   | { t: 'die'; x: number; y: number; w: number; h: number; kind: EnemyId }
-  | { t: 'beam'; dir: 'row' | 'col'; at: number; color: string }
+  | { t: 'beam'; dir: 'row' | 'col'; at: number; from: number; color: string }
   | { t: 'chain'; x1: number; y1: number; x2: number; y2: number }
   | { t: 'quake'; c: number; r: number }
   | { t: 'dot'; x: number; y: number; dmg: number; kind: 'burn' | 'poison' }
@@ -191,12 +193,18 @@ export class Orb {
   }
 
   // ---------------- damage ----------------
+  /** Ш70: the hero's own ball hits harder with the hero's stars 1–5 */
+  private heroMul(kind: string): number { const c = this.s.cfg; return kind === c.heroBall ? 1 + 0.15 * Math.min(5, c.stars ?? 0) : 1; }
+  /** Ш72: the hit of a ball for the level-up cards (no crit) */
+  hitOf(kind: BallId, lv: number): number { return this.atkOf(kind, lv); }
+  /** the highest level a ball reaches in this run (the hero's ball goes to 4 with ★3) */
+  maxLv(id: BallId): number { return id === this.s.cfg.heroBall && (this.s.cfg.stars ?? 0) >= 3 ? 4 : 3; }
   private atkOf(kind: Ball['kind'], lv: number): number {
     const c = this.s.cfg, p = 1 + this.s.power;
     if (kind === 'normal') return c.atk * p * (1 + (c.rune?.normal ?? 0) + (c.rune?.allBalls ?? 0));
     if (kind === 'shard') return c.atk * p * BALL_FX.shard(lv) * (1 + (c.rune?.area ?? 0)) * (1 + (c.rune?.allBalls ?? 0));
     const meta = c.ballLv[kind] ?? 1;
-    return c.atk * p * (1 + elemHit(meta) * runLvMul(lv)) * (1 + (c.rune?.allBalls ?? 0));
+    return c.atk * p * (1 + elemHit(meta) * runLvMul(lv)) * (1 + (c.rune?.allBalls ?? 0)) * this.heroMul(kind);
   }
   private damage(e: Enemy, raw: number, src: string, canCrit: boolean, fxKind: string): number {
     const s = this.s, c = s.cfg;
@@ -224,7 +232,7 @@ export class Orb {
     const direct = (b.kind === 'shard' ? 1 : 1 + (rn.impact ?? 0)) * (b.kind === 'ghost' ? 1 + (rn.pierce ?? 0) : 1);
     this.damage(e, this.atkOf(b.kind, lv) * direct, b.kind, true, b.kind);
     const ex = e.c + e.w / 2, ey = e.r + e.h / 2;
-    const A = c.atk * (1 + s.power) * (1 + (rn.allBalls ?? 0));
+    const A = c.atk * (1 + s.power) * (1 + (rn.allBalls ?? 0)) * this.heroMul(b.kind);
     // правка Ш7: the duration rune is a chance of one more turn, rolled only when an effect is put on
     const dur = () => rn.dur && this.rng.chance(rn.dur) ? 1 : 0;
     switch (b.kind) {
@@ -238,7 +246,7 @@ export class Orb {
         const lines: ('row' | 'col')[] = lv >= 3 ? ['row', 'col'] : [row ? 'row' : 'col'];
         for (const dir of lines) {
           const at = dir === 'row' ? Math.floor(ey) : Math.floor(ex);
-          this.fx.push({ t: 'beam', dir, at, color: BALLS.beam.glow });
+          this.fx.push({ t: 'beam', dir, at, from: dir === 'row' ? ex : ey, color: BALLS.beam.glow });
           for (const o of [...s.enemies]) if (o !== e && o.hp > 0 && (dir === 'row' ? o.r <= at && at < o.r + o.h : o.c <= at && at < o.c + o.w)) this.damage(o, dmg, 'beam', false, 'beam');
         }
         break;
@@ -521,7 +529,7 @@ export class Orb {
     const s = this.s, c = s.cfg, pool: Card[] = [];
     const owned = BALL_IDS.filter(b => (c.ballLv[b] ?? 0) > 0 && !s.specials.some(x => x.id === b));
     if (s.specials.length < 4) for (const b of owned) pool.push({ k: 'new', ball: b, title: BALLS[b].name, desc: BALLS[b].desc(1), lv: 1 });
-    for (const x of s.specials) if (x.lv < 3) pool.push({ k: 'up', ball: x.id, title: BALLS[x.id].name, desc: BALLS[x.id].desc(x.lv + 1), lv: x.lv + 1 });
+    for (const x of s.specials) if (x.lv < this.maxLv(x.id)) pool.push({ k: 'up', ball: x.id, title: BALLS[x.id].name, desc: BALLS[x.id].desc(x.lv + 1), lv: x.lv + 1 });
     if (s.normals < c.normals + 4) pool.push({ k: 'normal', title: '+1 обычный шар', desc: 'Ещё один обычный шар в каждом залпе' });
     const picks: Card[] = [];
     while (picks.length < 3 && pool.length) picks.push(pool.splice(this.rng.int(pool.length), 1)[0]);

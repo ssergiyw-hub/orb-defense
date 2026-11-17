@@ -5,11 +5,14 @@ import { OrbRenderer, preloadOrb, fmtN } from './orbRender';
 import { preload3D } from './hero3d';
 import { fatan2 } from '../core/fmath';
 import { ORB_HERO_ART } from './orbHeroArt';
+import { HAS_BALL_ART } from './orbBallArt';
 import * as sfx from './sfx';
 import { tr, trS } from './i18n';
 
 const $ = <T extends HTMLElement = HTMLElement>(id: string) => document.getElementById(id) as T;
 const BOOK = (b: string) => `orb/book/${BALLS[b as keyof typeof BALLS]?.book ?? b}.webp`;
+/** Ш72: the picture of a ball (a round orb, art/orb/balls.py); the book stays as the fallback until the orbs are cut */
+const BALLPIC = (b: string) => HAS_BALL_ART ? `orb/ball/${b}.webp` : BOOK(b);
 
 export class OrbBattle {
   o: Orb | null = null;
@@ -174,12 +177,20 @@ export class OrbBattle {
       let best = 0; s.cards.forEach((c, i) => { if (order(c) < order(s.cards[best])) best = i; });
       setTimeout(() => this.pick(best), 450 / this.speed);
     }
+    // Ш72: what is taken already — 4 cells of special balls with their level, then the boosts
+    const pipsOf = (lv: number, max: number) => `<span class="opips">${Array.from({ length: max }, (_, k) => `<i class="${k < lv ? 'on' : ''}"></i>`).join('')}</span>`;
+    const cells = Array.from({ length: 4 }, (_, k) => { const x = s.specials[k];
+      return x ? `<span class="otk" style="--c:${BALLS[x.id].color}"><img src="${BALLPIC(x.id)}" alt="">${pipsOf(x.lv, o.maxLv(x.id))}</span>` : '<span class="otk empty"></span>'; }).join('');
+    const pw = Math.round(s.power / 0.12);
+    $('oTaken').innerHTML = `<div class="otkrow">${cells}</div><div class="otkb"><span class="otk2"><i class="onorm"></i>×${s.normals}</span><span class="otk2"><i>⚡</i>×${pw}</span></div>`;
+    $('oLvNum').textContent = String(s.level);
     $('oCardList').innerHTML = s.cards.map((c, i) => {
-      const pic = c.ball ? `<img class="obook" src="${BOOK(c.ball)}" alt="">` : c.k === 'normal' ? '<span class="onorm"></span>' : c.k === 'power' ? '<span class="opow">⚡</span>' : '<span class="opow">🧱</span>';
-      const tag = c.k === 'new' ? tr('новый шар') : c.k === 'up' ? `${tr('уровень')} ${c.lv}` : c.k === 'normal' ? tr('залп') : tr('усиление');
+      const pic = c.ball ? `<img class="obook oballpic" src="${BALLPIC(c.ball)}" alt="">` : c.k === 'normal' ? '<span class="onorm"></span>' : c.k === 'power' ? '<span class="opow">⚡</span>' : '<span class="opow">🧱</span>';
+      const tag = c.k === 'new' ? tr('новый шар') : c.k === 'up' ? `${tr('уровень')} ${(c.lv ?? 2) - 1} → ${c.lv}` : c.k === 'normal' ? tr('залп') : tr('усиление');
       const col = c.ball ? BALLS[c.ball].color : '#ffd36a';
-      const pips = c.k === 'up' || c.k === 'new' ? `<span class="opips">${[1, 2, 3].map(k => `<i class="${k <= (c.lv ?? 1) ? 'on' : ''}"></i>`).join('')}</span>` : '';
-      return `<button class="ocard" data-i="${i}" style="--c:${col}"><small>${tag}</small>${pic}<b>${tr(c.title)}</b><span>${trS(c.desc)}</span>${pips}</button>`;
+      const pips = c.ball && (c.k === 'up' || c.k === 'new') ? pipsOf(c.lv ?? 1, o.maxLv(c.ball)) : '';
+      const dmg = c.ball ? `<em class="odmg">✸ ${fmtN(o.hitOf(c.ball, c.lv ?? 1))}</em>` : '';
+      return `<button class="ocard" data-i="${i}" style="--c:${col}"><small>${tag}</small>${pic}${dmg}<b>${tr(c.title)}</b><span>${trS(c.desc)}</span>${pips}</button>`;
     }).join('');
     $('oCardList').querySelectorAll<HTMLElement>('.ocard').forEach(b => { b.onclick = () => this.pick(+b.dataset.i!); });
     $('oCards').hidden = false;
@@ -195,7 +206,7 @@ export class OrbBattle {
   private skills(): void {
     const o = this.o; if (!o) return; const s = o.s;
     const pips = (lv: number) => `<span class="opips">${[1, 2, 3].map(k => `<i class="${k <= lv ? 'on' : ''}"></i>`).join('')}</span>`;
-    const rows = s.specials.map(b => `<div class="osk" style="--c:${BALLS[b.id].color}"><img src="${BOOK(b.id)}" alt=""><div><b>${tr(BALLS[b.id].name)}</b><span>${trS(BALLS[b.id].desc(b.lv))}</span>${pips(b.lv)}</div></div>`);
+    const rows = s.specials.map(b => `<div class="osk" style="--c:${BALLS[b.id].color}"><img src="${BALLPIC(b.id)}" alt=""><div><b>${tr(BALLS[b.id].name)}</b><span>${trS(BALLS[b.id].desc(b.lv))}</span>${pips(b.lv)}</div></div>`);
     rows.push(`<div class="osk"><span class="onb"></span><div><b>${tr('Обычные шары')} ×${s.normals}</b><em>${tr('Шаров в залпе')}: ${s.normals + s.specials.length}</em></div></div>`);
     const pw = Math.round(s.power / 0.12);
     if (pw > 0) rows.push(`<div class="osk"><span class="opw">⚡</span><div><b>${tr('Сила Олимпа')} ×${pw}</b><em>${tr('Урон всех шаров')} +${Math.round(s.power * 100)}%</em></div></div>`);

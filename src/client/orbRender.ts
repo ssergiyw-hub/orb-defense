@@ -71,7 +71,7 @@ export class OrbRenderer {
         this.burst(cx, cy, 6, '#ffd36a', 1);
         break;
       }
-      case 'beam': this.flashes.push({ t: 'beam', age: 0, life: 0.35, a: f.dir === 'row' ? 1 : 0, b: f.at, c: 0, d: 0, col: f.color }); break;
+      case 'beam': this.flashes.push({ t: 'beam', age: 0, life: 0.35, a: f.dir === 'row' ? 1 : 0, b: f.at, c: f.from, d: 0, col: f.color }); break;
       case 'chain': this.flashes.push({ t: 'chain', age: 0, life: 0.3, a: f.x1, b: f.y1, c: f.x2, d: f.y2, col: '#fff6a0' }); break;
       case 'quake': this.flashes.push({ t: 'quake', age: 0, life: 0.45, a: f.c + 0.5, b: f.r + 0.5, c: 0, d: 0, col: '#ffd29a' }); this.shake = Math.max(this.shake, 0.18); break;
       case 'dot': this.text(f.x + 0.25, f.y - 0.35, fmtN(f.dmg), f.kind === 'burn' ? '#ffa04a' : '#9cff6a', false); break;
@@ -383,11 +383,16 @@ export class OrbRenderer {
       const k = 1 - f.age / f.life;
       c.save(); c.globalCompositeOperation = 'lighter';
       if (f.t === 'beam') {
-        const w = C * (0.5 * k + 0.12);
-        const g = f.a ? c.createLinearGradient(0, this.py(f.b + 0.5) - w, 0, this.py(f.b + 0.5) + w) : c.createLinearGradient(this.px(f.b + 0.5) - w, 0, this.px(f.b + 0.5) + w, 0);
-        g.addColorStop(0, hexA(f.col, 0)); g.addColorStop(0.5, hexA('#ffffff', 0.9 * k)); g.addColorStop(1, hexA(f.col, 0));
-        c.fillStyle = g;
-        if (f.a) c.fillRect(this.fx0, this.py(f.b + 0.5) - w, C * COLS, 2 * w); else c.fillRect(this.px(f.b + 0.5) - w, this.fy0, 2 * w, C * ROWS);
+        // Ш71: a thin white-blue beam that shoots out from the hit enemy both ways in 0.1 s, then fades
+        const grow = Math.min(1, f.age / 0.1), fade = f.age < 0.1 ? 1 : Math.max(0, 1 - (f.age - 0.1) / (f.life - 0.1));
+        const w = C * 0.17 * (0.6 + 0.4 * fade), len = (f.a ? COLS : ROWS) * grow;
+        const lo = Math.max(0, f.c - len), hi = Math.min(f.a ? COLS : ROWS, f.c + len), mid = f.b + 0.5;
+        c.save(); c.globalCompositeOperation = 'lighter';
+        for (const [ww, col, al] of [[w * 1.6, '#7fd8ff', 0.3], [w, '#bfeaff', 0.8], [w * 0.38, '#ffffff', 1]] as [number, string, number][]) {
+          c.fillStyle = hexA(col, al * fade);
+          if (f.a) c.fillRect(this.px(lo), this.py(mid) - ww / 2, this.px(hi) - this.px(lo), ww); else c.fillRect(this.px(mid) - ww / 2, this.py(lo), ww, this.py(hi) - this.py(lo));
+        }
+        c.restore();
       } else if (f.t === 'chain' || f.t === 'spirit' || f.t === 'shot') {
         c.strokeStyle = hexA(f.col, 0.9 * k); c.lineWidth = f.t === 'chain' ? 3 : 2.5; c.shadowColor = f.col; c.shadowBlur = 10;
         c.beginPath(); c.moveTo(this.px(f.a), this.py(f.b));
