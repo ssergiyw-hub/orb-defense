@@ -305,7 +305,7 @@ export class OrbRenderer {
     const key = (casting ? 'cast_' : 'idle_') + ['up', 'diag', 'side'][pi], P = art[key];
     const im = orbImg(`orb/hero/${s.cfg.heroId}_${key}.webp`);
     if (!im || !P) { orbImg(`orb/hero/${s.cfg.heroId}_idle_up.webp`); return false; }
-    const k = (C * 1.65) / HERO_POSE_H, w = P.w * k, h = P.h * k;
+    const k = (C * 2.48) / HERO_POSE_H /* Ш68: +50% */, w = P.w * k, h = P.h * k;
     const lean = Math.max(-0.12, Math.min(0.12, (d - nat) * 0.35)) * (right ? 1 : -1);
     const breath = casting ? 1 : 1 + 0.012 * Math.sin(this.t * 2.4);
     const low = s.enemies.some(e => e.hp > 0 && e.r + e.h >= ROWS - 0.01);

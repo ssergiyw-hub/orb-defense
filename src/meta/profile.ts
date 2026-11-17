@@ -7,7 +7,7 @@ import {
   BIG_COUPON, CR_SEARCH, DROP_ODDS, DUP_PARTICLES, ENERGY, ESS_BIG, ESS_SMALL, GEAR_CHEST_ODDS, GEM, GEM_FEED_XP,
   GEM_STAR_EFF, GEM_TYPES, GOLD_SEARCH, GemType, HERO_MAX_LEVEL, IDLE, PRICE, RARITY_BONUS, RARITY_CAP,
   RUNE_CRAFT, RUNE_CRAFT_TYPE, RUNE_UP, RUNE_K, RUNES, RuneId, RuneType, RUNE_SLOT_TYPE, RUNE_TYPE_NAME, BLESS_RUNES, FAMILY_RUNES, RUNE_SKILLS,
-  FAMILY_W, runeDupes, runeWorth, runeTier, SETS, SLOTS, EPIC, LEGEND, MYTHIC, MERGE_RULE, DMG_SLOTS, SET_FX,
+  FAMILY_W, runeDupes, runeWorth, runeTier, SETS, ACTIVE_SETS, SLOTS, EPIC, LEGEND, MYTHIC, MERGE_RULE, DMG_SLOTS, SET_FX,
   GEAR_MAIN, GEAR_STEP, HERO_STAT, SET_PCT, SET_SECOND, STAT_UNIT, rarityK, gemShare, gemFits, gemSlotsOf,
   SMALL_COUPON, STAR_LEVEL, STAR_PARTICLES, SetId, Slot, gemXpFor, heroXpFor, levelCost, runeSlots, spentTo,
   RARITIES, SLOT_NAME, SET_NAME, WEAPON_NAME, RUNE_RARITY, GEM_LOCATIONS, GEM_FREE_PER_DAY, CHESTS, CHEST_X10, ChestId, HERO_UNLOCK_PARTICLES,
@@ -281,11 +281,11 @@ export function idleHours(p: Profile): number { return Math.min(IDLE.capH, (Date
 export function idlePreview(p: Profile, h = idleHours(p)) {
   return { gold: Math.floor(IDLE.gold(Math.max(1, p.maxMap)) * h), scrolls: Math.floor(IDLE.scrollsH * h), gemChance: Math.min(1, IDLE.gemChanceH * h) };
 }
-function grantIdle(p: Profile, h: number): string[] {
+function grantIdle(p: Profile, h: number, gems = true): string[] {
   const r = idlePreview(p, h * (passActive(p, 'hunter') ? 1.2 : 1));
   p.gold += r.gold; p.scrolls += r.scrolls;
   const out = [`+${r.gold} золота`, `+${r.scrolls} свитков`];
-  if (rnd() < r.gemChance) { const g = randomGem(p, GOLD_SEARCH.odds); out.push(`гем ${GEM[g.type].name} ★${g.stars}`); }
+  if (gems && rnd() < r.gemChance) { const g = randomGem(p, GOLD_SEARCH.odds); out.push(`гем ${GEM[g.type].name} ★${g.stars}`); }
   return out;
 }
 export function collectIdle(p: Profile): string[] {
@@ -314,7 +314,7 @@ export function fastIdle(p: Profile, how: 'free' | 'energy' | 'crystals' = 'free
     pay(p, 'crystals', f.price); f.st.c++;
   }
   taskAdd(p, 'idle', 1);
-  return grantIdle(p, IDLE.fastH);
+  return grantIdle(p, IDLE.fastH, false); // Ш61: the fast collect gives no gems
 }
 
 function pay(p: Profile, cur: 'gold' | 'crystals' | 'scrolls' | 'shards', n: number): void {
@@ -369,9 +369,9 @@ export function finishRun(p: Profile, m: Match, map: number): RunReward {
 /** правка 145: what the stage chest gives — one prize. Stone: 38% resources, 25% essence, 12% gear, 8% gem, 15% tavern coupon, 2% rune
  *  (coupons stay at the old 15% a win: the free player gets heroes from them; econ/model.py — payer 347 days instead of 360, free 1226 as before).
  *  Gold (first clear of a stage): a rare item or 2 small essences + 30 crystals */
-export const STAGE_CHEST = [0.38, 0.25, 0.12, 0.08, 0.15, 0.02];
+export const STAGE_CHEST = [0.38, 0.30, 0.12, 0.03, 0.15, 0.02]; // Ш61: gem 8% → 3%, the rest to essence
 export function openStageChest(p: Profile, kind: StageChest, runGold: number): void {
-  if (kind === 'gold') { if (rnd() < 0.5) addItem(p, pick(SLOTS), pick(SETS), 1); else { p.essSmall += 2; p.crystals += 30; } return; }
+  if (kind === 'gold') { if (rnd() < 0.5) addItem(p, pick(SLOTS), pick(ACTIVE_SETS), 1); else { p.essSmall += 2; p.crystals += 30; } return; }
   switch (roll(STAGE_CHEST)) {
     case 0: { const k = rnd();
       if (k < 1 / 3) p.gold += Math.max(100, Math.round(runGold * (1 + 0.5 * rnd())));
@@ -379,7 +379,7 @@ export function openStageChest(p: Profile, kind: StageChest, runGold: number): v
       else p.shards += 10 + Math.floor(rnd() * 11);
       break; }
     case 1: if (rnd() < 0.12) p.essBig += 1; else p.essSmall += 1 + (rnd() < 0.4 ? 1 : 0); break;
-    case 2: addItem(p, pick(SLOTS), pick(SETS), roll([0.82, 0.16, 0.02])); break;
+    case 2: addItem(p, pick(SLOTS), pick(ACTIVE_SETS), roll([0.82, 0.16, 0.02])); break;
     case 3: randomGem(p, [0.85, 0.15]); break;
     case 4: p.couponsSmall++; break;
     default: randomRune(p, rnd() < 0.7 ? 0 : 1);
@@ -960,7 +960,7 @@ export const WHEELS: Record<'adv' | 'super', { name: string; price: number; pric
     { icon: 'ᚱ', label: 'Осколки рун', qty: '×150', w: 10, tier: 2, give: p => { p.shards += 150; } },
     { icon: '◈', label: 'Гем ★4', qty: '×1', w: 1.5, tier: 3, give: gem(4) },
     { icon: '◆', label: 'Гем ★3', qty: '×1', w: 8, tier: 3, give: gem(3) },
-    { icon: '🛡️', label: 'Эпический предмет', qty: '×1', w: 8, tier: 3, give: p => { addItem(p, pick(SLOTS), pick(SETS), 2); } },
+    { icon: '🛡️', label: 'Эпический предмет', qty: '×1', w: 8, tier: 3, give: p => { addItem(p, pick(SLOTS), pick(ACTIVE_SETS), 2); } },
     { icon: '🔶', label: 'Легендарная руна', qty: '×1', w: 3, tier: 3, give: p => { randomRune(p, LEGEND); } },
     { icon: '🧩', label: 'Частицы героя дня', qty: '×50', w: 4, tier: 3, give: p => { p.heroes[heroOfDay()].particles += 50; } },
     // правка 93: 12 prizes like the picture of the wheel; the old common prizes gave their share, rare odds unchanged
@@ -1010,7 +1010,7 @@ export function openChest(p: Profile, id: ChestId, n: 1 | 10, set: SetId, free =
       p.pityChest[id] = rarity >= c.pity.rarity ? 0 : k;
     }
     if (id === 'runes') { randomRune(p, rarity); continue; }
-    out.push(addItem(p, pick(SLOTS), id === 'set' ? set : pick(SETS), rarity));
+    out.push(addItem(p, pick(SLOTS), id === 'set' ? set : pick(ACTIVE_SETS), rarity));
   }
   return out;
 }

@@ -2709,6 +2709,98 @@ div.rstats span{flex:1 1 auto;min-width:0}div.rstats small{letter-spacing:0;line
 .rbrays{background:repeating-conic-gradient(rgba(255,214,110,.22) 0 7deg,transparent 7deg 13deg,rgba(47,224,128,.18) 13deg 20deg,transparent 20deg 26deg)!important}
 .lvfasts{margin-top:16px!important}
 .rstats b{color:#ffe9a0}.rstats span+span{border-left-color:#d9b25a88}
+
+/* ================= Ш62–Ш66 ================= */
+/* Ш62: надетые предметы и запас — та же каменная ячейка в золотой рамке, что и пустые; внутри — цвет редкости */
+.stagebox.gearhall .gslotcard:not(.empty):not(.glock),#view.herofix .igrid .icard{background:url(orb/ui/slot.webp) center/100% 100% no-repeat!important;border:0!important;outline:0!important;
+  box-shadow:none!important;border-radius:10px;filter:drop-shadow(0 2px 3px rgba(0,0,0,.35))!important;overflow:visible}
+.stagebox.gearhall .gslotcard:not(.empty):not(.glock)::before,#view.herofix .igrid .icard::before{content:"";position:absolute;inset:12.5%;border-radius:7px;z-index:0;
+  background:radial-gradient(circle at 50% 38%,var(--hi),var(--c) 58%,var(--lo));box-shadow:inset 0 0 0 1.5px var(--rim),inset 0 -4px 6px rgba(0,0,0,.25)}
+.stagebox.gearhall .gslotcard:not(.empty):not(.glock) .si,#view.herofix .igrid .icard .si{position:absolute;inset:16%;display:flex;align-items:center;justify-content:center;z-index:1}
+.stagebox.gearhall .gslotcard:not(.empty):not(.glock) .si :is(img,svg,.itemsvg),#view.herofix .igrid .icard .si :is(img,svg,.itemsvg){max-width:100%!important;max-height:100%!important;width:auto;height:auto}
+.stagebox.gearhall .gslotcard .lv,#view.herofix .igrid .icard .lv{top:-3px!important;left:50%;transform:translateX(-50%);z-index:3;font-size:9.5px!important;line-height:13px;padding:0 5px;background:rgba(14,18,16,.9)!important;border:1px solid #d9b25a!important;border-radius:6px;color:#fff3c0}
+.gslotcard.owslot::before{background:#2a2620!important;box-shadow:inset 0 0 0 2px var(--r)!important}
+.gslotcard.owslot .owimg{inset:12.5%!important;border-radius:7px;z-index:1}
+.gslotcard.owslot small{left:12.5%!important;right:12.5%!important;bottom:12.5%!important;border-radius:0 0 7px 7px;z-index:2}
+/* Ш64: «?» и «×» — только каменный квадрат в золоте, без старого тёмного круга */
+.lvsq,.lvsq.x,.lvsq.q,.mbox .x,.x,.qbtn{border-radius:0!important;border:0!important;box-shadow:none!important;background:url(orb/ui/btn_stone.webp) center/100% 100% no-repeat!important;
+  color:#3a2a10!important;text-shadow:0 1px 0 #fff8!important;filter:drop-shadow(0 2px 3px rgba(0,0,0,.5))!important}
+.lvfast[disabled]{filter:grayscale(1) brightness(.62)!important;opacity:.75}
+.lvfast[disabled] small{background:#2a3a30!important}
+.lvfast .lvdone{font:800 10px/1 system-ui,sans-serif;color:#3a2a10}
+/* Ш66: закрытые комплекты */
+.c3sets .c3soon{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:0;opacity:.6;filter:grayscale(.8)}
+.c3sets .c3soon img{display:none}.c3sets .c3soon span{font-size:13px;line-height:1.1;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:100%}
+.c3sets .c3soon small{font:800 10px/1.1 system-ui,sans-serif;color:#3a2a10}
+/* Ш63: колесо — две одинаковые кнопки, вкладки по ширине */
+.wbtns{display:grid!important;grid-template-columns:1fr 1fr;gap:10px;align-items:stretch;padding:0 6px}
+.wbtns>*{width:100%!important;min-width:0!important;height:64px!important;margin:0!important;box-sizing:border-box}
+.wbtns>.lvbtn{border:0!important;border-image:none!important;background:linear-gradient(#ffe9a0,#e8b23a)!important;border-radius:14px;box-shadow:0 0 0 2px #fff3c0,0 0 0 3.5px #8a5a10,0 4px 6px rgba(0,0,0,.5)!important}
+.wbtns>.lvbtn b,.wbtns>.lvbtn small{color:#3a2200!important;-webkit-text-stroke:0!important;text-shadow:0 1px 0 #fff8!important}
+.wbtns>.adbtn{border-radius:14px;padding:6px 10px!important}
+.wbtns>.adbtn b{font-size:14px!important;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.whtop .lvtabs>button:not(.lvsq){font-size:13px!important}
+.wheel .wimg{border-radius:50%}
+.wbtn2{background:radial-gradient(circle at 50% 35%,#5dff9a,#16a050 55%,#0a5a2a)!important;border:3px solid #ffd96a!important;box-shadow:0 0 0 2px #5a3a10,0 0 16px rgba(47,224,128,.6),inset 0 2px 0 #c8ffe0!important}
+.wbtn2 b{color:#fff!important;-webkit-text-stroke:1.5px #063a1c;paint-order:stroke fill;text-shadow:0 2px 0 #04260f!important}
+.wbtn2 small{color:#fff3c0!important}
+.superline2{background:linear-gradient(rgba(30,36,33,.93),rgba(16,20,18,.97))!important;border:2px solid #d9b25a!important;box-shadow:0 0 0 1.5px #5a3a10,0 4px 8px rgba(0,0,0,.5)!important;border-radius:12px}
+
+/* ================= Ш67: окно заданий — мраморная арка храма во весь экран ================= */
+.modal:has(.tasks2){top:calc(var(--ht,44px) + 6px);bottom:74px;background:url(orb/ui/arch.webp) center top/100% 100% no-repeat,#0a1a12!important;padding:44px 15% 4px!important;align-items:stretch}
+.mbox.lvpanel.tasks2{background:none!important;border:0!important;border-image:none!important;filter:none!important;box-shadow:none!important;max-width:none;width:100%;display:flex;flex-direction:column;padding:0!important;min-height:0}
+.tasks2 .lvtabs{margin:0 0 6px!important;gap:6px}
+.tasks2 .lvtabs>button:not(.lvsq){height:40px;border:0!important;border-image:none!important;border-radius:10px;background:var(--dia) 50% -3px/9px 13px no-repeat,var(--dia) 50% calc(100% + 3px)/9px 13px no-repeat,linear-gradient(#d8d2c4,#a49c8a)!important;
+  box-shadow:inset 0 0 0 2px #d9b25a,0 0 0 1px #5a3a10,0 3px 4px rgba(0,0,0,.5)!important;color:#1e6a3a!important;font:900 15px/1 Georgia,serif;text-shadow:0 1px 0 #fff8!important;filter:none!important}
+.tasks2 .lvtabs>button.on{background:var(--dia) 50% -3px/9px 13px no-repeat,var(--dia) 50% calc(100% + 3px)/9px 13px no-repeat,linear-gradient(#f7f2e6,#cfc6b2)!important;color:#0f7a3c!important;box-shadow:inset 0 0 0 2px #ffd96a,0 0 0 1px #5a3a10,0 0 12px rgba(47,224,128,.7)!important}
+.tasks2 .lvtabs>button.on::after{display:none}
+.tasks2 .lvtabs>.lvsq{position:fixed;right:10px;top:calc(var(--ht,44px) + 8px);width:38px;height:38px;z-index:5}
+.tasks2 .pinfo{background:none!important;border:0!important;border-image:none!important;justify-content:center;gap:10px;font-size:12px;color:#e8f0e8;text-shadow:0 1px 2px #000;margin:2px 0}
+.tasks2 .ptsbar2{margin:30px 22px 14px 8px}
+.tasks2 .lvtrough{border:0!important;border-image:none!important;background:rgba(6,20,12,.75);border-radius:9px;box-shadow:0 0 0 1.5px #d9b25a,0 0 10px rgba(47,224,128,.35)}
+.tasks2 .lvtrough::after{content:"ᚠᚢᚦᚨᚱᚲᚷᚹᚺᚾᛁᛃᛇᛈᛉᛊᛏᛒᛖᛗᛚᛜᛞᛟ";position:absolute;inset:0;display:flex;align-items:center;justify-content:center;overflow:hidden;white-space:nowrap;letter-spacing:3px;font-size:11px;color:rgba(200,255,220,.35);pointer-events:none}
+.tasks2 .pchest2 .chestimg{width:40px!important}
+.tasks2 .t2body{flex:1;min-height:0;overflow:auto;background:none!important;padding:2px 2px 6px}
+.tasks2 .task2{border:0!important;border-image:none!important;border-radius:10px;background:rgba(18,26,22,.62)!important;box-shadow:inset 0 0 0 1.5px rgba(217,178,90,.85),0 2px 5px rgba(0,0,0,.4)!important;padding:8px 8px;margin-top:7px;backdrop-filter:blur(2px)}
+.tasks2 .task2 b{font:700 13px/1.15 Georgia,serif;color:#f4ecd8}
+.tasks2 .tmed{position:relative;width:46px;height:46px;flex:none;border-radius:50%;background:radial-gradient(circle,#2a3a30,#0e1612)!important;border:0!important;box-shadow:none!important}
+.tasks2 .tmed img{width:34px;height:34px;object-fit:contain;position:relative;z-index:1;margin:6px}
+.tasks2 .tmed::after{content:"";position:absolute;inset:-9px;background:url(orb/ui/wreath.webp) center/100% 100% no-repeat;pointer-events:none}
+.tasks2 .tpts2{flex:none;width:32px;height:32px;display:flex;align-items:center;justify-content:center;transform:rotate(45deg);background:linear-gradient(135deg,#fff3c0,#d9a02a);border:1.5px solid #5a3a10;border-radius:4px;font-size:0}
+.tasks2 .tpts2::before{content:attr(data-p);transform:rotate(-45deg);font:900 11px/1 system-ui,sans-serif;color:#3a2200}
+.tasks2 .tclaim{border:0!important;border-image:none!important;height:36px;width:78px;border-radius:9px;background:linear-gradient(#2a5a3a,#123a22)!important;box-shadow:inset 0 0 0 2px #c9a24a,0 0 0 1px #3a2608!important;color:#9fc8a8!important;-webkit-text-stroke:0!important;font:800 12px/1 Georgia,serif;opacity:.75}
+.tasks2 .tclaim.on{background:linear-gradient(#a8f0b0,#38b860)!important;color:#063a1c!important;opacity:1;box-shadow:inset 0 0 0 2px #ffd96a,0 0 0 1px #5a3a10,0 0 12px rgba(120,255,160,.8)!important;animation:tglow2 1.6s ease-in-out infinite}
+@keyframes tglow2{50%{filter:brightness(1.12)}}
+.t2floor{display:flex;justify-content:space-between;align-items:flex-end;margin:4px -12% 0;padding:0 2%}
+.t2floor button{position:relative;background:none;border:0;padding:0;display:flex;flex-direction:column;align-items:center}
+.t2floor .chestimg{filter:drop-shadow(0 6px 5px rgba(0,0,0,.6))}
+.t2floor small{margin-top:-6px;padding:1px 8px;border-radius:8px;background:rgba(10,14,12,.85);border:1px solid #d9b25a;color:#fff3c0;font:800 10px/14px system-ui,sans-serif}
+.t2floor .rdot{position:absolute;top:2px;right:2px}
+.t2floor .t2fr.ready .chestimg{filter:drop-shadow(0 0 10px #2fe080) drop-shadow(0 6px 5px rgba(0,0,0,.6))}
+.tasks2 .cal2{gap:3px}
+
+/* ==== Ш65: карточка шара — чистая страница, рамки строк по тексту, тёмный размытый фон ==== */
+.modal.obmodal{background:rgba(4,10,7,.82)!important;backdrop-filter:blur(5px);-webkit-backdrop-filter:blur(5px)}
+.obribbon{display:flex;justify-content:center;margin:0 auto -2px}
+.obribbon b{padding:6px 34px 8px;font:900 19px/1 Georgia,serif;color:#3a2200;text-shadow:0 1px 0 #fff8;background:linear-gradient(#fff3c0,#e8b23a 60%,#c08a1c);
+  clip-path:polygon(0 0,100% 0,94% 50%,100% 100%,0 100%,6% 50%);filter:drop-shadow(0 2px 2px rgba(0,0,0,.6))}
+.obtop{gap:18px}
+.obnav{width:42px!important;height:42px!important;border-radius:0!important;border:0!important;background:url(orb/ui/btn_stone.webp) center/100% 100% no-repeat!important;color:#3a2a10!important;line-height:38px;filter:drop-shadow(0 2px 3px rgba(0,0,0,.6))}
+.obbig img{width:112px;height:140px}
+.obbig span{background:linear-gradient(#fff3c0,#e8b23a)!important;color:#3a2200!important;border:1.5px solid #5a3a10!important}
+.obpage{background-image:url(orb/ui/page2.webp)!important;padding:46px 50px 40px!important;gap:9px!important;min-height:0!important}
+.obplate{background:rgba(255,250,235,.6)!important;border:1.5px solid #c9a24a!important;box-shadow:inset 0 0 0 3px rgba(255,250,235,.6),inset 0 0 0 4px rgba(201,162,74,.45)}
+.obdesc{padding:8px 10px;border-radius:10px;border:1.5px solid rgba(201,162,74,.75);background:rgba(255,250,235,.38)}
+.obdesc p{margin:4px 0 0!important}
+.obstats{border-radius:10px;border:1.5px solid rgba(201,162,74,.75);background:rgba(255,250,235,.38);overflow:hidden}
+.obstats div:last-child{border-bottom:0!important}
+.obhero{display:block;text-align:center;font:italic 11.5px/1.3 Georgia,serif;color:#7a6040}
+.obbtns .obup{background:url(orb/ui/f_btn.webp) center/100% 100% no-repeat!important;border:0!important;box-shadow:none!important;color:#fff!important;-webkit-text-stroke:1.5px #063a1c;paint-order:stroke fill;padding:12px 24px;font-size:16px}
+.obbtns .obup[disabled]{filter:grayscale(.85) brightness(.85)}
+.obbtns .obback{background:linear-gradient(#d8d2c4,#a49c8a)!important;border:1.5px solid #c9a24a!important;color:#3a2a10!important;box-shadow:0 2px 0 #5a4a30!important;padding:12px 20px}
+.tasks2 .lvtabs>.lvsq{top:calc(var(--ht,44px) + 12px)!important}
+.t2floor{margin:4px 0 0!important}
+.wbtns>*:only-child{grid-column:1/-1;justify-self:center;max-width:62%}
 </style>
 </head>
 <body>

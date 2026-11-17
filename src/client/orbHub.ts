@@ -61,18 +61,20 @@ function ballModal(p: P.Profile, b: BallId): string {
   const heroName = { prometheus: 'Гестия', skadi: 'Борей', apollo: 'Аполлон', hades: 'Геката', hydra: 'Медуза', perun: 'Зевс', heracles: 'Геракл', stribog: 'Ника', poseidon: 'Посейдон', veles: 'Деметра' }[BALLS[b].hero] ?? '';
   return `<div class="modal obmodal" data-a="close"><div class="mbox obm" style="--c:${BALLS[b].color}">
     <button class="x" data-a="close">✕</button>
+    <div class="obribbon"><b>${BALLS[b].name}</b></div>
     <div class="obtop"><button class="obnav" data-a="o:ball" data-v="${prev}">‹</button>
-      <div class="obbig"><b>${BALLS[b].name}</b><img src="${book(b)}" alt=""><span>Ур. ${x.lv}</span></div>
+      <div class="obbig"><img src="${book(b)}" alt=""><span>Ур. ${x.lv}</span></div>
       <button class="obnav" data-a="o:ball" data-v="${next}">›</button></div>
     <div class="obpage">
       <div class="obplate">Крит-урон всех шаров <b>+${pct(OM.ballCritStep(x.lv + 1))}</b> за улучшение</div>
-      <div class="obdesc"><b>Описание</b><p>${trS(BALLS[b].desc(1))}</p><small>${trS(`Шар героя: ${heroName}. В забеге качается до 3-го уровня`)}</small></div>
+      <div class="obdesc"><b>Описание</b><p>${trS(BALLS[b].desc(1))}</p></div>
       <div class="obstats">
         <div><span>Удар стихией</span><b>${pct(hit)} атаки <i>+${pct(hitN - hit)}</i></b></div>
         <div><span>На 3-м уровне в забеге</span><b>${pct(hit * 1.6)} атаки</b></div>
       </div>
+      <small class="obhero">${trS(`Шар героя: ${heroName}. В забеге качается до 3-го уровня`)}</small>
       <div class="obcost"><span class="${okC ? 'ok' : 'no'}">🂠 ${x.cards}/${c.cards}</span><span class="${okG ? 'ok' : 'no'}">🪙 ${fmt(p.gold)}/${fmt(c.gold)}</span></div>
-      <div class="obbtns"><button class="btn danger" data-a="close">Назад</button><button class="btn big2" data-a="o:ballUp" data-v="${b}" ${okC && okG ? '' : 'disabled'}>Улучшить</button></div>
+      <div class="obbtns"><button class="btn obback" data-a="close">Назад</button><button class="btn obup" data-a="o:ballUp" data-v="${b}" ${okC && okG ? '' : 'disabled'}>Улучшить</button></div>
     </div></div></div>`;
 }
 

@@ -3,7 +3,7 @@
 // Plain DOM; every button carries data-a="action" and data-v="value".
 import { HEROES, ELEMENT_NAME, ELEMENT_EFFECT, Element, SkillId, WALL, WALL_MAPS, EVENT, EventId, stageMul } from '../core/content';
 import {
-  GEM, GEM_TYPES, GemType, RARITIES, RARITY_CAP, RARITY_COLOR, SLOTS, SLOT_ICON, SLOT_NAME, SETS, SET_NAME,
+  GEM, GEM_TYPES, GemType, RARITIES, RARITY_CAP, RARITY_COLOR, SLOTS, SLOT_ICON, SLOT_NAME, SETS, ACTIVE_SETS, SET_NAME,
   SET_DESC, WEAPON_NAME, SET_COLOR, CHESTS as CHEST_DEFS, Slot, SetId, levelCost, STAR_PARTICLES, STAR_LEVEL, heroXpFor, runeSlots, RUNE_RARITY, RUNE_CRAFT, RUNE_CRAFT_TYPE, RUNE_UP,
   PRICE, BIG_COUPON, CHESTS, CHEST_X10, ChestId, HERO_UNLOCK_PARTICLES, CR_SEARCH, ENERGY, IDLE, gemXpFor, GEM_STAR_EFF,
   GEM_LOCATIONS, GEM_FREE_PER_DAY, R_TIER, R_PLUS, MYTHIC, gearLines, RUNES, RUNE_TYPES, RUNE_TYPE_NAME, RUNE_TYPE_PL, RUNE_SLOT_TYPE, RuneType,
@@ -733,7 +733,7 @@ export class Hub {
       case 'wInfo': this.wheel.info = !this.wheel.info; return this.render();
       // shop
       case 'shopTab': this.sel.shopTab = v as 'chests'; return this.render();
-      case 'shopSet': this.sel.set = v as SetId; return this.render();
+      case 'shopSet': if (!ACTIVE_SETS.includes(v as SetId)) return this.toast('Скоро'); this.sel.set = v as SetId; return this.render(); // Ш66
       case 'offer': return this.act(() => { P.buyOffer(p, v); return 'Покупка'; }, 'Покупка');
       case 'buy': return this.act(() => { P.buy(p, v as never); return 'Покупка'; }, 'Покупка');
       case 'chestInfo': this.sel.chestInfo = v as ChestId; return this.render();
@@ -1397,12 +1397,13 @@ export class Hub {
             <div class="c3info"><b class="c3title">${title}</b><div class="c3odds">${what}</div>
             ${c.pity ? `<div class="c3pity"><span>Гарантия ${id === 'runes' ? ['обычной', 'редкой', 'эпической'][c.pity.rarity] + ' руны' : ['обычного', 'редкого', 'эпического'][c.pity.rarity]} через</span><b>${pity}</b></div>` : ''}</div></div>
           <div class="c3btns"><button class="c3b one" data-a="chest" data-v="${id}:1"><span>Открыть ×1</span><b>${c.price}💎</b></button>
-          <button class="c3b ten" data-a="chest" data-v="${id}:10"><i class="bsp"></i><span>Открыть ×10</span><b>${c.price * CHEST_X10}💎</b></button></div>
+          <button class="c3b ten" data-a="chest" data-v="${id}:10"><span>Открыть ×10</span><b>${c.price * CHEST_X10}💎</b></button></div>
           ${id === 'set' ? this.adBtn(p, 'chest', 'Сундук бесплатно за рекламу') : id === 'runes' ? this.adBtn(p, 'runes', 'Сундук рун бесплатно за рекламу') : ''}
-          ${id === 'set' ? `<div class="c3sets">${SETS.map(st => `<button class="${set === st ? 'on' : ''}" style="--sc:${SET_COLOR[st]}" data-a="shopSet" data-v="${st}"><img src="${ICONS['set_' + st]}" alt="">${SET_NAME[st]}</button>`).join('')}</div>
+          ${id === 'set' ? `<div class="c3sets">${SETS.map(st => ACTIVE_SETS.includes(st) ? `<button class="${set === st ? 'on' : ''}" style="--sc:${SET_COLOR[st]}" data-a="shopSet" data-v="${st}"><img src="${ICONS['set_' + st]}" alt="">${SET_NAME[st]}</button>` : `<button class="c3soon" data-a="shopSet" data-v="${st}"><img src="${ICONS['set_' + st]}" alt=""><span>${SET_NAME[st]}</span><small>🔒 Скоро</small></button>`).join('')}</div>
             <div class="c3bonus">2 шт. — ${SET_DESC[set].b2} · 4 шт. — ${SET_DESC[set].b4} · 6 шт. — ${SET_DESC[set].b6}</div>` : ''}</div>`;
       };
-      body = this.giftCard(p) + chest('set', 'th-void') + chest('obsidian', 'th-epic') + chest('runes', 'th-rune') + this.tavernCard(p);
+      if (!ACTIVE_SETS.includes(this.sel.set)) this.sel.set = ACTIVE_SETS[0];
+      body = this.giftCard(p) + chest('set', 'th-void') + chest('runes', 'th-rune') + this.tavernCard(p); // Ш66: no epic gear chest
     } else { // правка 173: crystal packs for real money (first purchase ×2), правка 172: the starter pack
       const gate = P.payTest(p) ? '' : '<div class="parch2 tpnote">Оплата появится вместе с Google Play</div>';
       const starter = P.starterOffered(p) ? `<div class="ch3 th-epic stpack">${CORNERS}
@@ -1691,11 +1692,19 @@ export class Hub {
         const v = Math.min(d.need, prog[d.key] ?? 0), ok = v >= d.need, taken = done.includes(d.id);
         const auto = d.key === 'days', ico = UI2['task_' + d.key] ?? UI2.task_runs, lock = P.taskLock(p, d.key);
         return `<div class="task2${taken ? ' taken' : ok && !auto ? ' ready' : ''}${lock ? ' tlocked' : ''}"><span class="tmed"><img src="${ico}" alt=""></span><div class="grow"><b>${d.text}</b>${lock ? `<div class="tlock">🔒 ${lock}</div>` : this.lvBar(v / d.need, `${fmt(v)}/${fmt(d.need)}`)}</div>
-          <span class="tpts2">+${d.pts}</span>${auto ? '<span class="tauto">авто</span>' : taken ? '<i class="seal"></i>' : lock ? '' : `<button class="tclaim${ok ? ' on' : ''}" data-a="taskClaim" data-v="${weekly ? 'w' : 'd'}:${d.id}" ${ok ? '' : 'disabled'}>Забрать</button>`}</div>`;
+          <span class="tpts2" data-p="+${d.pts}">+${d.pts}</span>${auto ? '<span class="tauto">авто</span>' : taken ? '<i class="seal"></i>' : lock ? '' : `<button class="tclaim${ok ? ' on' : ''}" data-a="taskClaim" data-v="${weekly ? 'w' : 'd'}:${d.id}" ${ok ? '' : 'disabled'}>Забрать</button>`}</div>`;
       }).join('') + `<div class="lvsub">${weekly ? 'Сброс в понедельник' : 'Сброс в 00:00'}</div>`;
     }
     return `<div class="modal" data-a="close"><div class="mbox lvpanel tasks2">
-      <div class="lvtabs">${tb('day', 'День', dDot)}${tb('week', 'Неделя', wDot)}${tb('login', 'Вход', P.loginClaimable(p))}<button class="lvsq x" data-a="close">✕</button></div>${head ? `<div class="t2head">${head}</div>` : ''}<div class="t2body panelbox" data-k="t${tab}">${body}</div></div></div>`;
+      <div class="lvtabs">${tb('day', 'День', dDot)}${tb('week', 'Неделя', wDot)}${tb('login', 'Вход', P.loginClaimable(p))}<button class="lvsq x" data-a="close">✕</button></div>${head ? `<div class="t2head">${head}</div>` : ''}<div class="t2body panelbox" data-k="t${tab}">${body}</div>${this.tasksFloor(p)}</div></div>`;
+  }
+
+  /** Ш67: the marble floor of the tasks arch — the idle chest with its timer on the left, the week's chest on the right */
+  private tasksFloor(p: P.Profile): string {
+    const hrs = P.idleHours(p), t = P.taskState(p), wp = P.weeklyPoints(p);
+    const wNext = P.WEEKLY_CHESTS.find(c => !t.wChest.includes(c.at)), wReady = !!wNext && wp >= wNext.at;
+    return `<div class="t2floor"><button class="t2fl" data-a="idleOpen">${chestSvg(hrs < IDLE.capH / 2 ? 0 : hrs < IDLE.capH ? 1 : 2, 64)}<small>${hrs >= IDLE.capH ? 'полон' : `${Math.floor(IDLE.capH - hrs)}ч ${Math.floor(((IDLE.capH - hrs) % 1) * 60)}м`}</small></button>
+      <button class="t2fr${wReady ? ' ready' : ''}" data-a="taskTab" data-v="week">${chestSvg(wReady ? 1 : 0, 64)}${wReady ? '<i class="rdot"></i>' : ''}</button></div>`;
   }
 
   // ---------------- правка 202: mail — letters from the developer (rewards, greetings) ----------------
@@ -1761,7 +1770,7 @@ export class Hub {
     const hrs = P.idleHours(p), r = P.idlePreview(p), per = P.idlePreview(p, 1), f = P.fastIdleState(p), F = P.FAST_IDLE;
     const st = hrs < IDLE.capH / 2 ? 0 : hrs < IDLE.capH ? 1 : 2;
     const fast = (v: string, cls: string, top: string, left: string, ok: boolean) =>
-      `<button class="lvfast ${cls}" data-a="idleFast" data-v="${v}" ${ok ? '' : 'disabled'}><i class="lvgem"></i><b>${top}</b><small>${left}</small></button>`;
+      `<button class="lvfast ${cls}" data-a="idleFast" data-v="${v}" ${ok ? '' : 'disabled'}><i class="lvgem"></i><b>${top}</b><small>${ok ? left : '<i>✓</i> Завтра'}</small></button>`; // Ш64: a spent one says so
     // правки 146, 147: the head (plate, «?», «✕») stands still, the rest scrolls under it; «?» and «✕» sit in the frame corners
     return `<div class="modal" data-a="close"><div class="mbox lvpanel idle2">
       <div class="lvhead fixhead">${this.lvBanner('Сундук накопления', 'fit')}<button class="lvsq q" data-a="idleInfo">?</button><button class="lvsq x" data-a="close">✕</button></div>
@@ -2012,12 +2021,12 @@ export class Hub {
       <div class="muted small">${wid === 'adv' ? `Гарантия легендарного приза через ${40 - p.pityLottery} вращений. Одно бесплатное вращение в день.` : 'Только крупные призы.'}</div></div>` : '';
     const POINTER = '<svg class="wpin" viewBox="0 0 40 46"><path d="M4 4 H36 L20 42 Z" fill="url(#wpg)" stroke="#2a1400" stroke-width="3" stroke-linejoin="round"/><path d="M10 8 H30 L20 32 Z" fill="#fff4c0" opacity=".35"/><circle cx="20" cy="10" r="4" fill="#e8303a" stroke="#2a1400" stroke-width="1.5"/><defs><linearGradient id="wpg" x1="0" x2="1"><stop offset="0" stop-color="#8a5a10"/><stop offset=".45" stop-color="#ffe08a"/><stop offset="1" stop-color="#b07a20"/></linearGradient></defs></svg>';
     return `<div class="whscreen">${sparksHtml(1, '#ff8a2a')}
-      <div class="whtop"><div class="lvtabs">${tb('free', 'Бесплатное')}${tb('adv', 'Улучшенное')}${tb('super', 'Супер')}</div><button class="lvsq q" data-a="wInfo">?</button><button class="lvsq x" data-a="close">✕</button></div>
+      <div class="whtop"><div class="lvtabs">${tb('free', 'Обычное')}${tb('adv', 'Лучше')}${tb('super', 'Супер')}</div><button class="lvsq q" data-a="wInfo">?</button><button class="lvsq x" data-a="close">✕</button></div>
       ${this.lvBanner('Колесо фортуны')}
       <div class="wheelwrap2"><div class="whalo"></div>${POINTER}
-        <div class="wheel" style="transform:rotate(${this.wheel.rot}deg)"><img class="wimg" src="${UI2.wheel}" alt="" draggable="false"><svg class="wprz" viewBox="0 0 300 300">${prizes}</svg></div>
+        <div class="wheel" style="transform:rotate(${this.wheel.rot}deg)"><img class="wimg" src="orb/ui/wheel.webp" alt="" draggable="false"><svg class="wprz" viewBox="0 0 300 300">${prizes}</svg></div>
         <button class="wbtn2" data-a="spin" data-v="1" ${this.wheel.busy ? 'disabled' : ''}><b>${this.wheel.busy ? '…' : 'Крутить'}</b><small>${btn}</small></button></div>
-      <div class="wbtns">${tab !== 'free' ? `<button class="lvbtn" data-a="spin" data-v="10" ${this.wheel.busy ? 'disabled' : ''}><b>×10</b><small>${W.price10}💎</small></button>` : ''}${this.wheel.busy ? '' : this.adBtn(p, 'wheel', 'Вращение за рекламу', 'adbtn wad')}</div>
+      <div class="wbtns">${tab !== 'free' ? `<button class="lvbtn" data-a="spin" data-v="10" ${this.wheel.busy ? 'disabled' : ''}><b>×10</b><small>${W.price10}💎</small></button>` : ''}${this.wheel.busy ? '' : this.adBtn(p, 'wheel', 'За рекламу', 'adbtn wad')}</div>
       <div class="superline2"><span class="sico">${this.prizeIcon(best.icon)}</span><span>Суперприз<b>${best.label} ${best.qty}</b></span></div>
       ${info}
     </div>`;

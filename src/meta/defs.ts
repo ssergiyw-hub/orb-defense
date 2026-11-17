@@ -9,6 +9,8 @@ export const SLOT_ICON: Record<Slot, string> = { book: '📕', mantle: '🧥', g
 
 export type SetId = 'guard' | 'wanderer' | 'berserk';
 export const SETS: readonly SetId[] = ['guard', 'wanderer', 'berserk'];
+/** Ш66: the sets that drop now — the others are «Скоро» in the shop and drop nowhere */
+export const ACTIVE_SETS: readonly SetId[] = ['guard'];
 export const SET_NAME: Record<SetId, string> = { guard: 'Лес', wanderer: 'Солнце', berserk: 'Пустота' };
 export const SET_DESC: Record<SetId, { main: string; b2: string; b4: string; b6: string }> = {
   // правка 155: the percent of attack / health here is real (of the total) — see SET_PCT
@@ -161,7 +163,7 @@ export const GEM_LOCATIONS = [
   { name: 'Руины', icon: '🏛️', cost: 3125, odds: [0.03, 0.05, 0.02], next: 0.35, ess: [{ p: 0.845, small: 2, big: 0 }, { p: 0.055, small: 0, big: 1 }] },
   { name: 'Замок', icon: '🏰', cost: 4500, odds: [0.03, 0.06, 0.04], next: 0, ess: [{ p: 0.745, small: 3, big: 0 }, { p: 0.125, small: 0, big: 1 }] },
 ];
-export const GEM_FREE_PER_DAY = 12;
+export const GEM_FREE_PER_DAY = 5; // Ш61: was 12
 /** crystal search (straight to the Ruins): the only search with ★4; pity ★3 at 30 and ★4 at 60 */
 export const CR_SEARCH = { cost: 150, odds: [0.44, 0.35, 0.17, 0.04], pity: 30, pity4: 60 };
 
@@ -241,7 +243,8 @@ export const DROP_ODDS = [0.85, 0.14, 0.01];
 
 // ---- energy and idle chest ----
 export const ENERGY = { max: 30, regenSec: 360, run: 5, refundEarly: 4 };
-export const IDLE = { capH: 12, scrollsH: 1, gemChanceH: 0.05, gold: (map: number) => 100 + 20 * map, fastH: 2 };
+export const IDLE = { capH: 12, scrollsH: 1, gemChanceH: 0.015, // Ш61: was 5% an hour
+  gold: (map: number) => 100 + 20 * map, fastH: 2 };
 
 export function elemOf(x: string): Element { return x as Element; }
 
