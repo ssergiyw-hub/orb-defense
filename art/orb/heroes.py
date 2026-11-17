@@ -31,6 +31,37 @@ HEROES = {
         'idle': [('heroes/2376', 0), ('heroes/2376', 0), ('heroes/2376', 1)],
         'cast': [('heroes/2376', 2), ('heroes/2376', 2), ('heroes/2376', 3)],
     },
+    # Ш80 (18.11): the other six — Seryoga's back views + Meshy (art/orb/src/heroes/mesh/h-*.png): fronts, pose sheets, "up" pairs
+    'perun': {  # Zeus
+        'front': 'mesh/h-zeus-front',
+        'idle': ['heroes/2178', ('heroes/2364', 0), ('heroes/2364', 1)],
+        'cast': ['heroes/2179', ('heroes/2364', 2), ('heroes/2364', 3)],
+    },
+    'heracles': {  # the Spartan
+        'front': 'mesh/h-heracles-front',
+        'idle': ['heroes/2180', ('heroes/2365', 0), ('heroes/2365', 1)],
+        'cast': ['heroes/2181', ('heroes/2365', 2), ('heroes/2365', 3)],
+    },
+    'stribog': {  # Nike (sheet 2366 redrawn without the big back wings)
+        'front': 'mesh/h-nike-front',
+        'idle': ['heroes/2182', ('mesh/h-nike-sheet', 0), ('mesh/h-nike-sheet', 1)],
+        'cast': ['heroes/2183', ('mesh/h-nike-sheet', 2), ('mesh/h-nike-sheet', 3)],
+    },
+    'poseidon': {  # the red-haired merman, redrawn in Apollo's style
+        'front': 'mesh/h-poseidon-front',
+        'idle': [('mesh/h-poseidon-up2', 0, 2), ('mesh/h-poseidon-sheet', 0), ('mesh/h-poseidon-sheet', 1)],
+        'cast': [('mesh/h-poseidon-up2', 1, 2), ('mesh/h-poseidon-sheet', 2), ('mesh/h-poseidon-sheet', 3)],
+    },
+    'hades': {  # Hecate in the hood
+        'front': 'mesh/h-hecate-front',
+        'idle': [('mesh/h-hecate-up', 0, 2), ('mesh/h-hecate-sheet', 0), ('mesh/h-hecate-sheet', 1)],
+        'cast': [('mesh/h-hecate-up', 1, 2), ('mesh/h-hecate-sheet', 2), ('mesh/h-hecate-sheet', 3)],
+    },
+    'prometheus': {  # Hestia, new
+        'front': 'mesh/h-hestia-front',
+        'idle': [('mesh/h-hestia-up2', 0, 2), ('mesh/h-hestia-sheet', 0), ('mesh/h-hestia-sheet', 3)],  # her calm side pose holds the torch upright — the aim reads from the thrust
+        'cast': [('mesh/h-hestia-up2', 1, 2), ('mesh/h-hestia-sheet', 2), ('mesh/h-hestia-sheet', 3)],
+    },
 }
 POSES = ['up', 'diag', 'side']
 
@@ -75,13 +106,15 @@ def cut(src):
     return Image.fromarray(np.dstack([rgb.astype(np.uint8), (alpha * 255).astype(np.uint8)]), 'RGBA')
 
 
-def sheet_poses(src):
-    """a row of 4 poses on one picture: the 4 biggest blobs, small bits (sparks) join the nearest one"""
+def sheet_poses(src, n=4):
+    """a row of n poses on one picture: the 4 biggest blobs, small bits (sparks) join the nearest one"""
     im = cut(src)
     a = np.asarray(im)[..., 3] > 40
-    lab, n = ndimage.label(ndimage.binary_dilation(a, iterations=4))
-    sizes = ndimage.sum(a, lab, range(1, n + 1))
-    order = sorted(range(n), key=lambda i: -sizes[i])[:4]
+    for it in (4, 2, 1):  # poses close together (a weapon near the next figure) merge at 4 — then glue bits less
+        lab, nl = ndimage.label(ndimage.binary_dilation(a, iterations=it))
+        sizes = ndimage.sum(a, lab, range(1, nl + 1))
+        if sum(1 for v in sizes if v > 0.3 * max(sizes)) >= n: break
+    order = sorted(range(nl), key=lambda i: -sizes[i])[:n]
     cx = {i: ndimage.center_of_mass(a, lab, i + 1)[1] for i in order}
     main = sorted(order, key=lambda i: cx[i])
     owner = np.zeros(lab.shape, np.int16)
@@ -91,11 +124,11 @@ def sheet_poses(src):
         rl, rn = ndimage.label(rest)
         for j in range(1, rn + 1):
             x = ndimage.center_of_mass(rest, rl, j)[1]
-            k = min(range(4), key=lambda k: abs(cx[main[k]] - x))
+            k = min(range(n), key=lambda k: abs(cx[main[k]] - x))
             owner[rl == j] = k + 1
     arr = np.asarray(im)
     out = []
-    for k in range(4):
+    for k in range(n):
         m = owner == k + 1
         part = arr.copy(); part[..., 3] = np.where(m, part[..., 3], 0)
         out.append(Image.fromarray(part, 'RGBA'))
@@ -105,8 +138,8 @@ def sheet_poses(src):
 _sheets = {}
 def pose_img(spec):
     if isinstance(spec, tuple):
-        name, k = spec
-        if name not in _sheets: _sheets[name] = sheet_poses(path(name))
+        name, k = spec[:2]; n = spec[2] if len(spec) > 2 else 4
+        if name not in _sheets: _sheets[name] = sheet_poses(path(name), n)
         return _sheets[name][k]
     return cut(path(spec))
 
@@ -126,14 +159,24 @@ def feet(im):
 
 
 def body_height(im):
-    """the hero's height without the weapon raised above the head: rows where the opaque run is wider than a staff"""
+    """the hero's height from the feet to the top of the head, without a raised staff, arm, flame or glow:
+    thin parts (staff, arm) are opened away, then the blob that holds the feet gives the head top"""
     a = np.asarray(im)[..., 3] > 60
     w = a.sum(1)
-    rows = np.where(w > 0.16 * a.shape[1])[0]
-    return int(rows.max() - rows.min()) if len(rows) else im.height
+    k = max(3, int(0.045 * w.max()))
+    o = ndimage.binary_opening(a, iterations=k)
+    lab, n = ndimage.label(o)
+    if not n: return im.height
+    ys, xs = np.nonzero(o)
+    low = lab[ys.max(), xs[ys == ys.max()][0]]  # the blob at the lowest point = the feet / tail
+    rows = np.where((lab == low).any(1))[0]
+    return int(rows.max() - rows.min())
 
 
 H_OUT = 360  # px of the body in the saved pose
+# hand fixes after a look at all poses side by side: a raised thick arm or a big flame counts into the height
+FIX = {('perun', 'idle_diag'): 1.33, ('perun', 'cast_diag'): 1.38, ('stribog', 'idle_diag'): 1.27, ('stribog', 'cast_up'): 1.18,
+       ('prometheus', 'cast_up'): 1.25, ('prometheus', 'cast_diag'): 1.15}
 meta = {}
 for hid, d in HEROES.items():
     m = {'poses': {}}
@@ -141,7 +184,7 @@ for hid, d in HEROES.items():
         for pi, spec in enumerate(d[kind]):
             im = trim(pose_img(spec))
             bh = body_height(im)
-            k = H_OUT / bh
+            k = H_OUT / bh * FIX.get((hid, f'{kind}_{POSES[pi]}'), 1)
             im = im.resize((max(1, round(im.width * k)), max(1, round(im.height * k))), Image.LANCZOS)
             fy, fx = feet(im)
             name = f'{hid}_{kind}_{POSES[pi]}'
@@ -166,7 +209,9 @@ open('src/client/orbHeroArt.ts', 'w').write('\n'.join(ts))
 
 
 # ---- the hero screen: the front picture replaces the old one (HERO_IMG, 512 px tall) and the avatar (HERO_FACE) ----
-FACE = {'apollo': (0.5, 0.25, 0.46), 'skadi': (0.42, 0.18, 0.36), 'veles': (0.48, 0.19, 0.36)}  # centre x, y, side (share of height)
+FACE = {'apollo': (0.5, 0.25, 0.46), 'skadi': (0.42, 0.18, 0.36), 'veles': (0.48, 0.19, 0.36),
+        'perun': (0.4, 0.25, 0.44), 'heracles': (0.48, 0.25, 0.42), 'stribog': (0.39, 0.24, 0.44),
+        'poseidon': (0.41, 0.24, 0.46), 'hades': (0.53, 0.22, 0.44), 'prometheus': (0.62, 0.24, 0.44)}  # centre x, y, side (share of height)
 
 def uri(im, q):
     b = io.BytesIO(); im.save(b, 'WEBP', quality=q, method=6); return 'data:image/webp;base64,' + base64.b64encode(b.getvalue()).decode()
@@ -174,7 +219,7 @@ def uri(im, q):
 def patch(file, obj, hid, value):
     s = open(file).read()
     i = s.index(f'export const {obj}')
-    m = re.compile(r"^  " + hid + r": '[^']*',$", re.M).search(s, i)
+    m = re.compile(r"^  " + hid + r": '[^']*',", re.M).search(s, i)  # a comment may follow the comma
     s = s[:m.start()] + f"  {hid}: '{value}'," + s[m.end():]
     open(file, 'w').write(s)
 
