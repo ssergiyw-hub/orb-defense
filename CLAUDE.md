@@ -129,5 +129,9 @@ python3 art/orb/enemies.py && python3 art/orb/process.py   # пересобра�
 - Сначала стена, потом герой (Ш102): все удары — через `Orb.hurt()`; стена пала — fx `wallFall`, удары в героя, поражение только при `heroHp <= 0`.
 - «Атака на босса» (Ш101): `cfg.bossEv` (+ `cfg.storm`), `BOSS_EV`, `bossStart`/`bossTick`, мета `finishBossEv`, событие `'bossorb'`, босс дня `bossOfDay()`. Бот: `npx tsx tools/stormbot.ts <этап> <мн.> <сиды> <id босса>`; скриншоты `node tools/bossshot.mjs` → `shots/b-*.png` (бой виден как `window.__orb`).
 
+## Правки Ш103–Ш105 (18.11, вечер)
+- Свойства «Леса» (Ш104): `cfg.gear` (эпик 1 / миф 2, собирает `gearFx` в `orbMeta.ts`), числа `GEAR_FX`; в `Orb`: `gx()`, `thornThrough`, `blocked()` (Кора/Чаща), `gearTick()` (события по секундам), «Второе дыхание» в `hurt()`, копия шара `Ball.copy`. Здоровье стены от предметов — `gearWall`. Бот: `OGEAR=1|2 OFROM=7 npx tsx tools/orbbot.ts 7 110 110 20`, `OGEAR=… npx tsx tools/stormbot.ts`.
+- Светлый мрамор (Ш103, Ш105): `art/orb/marble.py` режет листы `art/orb/src/ref/2537, 2538, 2540, 2541` (фиолетовый фон) → `assets/orb/ui/m_*.webp`. Окно предмета — CSS `.itembox2`, рейтинг и окно события — `.mrate` / `.mev` (последние блоки `index.html`). Скриншоты: `tools/itemshot.mjs`, `tools/ratingshot.mjs`, `tools/gearshot.mjs`.
+
 ## Не сделано (на 18.11)
 Медуза — 3D (нет поз спиной), батл пасс / рынок / колесо / события — только через общие рамки, без отдельной доводки. События, итерация 2 (слияния, пассивки), баланс живой игрой.
