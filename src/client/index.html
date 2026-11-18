@@ -2940,6 +2940,35 @@ div.rstats span{flex:1 1 auto;min-width:0}div.rstats small{letter-spacing:0;line
 .jbtns .gbtn.violet{border-width:8px!important;border-image:url(orb/ui/btn_stone.webp) 30 fill / 8px stretch!important;color:#2a2418!important;-webkit-text-stroke:0;text-shadow:0 1px 0 #fff8!important}
 .jbtns .gbtn.red{border-width:0!important;border-radius:14px!important;background:linear-gradient(#ffe9a0,#e8b23a)!important;box-shadow:0 0 0 2px #fff3c0,0 0 0 3.5px #8a5a10,0 4px 6px rgba(0,0,0,.5)!important;color:#3a2200!important;-webkit-text-stroke:0;text-shadow:0 1px 0 #fff8!important}
 .jbtns .gbtn b{color:inherit!important}
+/* Ш96: hits in a volley, top right under ×1 / Auto */
+.ohits{position:absolute;right:8px;top:calc(env(safe-area-inset-top,0px) + 92px);opacity:.88;z-index:6;padding:4px 10px;border-radius:10px;pointer-events:none;
+  font:700 12px/1 system-ui,sans-serif;color:#f4ecd8;background:rgba(10,14,20,.72);box-shadow:inset 0 0 0 1.5px #b8a070}
+.ohits b{font-size:16px;color:#fff}.ohits.gold{box-shadow:inset 0 0 0 1.5px #ffd24a}.ohits.gold b{color:#ffd24a}
+.ohits.hot{box-shadow:inset 0 0 0 1.5px #ffd24a,0 0 14px rgba(255,200,60,.8)}.ohits.bump b{display:inline-block;animation:ohb .18s ease-out}
+@keyframes ohb{40%{transform:scale(1.35)}}
+.ohbest{text-align:center;margin:10px 0 2px;color:#e8dcc0;font-size:13px}.ohbest b{color:#ffd24a;font-size:16px}
+/* Ш93: the parchment keeps its ornaments at any height (parch9.webp: a uniform middle band, 9-slice 130 100 200 100) */
+.rband,.rgrid{border-image:url(orb/ui/parch9.webp) 130 100 200 100 fill / 52px 36px 80px 36px stretch!important;border-width:44px 30px 66px 30px!important;border-style:solid!important}
+.rband{padding:0 2px!important}.rgrid{padding:0!important}
+/* «Ещё ×1 / ×10» under the rewards: stone plates in gold, ×1 lit, a disabled one dimmed */
+.ragain .stonebtn{border:8px solid transparent!important;border-image:url(orb/ui/btn_stone.webp) 30 fill / 8px stretch!important;background:none!important;border-radius:0!important;
+  box-shadow:0 0 0 2px #d9b25a,0 4px 6px rgba(0,0,0,.5)!important;color:#fff3d0!important;text-shadow:0 1px 2px #000!important;-webkit-text-stroke:0!important}
+.ragain .stonebtn b{color:#ffd96a!important;font-family:Georgia,serif;-webkit-text-stroke:1.5px #2a1a04!important;paint-order:stroke fill;text-shadow:0 2px 0 #1a1004!important}
+.ragain .stonebtn small{color:#fff3d0!important;-webkit-text-stroke:0!important;text-shadow:0 1px 2px #000!important}
+.ragain .stonebtn:first-child:not([disabled]){box-shadow:0 0 0 2px #ffd24a,0 0 14px rgba(255,210,74,.55),0 4px 6px rgba(0,0,0,.5)!important}
+.ragain .stonebtn[disabled]{filter:grayscale(.5);opacity:.6}
+/* Ш94: a slow glowing rune circle behind the rewards */
+.rgrid{position:relative!important}
+.rewardov .rband::after,.rewardov .rgrid::after{display:block!important;content:""!important;position:absolute;left:50%;top:50%;height:94%;max-height:330px;width:auto;max-width:94%;aspect-ratio:1;
+  transform:translate(-50%,-50%);background:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 200 200'%3E%3Cg fill='none' stroke='%2346d6c0' stroke-width='1.2'%3E%3Ccircle cx='100' cy='100' r='96'/%3E%3Ccircle cx='100' cy='100' r='84' stroke-dasharray='3 5'/%3E%3Ccircle cx='100' cy='100' r='60' stroke='%23d9b25a'/%3E%3Cpath d='M100 16 L172 142 L28 142 Z M100 184 L28 58 L172 58 Z' stroke='%23d9b25a' stroke-width='1'/%3E%3C/g%3E%3Cg fill='%2346d6c0' font-family='serif' font-size='11' text-anchor='middle'%3E%3Ctext x='100' y='12'%3Eᚠ%3C/text%3E%3Ctext x='100' y='196'%3Eᚱ%3C/text%3E%3Ctext x='8' y='104'%3Eᛟ%3C/text%3E%3Ctext x='192' y='104'%3Eᚦ%3C/text%3E%3Ctext x='38' y='42'%3Eᛉ%3C/text%3E%3Ctext x='162' y='42'%3Eᚹ%3C/text%3E%3Ctext x='38' y='170'%3Eᛗ%3C/text%3E%3Ctext x='162' y='170'%3Eᛞ%3C/text%3E%3C/g%3E%3C/svg%3E") center/contain no-repeat!important;
+  opacity:.3;pointer-events:none;z-index:0;filter:drop-shadow(0 0 6px rgba(70,214,192,.8));animation:rrune 40s linear infinite;clip-path:none!important;left:50%!important;top:50%!important;right:auto!important;bottom:auto!important;margin:0!important}
+@keyframes rrune{to{transform:translate(-50%,-50%) rotate(360deg)}}
+.rband>.rrow,.rgrid>.rcell{position:relative;z-index:1}
+/* rarity glow on the tile: rare blue, epic purple, legendary gold, mythic red (only the epic glowed before) */
+.rtile.t1{box-shadow:0 0 0 2px #4aa8ff,0 0 12px rgba(74,168,255,.7)!important}
+.rtile.t2{box-shadow:0 0 0 2px #b45cff,0 0 14px rgba(180,92,255,.75)!important}
+.rtile.t3{box-shadow:0 0 0 2px #ffcf4a,0 0 16px rgba(255,207,74,.8)!important}
+.rtile.t4{box-shadow:0 0 0 2px #ff5a4a,0 0 16px rgba(255,90,74,.8)!important}
 </style>
 </head>
 <body>
@@ -2966,7 +2995,7 @@ div.rstats span{flex:1 1 auto;min-width:0}div.rstats small{letter-spacing:0;line
     <div id="fps"></div>
   </div>
   <div id="ohud" hidden>
-    <div id="oFast" class="ofast" hidden></div><div class="otop"><button id="oPause" class="obtn">II</button><div class="omid"><div id="oTitle"></div><div class="oprog"><i id="oProgFill"></i><em id="oProgTxt"></em></div></div><button id="oSpeed" class="obtn">×1</button><button id="oAuto" class="obtn oauto">Авто</button></div>
+    <div id="oFast" class="ofast" hidden></div><div id="oHits" class="ohits" hidden><span>Ударов</span> <b id="oHitsN">0</b></div><div class="otop"><button id="oPause" class="obtn">II</button><div class="omid"><div id="oTitle"></div><div class="oprog"><i id="oProgFill"></i><em id="oProgTxt"></em></div></div><button id="oSpeed" class="obtn">×1</button><button id="oAuto" class="obtn oauto">Авто</button></div>
     <div class="oxp"><span id="oLvl">1</span><div class="oxpbar" id="oXpBar"><i id="oXpFill"><b class="oxb"></b><b class="oxb b2"></b><b class="oxb b3"></b><b class="oxb b4"></b></i></div></div>
     <div id="oBoss" hidden><b id="oBossName"></b><div class="obossbar"><i id="oBossFill"></i></div></div>
     <div id="oBanner" hidden></div>

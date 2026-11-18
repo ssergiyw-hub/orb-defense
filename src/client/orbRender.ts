@@ -2,7 +2,7 @@
 // Layout (правки Ш28–Ш33): the biome picture fills the screen, the field of 9 columns stands on it, the wall with its
 // walkway takes the bottom ~22% of the screen, the hero (3D, from behind) and the spirit stand on the walkway.
 import { Orb, Fx, Enemy, Ball } from '../core/orb';
-import { COLS, ROWS, BALL_R, ENEMY_T, BALLS, ENEMY, BIOME_SET, lookOf, SPIRITS } from '../core/orbContent';
+import { COLS, ROWS, LAUNCH_DY, BALL_R, ENEMY_T, BALLS, ENEMY, BIOME_SET, lookOf, SPIRITS } from '../core/orbContent';
 import { WALL_ART, EN_ART } from './orbArt';
 import { drawHero3D } from './hero3d';
 import { fcos, fsin } from '../core/fmath';
@@ -60,7 +60,7 @@ export class OrbRenderer {
   /** screen point of a field point (cells) */
   px(x: number): number { return this.fx0 + x * this.cell; }
   py(y: number): number { return this.fy0 + y * this.cell; }
-  launch(): { x: number; y: number } { return { x: this.px(COLS / 2), y: this.py(ROWS - 0.05) }; }
+  launch(): { x: number; y: number } { return { x: this.px(COLS / 2), y: this.py(ROWS + LAUNCH_DY) }; }
 
   addFx(o: Orb, fx: Fx[]): void {
     const C = this.cell;
@@ -267,7 +267,7 @@ export class OrbRenderer {
   }
   private deckY(): number { return this.wallY + (this.H - this.wallY) * 0.5; }
   private drawHero(o: Orb): void {
-    const c = this.c, C = this.cell, s = o.s, x = this.W / 2, gy = this.deckY() + C * 0.15;
+    const c = this.c, C = this.cell, s = o.s, x = this.W / 2, gy = this.py(ROWS + LAUNCH_DY) + C * 0.05; // Ш95: the feet on the launch point
     const sc = (1.95 * C) / 140; // правка Ш43: the hero is 40% bigger than before (the cell itself grew ~26%)
     const aim = this.aimAt ?? s.aim, fx = fcos(aim), fy = fsin(aim);
     // a golden ring under the hero
@@ -334,7 +334,7 @@ export class OrbRenderer {
   private drawBall(b: Ball): void {
     const c = this.c, C = this.cell, x = this.px(b.x), y = this.py(b.y);
     const def = b.kind === 'normal' || b.kind === 'shard' ? null : BALLS[b.kind];
-    const r = BALL_R * C * (b.kind === 'shard' ? 0.75 : 1.15); // Ш59: drawn smaller and crisper (the hit size is the same)
+    const r0 = BALL_R * C * (b.kind === 'shard' ? 0.75 : 1.15), r = r0 * 0.7; // Ш59, Ш97: the body 30% smaller, the aura keeps r0 (the hit size is the same)
     const col = def?.color ?? '#f4f0e6', glow = def?.glow ?? '#ffffff';
     // trail
     const v = Math.hypot(b.vx, b.vy) || 1, tx = -b.vx / v, ty = -b.vy / v;
@@ -343,7 +343,7 @@ export class OrbRenderer {
     g.addColorStop(0, hexA(glow, 0.5)); g.addColorStop(1, hexA(glow, 0));
     c.strokeStyle = g; c.lineWidth = r * 1.3; c.lineCap = 'round'; c.beginPath(); c.moveTo(x, y); c.lineTo(x + tx * tl, y + ty * tl); c.stroke();
     // glow
-    if (def) { const gg = c.createRadialGradient(x, y, r * 0.6, x, y, r * 1.7); gg.addColorStop(0, hexA(glow, 0.45)); gg.addColorStop(1, hexA(glow, 0)); c.fillStyle = gg; c.beginPath(); c.arc(x, y, r * 1.7, 0, 6.283); c.fill(); }
+    if (def) { const gg = c.createRadialGradient(x, y, r0 * 0.6, x, y, r0 * 1.7); gg.addColorStop(0, hexA(glow, 0.45)); gg.addColorStop(1, hexA(glow, 0)); c.fillStyle = gg; c.beginPath(); c.arc(x, y, r0 * 1.7, 0, 6.283); c.fill(); } // Ш97: the aura as before
     // core
     const cg = c.createRadialGradient(x - r * 0.35, y - r * 0.35, r * 0.1, x, y, r);
     cg.addColorStop(0, '#ffffff'); cg.addColorStop(0.35, glow); cg.addColorStop(1, col);
@@ -361,14 +361,14 @@ export class OrbRenderer {
   }
   private drawAim(o: Orb, a: number): void {
     const c = this.c, C = this.cell, s = o.s;
-    let x = COLS / 2, y = ROWS - 0.05, vx = fcos(a), vy = fsin(a);
+    let x = COLS / 2, y = ROWS + LAUNCH_DY, vx = fcos(a), vy = fsin(a);
     const pts: [number, number][] = [[x, y]];
     let bounces = 0, len = 0;
     while (len < 26 && bounces < 2) {
       x += vx * 0.05; y += vy * 0.05; len += 0.05;
       if (x < BALL_R || x > COLS - BALL_R) { vx = -vx; bounces++; pts.push([x, y]); }
       if (y < BALL_R) { vy = -vy; bounces++; pts.push([x, y]); }
-      if (y > ROWS) break;
+      if (y > ROWS + LAUNCH_DY + 0.01) break;
       const hit = s.enemies.find(e => x > e.c + 0.04 - BALL_R && x < e.c + e.w - 0.04 + BALL_R && y > e.r + 0.04 - BALL_R && y < e.r + e.h - 0.04 + BALL_R);
       if (hit) { pts.push([x, y]); bounces = 9; break; }
     }

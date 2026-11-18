@@ -42,6 +42,12 @@ await p.screenshot({ path: `shots/o-${tag}-pause2.png` });
 await p.evaluate(() => document.getElementById('oQuit')?.click()); await p.waitForTimeout(300);
 await p.evaluate(() => document.getElementById('oQuitYes')?.click()); await p.waitForTimeout(2500);
 await p.screenshot({ path: `shots/o-${tag}-end.png` });
+// Ш93: a tall parchment — 10 rewards (the cells cloned), the ornaments must not stretch
+await p.evaluate(() => { const g = document.querySelector('.rgrid'); if (!g) return; const cs = [...g.querySelectorAll('.rcell')]; for (let i = cs.length; i < 10; i++) g.appendChild(cs[i % cs.length].cloneNode(true)); });
+await p.evaluate(() => { if (document.querySelector('.rgrid')) return; const b = document.querySelector('.rband'); if (!b) return; const g = document.createElement('div'); g.className = 'rgrid';
+  const cs = [...b.querySelectorAll('.rcell')]; for (let i = 0; i < 10; i++) g.appendChild(cs[i % cs.length].cloneNode(true)); b.replaceWith(g); document.querySelector('.rewardov')?.classList.replace('band', 'grid'); });
+await p.waitForTimeout(2200); await p.screenshot({ path: `shots/o-${tag}-end10.png` });
+console.log('pseudo', await p.evaluate(() => { const g = document.querySelector('.rgrid'); const cs = getComputedStyle(g, '::after'); const r = g.getBoundingClientRect(); return [cs.width, cs.height, cs.position, cs.transform.slice(0, 40), r.width, r.height, getComputedStyle(g).position].join(' '); }));
 // the 4-item band layout of the same window (a fight with 4 rewards)
 await p.evaluate(() => { const g = document.querySelector('.rgrid'); if (!g) return; const cells = [...g.querySelectorAll('.rcell')].slice(0, 4);
   const band = document.createElement('div'); band.className = 'rband'; band.innerHTML = '<div class="rrays"></div><div class="rflash"></div><div class="rrow n4"></div>';

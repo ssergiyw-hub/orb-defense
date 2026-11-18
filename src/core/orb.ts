@@ -3,7 +3,7 @@
 import { Rng } from './rng';
 import { fsin, fcos, PI } from './fmath';
 import {
-  wallMaxOf, COLS, ROWS, BALL_V, BALL_R, VOLLEY_GAP, ENEMY_T, BallId, BALLS, BALL_FX, elemHit, runLvMul, BALL_IDS,
+  wallMaxOf, COLS, ROWS, LAUNCH_DY, BALL_V, BALL_R, VOLLEY_GAP, ENEMY_T, BallId, BALLS, BALL_FX, elemHit, runLvMul, BALL_IDS,
   EnemyId, ENEMY, ECHIDNA_ARMOR, SpiritId, spiritEvery, WallId, wallFx, stageDef, StageDef, MINIS, BASE_WALL_HP,
 } from './orbContent';
 
@@ -67,6 +67,8 @@ export type Fx =
 export interface OrbState {
   cfg: OrbConfig; sd: StageDef; rng: number;
   phase: Phase; turn: number; tick: number; phaseT: number;
+  /** Ш96: hits on enemies in this volley (every touch, ray, chain, shard, splash) and the best volley of the run */
+  hits?: number; bestHits?: number;
   enemies: Enemy[]; balls: Ball[]; bushes: Bush[]; nextId: number;
   queue: (BallId | 'normal')[]; launchT: number; aim: number;
   specials: { id: BallId; lv: number }[]; normals: number; power: number;
@@ -112,7 +114,7 @@ export class Orb {
     if (s.phase === 'aim' && a.aim !== undefined) {
       s.aim = clamp(a.aim / 1000, -PI + 0.12, -0.12);
       s.queue = [...s.specials.map(x => x.id), ...Array.from({ length: s.normals }, () => 'normal' as const)];
-      s.launchT = 0; s.phase = 'fly'; s.phaseT = 0;
+      s.launchT = 0; s.phase = 'fly'; s.phaseT = 0; s.hits = 0;
     } else if (s.phase === 'choose' && a.choice !== undefined && s.cards[a.choice]) {
       this.applyCard(s.cards[a.choice]);
       s.pendingLv--; s.cards = [];
@@ -138,7 +140,7 @@ export class Orb {
     if (s.queue.length && s.launchT <= 0) {
       const k = s.queue.shift()!;
       const lv = k === 'normal' ? 0 : s.specials.find(x => x.id === k)!.lv;
-      s.balls.push({ kind: k, lv, x: COLS / 2, y: ROWS - 0.05, vx: BALL_V * fcos(s.aim), vy: BALL_V * fsin(s.aim), age: 0, alive: true, bounces: 0, hit: {} });
+      s.balls.push({ kind: k, lv, x: COLS / 2, y: ROWS + LAUNCH_DY, vx: BALL_V * fcos(s.aim), vy: BALL_V * fsin(s.aim), age: 0, alive: true, bounces: 0, hit: {} });
       s.launchT = VOLLEY_GAP; this.fx.push({ t: 'launch' });
     }
     s.launchT--;
@@ -155,7 +157,7 @@ export class Orb {
       if (b.x < BALL_R) { b.x = BALL_R; b.vx = Math.abs(b.vx); b.bounces++; }
       if (b.x > COLS - BALL_R) { b.x = COLS - BALL_R; b.vx = -Math.abs(b.vx); b.bounces++; }
       if (b.y < BALL_R) { b.y = BALL_R; b.vy = Math.abs(b.vy); b.bounces++; }
-      if (b.y > ROWS + 0.2) { b.alive = false; return; }
+      if (b.y > ROWS + LAUNCH_DY + 0.2) { b.alive = false; return; } // Ш95: back below the launch point
       if (b.kind === 'shard' && b.bounces > 2) { b.alive = false; return; }
       for (const e of s.enemies) {
         if (e.hp <= 0) continue;
@@ -209,6 +211,7 @@ export class Orb {
   private damage(e: Enemy, raw: number, src: string, canCrit: boolean, fxKind: string): number {
     const s = this.s, c = s.cfg;
     if (e.hp <= 0) return 0;
+    if (s.phase === 'fly' && src !== 'wall' && src !== 'spirit') { s.hits = (s.hits ?? 0) + 1; if (s.hits > (s.bestHits ?? 0)) s.bestHits = s.hits; } // Ш96
     let d = raw, crit = false;
     if (canCrit && this.rng.chance(c.crit)) { d *= c.critDmg; crit = true; }
     if (e.freeze > 0) d *= 1.1;

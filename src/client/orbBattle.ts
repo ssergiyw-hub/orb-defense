@@ -153,11 +153,16 @@ export class OrbBattle {
   private bannerT = 0;
   private banner(s: string): void { const b = $('oBanner'); b.textContent = s; b.hidden = false; this.bannerT = 2.2; }
   private cache = new Map<string, string>();
-  private set(id: string, v: string, html = false): void { if (this.cache.get(id) === v) return; this.cache.set(id, v); if (html) $(id).innerHTML = v; else $(id).textContent = v; }
+  private set(id: string, v: string, html = false): boolean { if (this.cache.get(id) === v) return false; this.cache.set(id, v); if (html) $(id).innerHTML = v; else $(id).textContent = v; return true; }
   private hud(force = false): void {
     const o = this.o; if (!o) return; const s = o.s;
     if (force) this.cache.clear();
     this.set('oSpeed', '×' + this.speed);
+    // Ш96: hits in this volley — shown while the balls fly and until the next aim
+    const hn = s.hits ?? 0, hb = $('oHits');
+    if (hn > 0 && s.phase !== 'aim') { hb.hidden = false; if (this.set('oHitsN', String(hn))) { hb.classList.remove('bump'); void hb.offsetWidth; hb.classList.add('bump'); }
+      hb.classList.toggle('gold', hn >= 20); hb.classList.toggle('hot', hn >= 50); }
+    else if (s.phase === 'aim') hb.hidden = true;
     $('oAuto').classList.toggle('on', this.auto);
     ($('oProgFill') as HTMLElement).style.width = (100 * o.progress).toFixed(1) + '%';
     this.set('oProgTxt', s.bossSpawned ? tr('БОСС') : Math.round(100 * o.progress) + '%');
@@ -227,6 +232,6 @@ export class OrbBattle {
     // Ш75: a picture of who dealt it, a bar in the ball's colour, the number and the share
     const pic = (k: string) => k === 'spirit' || k === 'wall' ? `<span class="odi">${k === 'spirit' ? '✨' : '🧱'}</span>` : `<img class="odi" src="${BALLPIC(k === 'shard' ? 'cluster' : k)}" alt="">`;
     const col = (k: string) => (BALLS[k as keyof typeof BALLS]?.color) ?? (k === 'shard' ? BALLS.cluster.color : k === 'normal' ? '#f4efe4' : k === 'spirit' ? '#7be0a0' : '#c9a24a');
-    $('oPauseBody').innerHTML = rows.map(([k, v]) => `<div class="odr">${pic(k)}<span>${tr(name(k))}</span><em class="odtr"><i style="width:${Math.max(2, 100 * v / rows[0][1]).toFixed(1)}%;--c:${col(k)}"></i></em><b>${fmtN(v)}<small>${Math.round(100 * v / total)}%</small></b></div>`).join('') || `<p class="osp">${tr('Пока нет урона')}</p>`;
+    $('oPauseBody').innerHTML = rows.map(([k, v]) => `<div class="odr">${pic(k)}<span>${tr(name(k))}</span><em class="odtr"><i style="width:${Math.max(2, 100 * v / rows[0][1]).toFixed(1)}%;--c:${col(k)}"></i></em><b>${fmtN(v)}<small>${Math.round(100 * v / total)}%</small></b></div>`).join('') + ((this.o?.s.bestHits ?? 0) > 0 ? `<p class="ohbest"><span>${tr('Лучший ход')}</span>: <b>${this.o!.s.bestHits}</b> <span>${tr('ударов')}</span></p>` : '') || `<p class="osp">${tr('Пока нет урона')}</p>`; // Ш96
   }
 }
