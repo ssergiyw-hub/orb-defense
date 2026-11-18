@@ -121,5 +121,9 @@ python3 art/orb/enemies.py && python3 art/orb/process.py   # пересобра�
 - Счётчик ударов: `s.hits` / `s.bestHits` в `Orb` (считает `damage()` в фазе полёта), `#oHits` в HUD.
 - Награды: пергамент `orb/ui/parch9.webp` (`art/orb/parch.py`, 9 частей 130 100 200 100), рунный круг — `::after` у `.rband` / `.rgrid`.
 
+## Правки Ш98–Ш99 (18.11)
+- «Шквал шаров» (Ш98): `cfg.storm` в `Orb` — `stormTick`, `stormRefill`, `stormAim`, `stormSec`, константы `STORM` в `orbContent.ts`; прицел — act с `at` (тик), `replayOrb` повторяет по тикам. Мета — `finishStorm` (`orbMeta.ts`), событие `'storm'` в `EventId`, награды `EV_REWARDS.storm`, группа дня `evGroup`. Бот: `npx tsx tools/stormbot.ts <этап> <множитель силы> <сиды>`; скриншоты: `node tools/stormshot.mjs` → `shots/s-*.png`.
+- Окно энергии (Ш99): `vEnergy` в `hub.ts`, открывается с `#hEn` (`energyOpen`).
+
 ## Не сделано (на 18.11)
 Медуза — 3D (нет поз спиной), батл пасс / рынок / колесо / события — только через общие рамки, без отдельной доводки. События, итерация 2 (слияния, пассивки), баланс живой игрой.
