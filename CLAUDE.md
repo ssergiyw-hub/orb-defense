@@ -133,5 +133,10 @@ python3 art/orb/enemies.py && python3 art/orb/process.py   # пересобра�
 - Свойства «Леса» (Ш104): `cfg.gear` (эпик 1 / миф 2, собирает `gearFx` в `orbMeta.ts`), числа `GEAR_FX`; в `Orb`: `gx()`, `thornThrough`, `blocked()` (Кора/Чаща), `gearTick()` (события по секундам), «Второе дыхание» в `hurt()`, копия шара `Ball.copy`. Здоровье стены от предметов — `gearWall`. Бот: `OGEAR=1|2 OFROM=7 npx tsx tools/orbbot.ts 7 110 110 20`, `OGEAR=… npx tsx tools/stormbot.ts`.
 - Светлый мрамор (Ш103, Ш105): `art/orb/marble.py` режет листы `art/orb/src/ref/2537, 2538, 2540, 2541` (фиолетовый фон) → `assets/orb/ui/m_*.webp`. Окно предмета — CSS `.itembox2`, рейтинг и окно события — `.mrate` / `.mev` (последние блоки `index.html`). Скриншоты: `tools/itemshot.mjs`, `tools/ratingshot.mjs`, `tools/gearshot.mjs`.
 
+## Правки Ш106–Ш111 (18.11, вечер)
+- Смена карточек (Ш111): действие `{ reroll: true }` в `Orb.act` (`rollCards(avoid)`), оплата — `OrbBattle.shop` (задаёт `main.ts`: реклама, пропуски, кристаллы), цены `REROLL_GEMS`; в событиях (`cfg.storm`) — только реклама 1 раз.
+- Мрамор: `art/orb/marble.py` режет и фиолетовые листы, и прозрачные 2552 / 2553 (`new_sheets()` — что где чище). Картинка «Шквала» — `art/orb/evart.py` → `orb/ui/ev_storm.webp`. CSS: задания `.tasks2 .task2`, рынок `.mkscreen.lv`, поиск героев `.cpcards / .cpb`, окно события `.mev .evsub / .evpic`. Скриншоты — `tools/uishot5.mjs`.
+- Цвета кнопок: изумруд — бесплатно / своё, золото — трата кристаллов, камень — нельзя.
+
 ## Не сделано (на 18.11)
 Медуза — 3D (нет поз спиной), батл пасс / рынок / колесо / события — только через общие рамки, без отдельной доводки. События, итерация 2 (слияния, пассивки), баланс живой игрой.
