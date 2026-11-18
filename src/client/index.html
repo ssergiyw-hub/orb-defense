@@ -2907,6 +2907,25 @@ div.rstats span{flex:1 1 auto;min-width:0}div.rstats small{letter-spacing:0;line
 .rnote:has(.rstats) .rstats b{color:#33240c!important;text-shadow:0 1px 0 #fff9!important}
 .rnote:has(.rstats) .rstats span+span{border-left-color:#8a7650aa!important}
 .rnote:has(.rstats) .rextra{color:#3a2a10!important}
+/* Ш82: reward tiles line up by the top; a gem picture fills its tile less (like coins and scrolls); the star line gold */
+.rrow{align-items:flex-start!important}
+.rti img.gemsvg{width:72%!important;height:auto!important}
+.rcell .rsub{color:#ffcf4a!important;-webkit-text-stroke:1px #3a2406;paint-order:stroke fill;text-shadow:0 1px 1px #000!important}
+/* Ш84: the emerald button of sample 2444 — a 9-slice picture (gold frame, side diamonds), gold serif text */
+.lvbtn:not(.wbtns>.lvbtn),.fightbtn.lv,#oResume,.obbtns .obup,.adbtn,.c3b.one,.giftc .gbtn,.tclaim.on{
+  border-style:solid!important;border-color:transparent!important;border-width:11px 21px!important;border-radius:0!important;box-sizing:border-box;
+  border-image:url(orb/ui/btn_emerald.webp) 62 118 62 118 fill / 11px 21px 11px 21px stretch!important;background:none!important;box-shadow:none!important;
+  filter:drop-shadow(0 4px 4px rgba(0,0,0,.5)) drop-shadow(0 0 10px rgba(47,224,128,.3))!important}
+.tclaim.on{border-width:7px 13px!important;border-image-width:7px 13px 7px 13px!important}
+.fightbtn.lv{border-width:14px 27px!important;border-image-width:14px 27px 14px 27px!important}
+.lvbtn:not(.wbtns>.lvbtn) b,.fightbtn.lv b,.fightbtn.lv span,#oResume,.obbtns .obup,.adbtn,.adbtn b,.c3b.one b,.giftc .gbtn,.tclaim.on{
+  font-family:Georgia,'Times New Roman',serif!important;color:#ffd96a!important;-webkit-text-stroke:2px #2a1a04!important;paint-order:stroke fill;text-shadow:0 2px 0 #1a1004!important}
+.lvbtn:not(.wbtns>.lvbtn) small,.c3b.one small,.adbtn small{color:#fff3c8!important;-webkit-text-stroke:1.5px #1e3a14!important}
+.lvbtn:not(.wbtns>.lvbtn):active,.fightbtn.lv:active,#oResume:active,.obbtns .obup:active,.adbtn:active,.c3b.one:active,.giftc .gbtn:active{transform:translateY(2px)!important;filter:brightness(.88) drop-shadow(0 2px 2px rgba(0,0,0,.5))!important}
+/* Ш84: the gold crest with the emerald on top of the title plaques */
+.rbanner::after,.lvbanner::after{content:""!important;position:absolute;left:50%;top:0;width:58%;aspect-ratio:1101/230;transform:translate(-50%,-52%);
+  background:url(orb/ui/crest.webp) center/contain no-repeat!important;clip-path:none!important;inset:auto!important;z-index:3;pointer-events:none}
+.rbanner::after,.lvbanner::after{left:50%!important;top:0!important}
 </style>
 </head>
 <body>

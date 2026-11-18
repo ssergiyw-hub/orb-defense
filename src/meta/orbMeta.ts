@@ -138,7 +138,11 @@ export function finishOrb(p: P.Profile, m: Orb, stage: number, quit: boolean): O
   // ball cards: a few for random owned balls, more for a won stage
   const cards: Partial<Record<BallId, number>> = {};
   const nCards = quit ? 0 : Math.round((win ? 10 + 2 * stage : 4 * share + 1));
-  for (let i = 0; i < nCards; i++) { const b = BALL_IDS[Math.floor(Math.random() * BALL_IDS.length)]; cards[b] = (cards[b] ?? 0) + 1; o.balls[b].cards++; }
+  // Ш83: the same number of cards, but for 2 random balls only (1 when the fight gave ≤ 5) — one or two books really move
+  const pool = [...BALL_IDS], picks: BallId[] = [];
+  for (let i = 0; i < (nCards > 5 ? 2 : 1) && pool.length; i++) picks.push(pool.splice(Math.floor(Math.random() * pool.length), 1)[0]);
+  const split = picks.length > 1 ? Math.ceil(nCards * (0.4 + Math.random() * 0.2)) : nCards;
+  for (let i = 0; i < nCards; i++) { const b = i >= split ? picks[1] : picks[0]; cards[b] = (cards[b] ?? 0) + 1; o.balls[b].cards++; }
   const spiritShards = win ? 3 + Math.floor(stage / 3) : share > 0.5 ? 1 : 0;
   o.spiritShards += spiritShards;
   const stones = win ? 2 + Math.floor(stage / 4) : 0;

@@ -517,7 +517,7 @@ function orbDone(o: Orb, cfg: OrbConfig, acts: Act[], quit: boolean): void {
   const before = hub.snap();
   const rw = OM.finishOrb(hub.p, o, cfg.stage, quit);
   const items = hub.diff(before);
-  for (const [b, n] of Object.entries(rw.cards)) items.push({ icon: `<img class="ri" src="orb/book/${BALLS[b as keyof typeof BALLS].book}.webp" alt="">`, name: BALLS[b as keyof typeof BALLS].name, count: '×' + n, sub: 'карты шара' });
+  for (const [b, n] of Object.entries(rw.cards)) items.push({ icon: `<img class="ri" src="orb/book/${BALLS[b as keyof typeof BALLS].book}.webp" alt="">`, name: BALLS[b as keyof typeof BALLS].name, count: '×' + n }); // Ш83: no «карты шара» line under every book
   if (rw.spiritShards) items.push({ icon: '<span class="ri" style="font-size:26px">✨</span>', name: 'Частички духа', count: '×' + rw.spiritShards });
   if (rw.stones) items.push({ icon: '<span class="ri" style="font-size:26px">🧱</span>', name: 'Камни стены', count: '×' + rw.stones });
   let chest: { kind: P.StageChest; items: ReturnType<typeof hub.diff>; open: boolean } | undefined;
