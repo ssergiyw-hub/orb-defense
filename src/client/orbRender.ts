@@ -9,6 +9,7 @@ import { fcos, fsin } from '../core/fmath';
 import { ORB_HERO_ART, HERO_POSE_H } from './orbHeroArt';
 import { HEROES } from '../core/content';
 import { EL_HEX } from './art';
+import { tr } from './i18n';
 
 const imgs = new Map<string, HTMLImageElement>();
 export function orbImg(src: string): HTMLImageElement | null {
@@ -96,6 +97,10 @@ export class OrbRenderer {
       case 'shard': this.burst(f.x, f.y, 4, '#ffffff', 0.5); break;
       case 'thorn': this.burst(f.c + 0.5, f.r + 0.5, 6, '#7bdc6a', 0.7); break;
       case 'summon': this.burst(f.x, f.y, 10, '#ffe08a', 1); break;
+      // Ш104: the «Лес» effects
+      case 'block': if (f.kind === 'miss') this.text(f.x, ROWS - 0.3, tr('промах'), '#d8d2c4', false); else { this.burst(f.x, ROWS - 0.1, 8, '#ffe08a', 0.9); this.text(f.x, ROWS - 0.3, '0', '#ffe08a', false); } break;
+      case 'breath': for (let i = 0; i < 7; i++) this.burst(0.5 + i, ROWS - 0.1, 6, '#9cff9a', 1); this.wallRed = 0; break;
+      case 'pierce': this.flashes.push({ t: 'chain', age: 0, life: 0.3, a: f.x1, b: f.y1, c: f.x2, d: f.y2, col: '#9cff6a' }); this.burst(f.x2, f.y2, 6, '#9cff6a', 0.6); break;
       case 'bossShot': this.flashes.push({ t: 'shot', age: 0, life: 0.35, a: f.x, b: f.y, c: f.x, d: ROWS, col: '#ff9a3a' }); this.burst(f.x, f.y, 6, '#ffb36a', 0.6); break; // Ш101
       case 'phase': { // Ш101: the boss's bar refilled — a new phase
         const b = o.s.enemies.find(e => e.kind === o.s.cfg.bossEv);
@@ -282,6 +287,14 @@ export class OrbRenderer {
     if (this.wallRed > 0) { c.fillStyle = `rgba(255,30,20,${0.35 * this.wallRed})`; c.fillRect(0, y, this.W, a.solid * sc + this.cell * 0.4); }
     // energy shield: a glowing band over the parapet
     const s = o.s;
+    if (s.immune || (s.immuneUntil ?? 0) > s.tick) { // Ш104: «Кора» — the wall glows gold while nothing hurts
+      const t = 0.42 + 0.14 * Math.sin(this.t * 6), y0 = this.wallY - this.cell * 1.2, y1 = this.wallY + this.cell * 0.7;
+      const g = c.createLinearGradient(0, y0, 0, y1);
+      g.addColorStop(0, 'rgba(255,214,90,0)'); g.addColorStop(0.55, `rgba(255,206,70,${t.toFixed(3)})`); g.addColorStop(1, 'rgba(255,214,90,0)');
+      c.save(); c.globalCompositeOperation = 'source-over'; c.fillStyle = g; c.fillRect(0, y0, this.W, y1 - y0); c.restore();
+      c.save(); c.strokeStyle = `rgba(255,236,150,${(t + 0.2).toFixed(3)})`; c.lineWidth = 3; c.shadowColor = '#ffd84a'; c.shadowBlur = 12;
+      c.beginPath(); c.moveTo(0, this.wallY - this.cell * 0.15); c.lineTo(this.W, this.wallY - this.cell * 0.15); c.stroke(); c.restore();
+    }
     if (s.wallShield > 0) {
       const t = 0.18 + 0.06 * Math.sin(this.t * 3);
       const g = c.createLinearGradient(0, this.wallY - this.cell * 0.9, 0, this.wallY);

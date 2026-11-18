@@ -589,7 +589,7 @@ export function addHeroXp(p: Profile, id: string, xp: number): boolean {
 // ---------------- stats for the run ----------------
 /** правка 155: what one item gives. The main number (attack or health, by slot) grows with level and rarity;
  *  rare adds a lump, legendary a bigger one (they were the «+4% / +8%» lines). The set gives a second line in percent. */
-export interface ItemStats { atk?: number; hp?: number; def?: number; speed?: number; atkSpeed?: number; crit?: number }
+export interface ItemStats { atk?: number; hp?: number; def?: number; speed?: number; atkSpeed?: number; crit?: number; wall?: number }
 export function itemBase(it: Item): ItemStats {
   const g = GEAR_MAIN[it.slot], k = rarityK(it.rarity), lv = it.level, out: ItemStats = {};
   let v = (g.base + g.per * lv) * k;

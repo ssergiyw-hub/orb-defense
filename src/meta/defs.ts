@@ -14,7 +14,7 @@ export const ACTIVE_SETS: readonly SetId[] = ['guard'];
 export const SET_NAME: Record<SetId, string> = { guard: 'Лес', wanderer: 'Солнце', berserk: 'Пустота' };
 export const SET_DESC: Record<SetId, { main: string; b2: string; b4: string; b6: string }> = {
   // правка 155: the percent of attack / health here is real (of the total) — see SET_PCT
-  guard: { main: 'защита', b2: '+8% здоровья', b4: '+20% защиты, −10% скорости', b6: '+10% здоровья, +10% защиты' },
+  guard: { main: 'здоровье стены', b2: '+8% здоровья', b4: '+10% здоровья стены', b6: '+10% здоровья' }, // Ш104: no defence in the ball game
   wanderer: { main: 'скорость, скорость атаки', b2: '+10% скорости', b4: '+15% скорости атаки, −5% здоровья, −10% защиты', b6: '+15% скорости атаки, +15% радиуса подбора' },
   berserk: { main: 'шанс крита', b2: '+8% атаки', b4: '+12% атаки, −20% защиты', b6: '+5% шанса крита, +30% урона крита' },
 };
@@ -63,8 +63,8 @@ export const GEAR_MAIN: Record<Slot, { stat: 'atk' | 'hp'; base: number; per: nu
 export const GEAR_STEP = { rare: { atk: 4, hp: 5 }, legend: { atk: 8, hp: 10 } };
 export const rarityK = (r: number) => (1 + RARITY_BONUS[r]) * (r >= 8 ? 1.2 : 1);
 /** the second line of an item comes from its set, in percent per level × rarityK (as before правки 155) */
-export const SET_SECOND: Record<SetId, { def?: number; speed?: number; atkSpeed?: number; crit?: number }> = {
-  guard: { def: 0.001 }, wanderer: { speed: 0.001, atkSpeed: 0.002 }, berserk: { crit: 0.0005 },
+export const SET_SECOND: Record<SetId, { def?: number; speed?: number; atkSpeed?: number; crit?: number; wall?: number }> = {
+  guard: { wall: 1.5 }, wanderer: { speed: 0.001, atkSpeed: 0.002 }, berserk: { crit: 0.0005 },
 };
 /** set bonuses for 2 / 4 / 6 worn items: real percent of the total attack / health (правка 155) */
 export const SET_PCT = { berserk2: 0.08, berserk4: 0.12, guard2: 0.08, guard6: 0.10, wanderer4Hp: -0.05 };
@@ -72,12 +72,13 @@ export const SET_PCT = { berserk2: 0.08, berserk4: 0.12, guard2: 0.08, guard6: 0
 export interface SetFx { id: string; name: string; e: string; m: string }
 export const SET_FX: Record<SetId, Record<Slot, SetFx>> = {
   guard: {
-    book: { id: 'thorn', name: 'Шипы', e: 'каждая 4-я атака: стрелы пробивают ещё 2 врагов', m: 'каждая 3-я атака: пробивают ещё 3 врагов' },
-    mantle: { id: 'bark', name: 'Кора', e: 'раз в 12 с щит гасит удар целиком', m: 'щит раз в 7 с' },
-    gloves: { id: 'spikes', name: 'Колючки', e: 'получив удар, герой ранит врагов рядом на 200% этого удара', m: '400% удара, радиус больше' },
-    boots: { id: 'roots', name: 'Корни', e: 'стоя на месте: защита +15%, лечение 1% в секунду', m: 'защита +25%, лечение 2% в секунду' },
-    amulet: { id: 'breath', name: 'Второе дыхание', e: 'при здоровье ниже 30% — лечение 30% (раз за забег)', m: 'лечение 40%, дважды за забег' },
-    ring: { id: 'thicket', name: 'Чаща', e: 'враги рядом с героем медленнее на 15%', m: 'медленнее на 25%, радиус больше' },
+    // Ш104: the «Лес» effects for the ball game (the numbers are GEAR_FX in orbContent.ts)
+    book: { id: 'thorn', name: 'Шипы', e: 'обычный шар с шансом 15% пробивает врага насквозь и бьёт ×2', m: 'шанс 22%, удар ×3' },
+    mantle: { id: 'bark', name: 'Кора', e: 'раз в 6 ходов — ход неуязвимости: удары по стене и герою не проходят', m: 'раз в 4 хода' },
+    gloves: { id: 'spikes', name: 'Ловкость рук', e: 'особый шар с шансом 10% вылетает дважды', m: 'шанс 18%' },
+    boots: { id: 'roots', name: 'Корни', e: 'стена чинится на 1,5% за ход', m: 'на 3% за ход' },
+    amulet: { id: 'breath', name: 'Второе дыхание', e: 'павшая стена поднимается с 30% здоровья — раз за бой', m: 'с 40% здоровья, дважды за бой' },
+    ring: { id: 'thicket', name: 'Чаща', e: 'удар врага с шансом 12% промахивается', m: 'шанс 20%' },
   },
   wanderer: {
     book: { id: 'volley', name: 'Солнечный залп', e: 'каждая 4-я атака: +2 стрелы веером', m: 'каждая 3-я атака: +3 стрелы' },

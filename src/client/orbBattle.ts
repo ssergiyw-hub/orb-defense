@@ -153,6 +153,7 @@ export class OrbBattle {
               if (f.t === 'hero') sfx.vibrate('heavy');
               if (f.t === 'level' && !s.cfg.bossEv) this.banner(tr('Новый уровень!'));
               if (f.t === 'phase') { this.banner(`${tr('Фаза')} ${f.n + 1} — ${tr('босс бьёт сильнее')}`); sfx.vibrate('heavy'); } // Ш101
+              if (f.t === 'breath') { this.banner(tr('Второе дыхание — стена поднялась!')); sfx.vibrate('level'); } // Ш104
               if (f.t === 'wallFall') { this.banner(tr('Стена пала — герой держит рубеж!')); sfx.vibrate('heavy'); } // Ш102
             }
           }

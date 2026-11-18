@@ -1076,7 +1076,7 @@ export class Hub {
         <button class="bonusrow flat" data-a="bonusOpen"><span>⚔️ Сила <b>${P.powerScore(p)}</b></span><small>бонусы в забег от героя и снаряжения</small><i>▴</i></button>
         <div class="stats">
           <span class="stw">⚔️ атака <b>${n(st.atk)}</b><small>${src(st.hero.atk, st.gear.atk, st.gems.atk, st.atkPct)}</small></span>
-          <span class="stw">❤️ здоровье <b>${n(st.hp)}</b><small>${src(st.hero.hp, st.gear.hp, st.gems.hp, st.hpPct)}</small></span><span>защита ${pct(m.def)}</span>
+          <span class="stw">❤️ здоровье <b>${n(st.hp)}</b><small>${src(st.hero.hp, st.gear.hp, st.gems.hp, st.hpPct)}</small></span><span>🧱 стена <b>${n(OM.wallStats(p).hp)}</b></span>
           ${m.crit ? `<span>крит ${pct(m.crit)} ×${m.critDmg.toFixed(2)}</span>` : ''}${m.speed !== 1 ? `<span>скорость ${pct(m.speed - 1)}</span>` : ''}
           ${m.atkSpeed !== 1 ? `<span>скор. атаки ${pct(m.atkSpeed - 1)}</span>` : ''}${m.area !== 1 ? `<span>площадь ${pct(m.area - 1)}</span>` : ''}
           ${m.pickup !== 1 ? `<span>подбор ${pct(m.pickup - 1)}</span>` : ''}${m.regen ? `<span>лечение ${(m.regen * 100).toFixed(1)}%/5с</span>` : ''}
@@ -1121,6 +1121,7 @@ export class Hub {
     const parts: string[] = [];
     if (b.atk) parts.push(`<b class="stm">⚔️ атака +${P.statNum(b.atk)}</b>`); // правка 155: plain numbers
     if (b.hp) parts.push(`<b class="stm">❤️ здоровье +${P.statNum(b.hp)}</b>`);
+    if (b.wall) parts.push(`<b class="stm">🧱 здоровье стены +${Math.round(b.wall)}</b>`); // Ш104
     if (b.def) parts.push(`защита +${f(b.def)}%`);
     if (b.speed) parts.push(`скорость +${f(b.speed)}%`);
     if (b.atkSpeed) parts.push(`скор. атаки +${f(b.atkSpeed)}%`);
@@ -1509,7 +1510,7 @@ export class Hub {
       ? `<button class="lvbtn wide" data-a="evGo"><b>В бой</b><small>бесплатно · осталось ${left} из ${EVENT.freePerDay}</small></button>`
       : `<button class="lvbtn wide" data-a="evGo" data-v="paid"><b>Ещё попытка</b><small>${EVENT.extraCost} ${GEM_ICON}</small></button>`;
     const last = this.sel.evLast;
-    return `<div class="modal" data-a="close"><div class="mbox lvpanel wallpanel evpanel">
+    return `<div class="modal" data-a="close"><div class="mbox lvpanel wallpanel evpanel mrate mev">
       <div class="lvtabs"><b class="wtitle">${name}</b><button class="lvsq x" data-a="close">✕</button></div>
       <div class="panelbox" data-k="ev-${ev}">
         ${bo ? `<div class="evmap evstorm evbo"><span style="background-image:url(orb/bg/fire.webp)"><img class="evboss" src="orb/en/olymp_${ENEMY[OM.bossOfDay()].art}.webp" alt=""></span><div class="wmname"><small>Босс дня</small><b>${ENEMY[OM.bossOfDay()].name}</b><em>конец дня через ${hh}ч ${mm}м</em></div></div>`
@@ -1533,8 +1534,10 @@ export class Hub {
     const rows = played ? [...opp, meRow].sort((a, b) => b.score - a.score || (a.me ? -1 : b.me ? 1 : 0)) : [...opp.sort((a, b) => b.score - a.score), meRow];
     const body = rows.map((r, i) => { const h = hero(r.hero), place = i + 1, none = r.me && !played;
       const band = P.EV_REWARDS[ev].findIndex(([to]) => place <= to), q = 3 - band;
-      const chest = none ? '<span class="rchest none"></span>' : `<button class="rchest q${q}" data-a="evChest" data-v="${place}" aria-label="Награда">${chestSvg(1, 40)}</button>`;
-      return `<div class="rrow${r.me ? ' me' : ''}"><span class="rpos">${none ? '—' : place}</span><span class="rava" style="--c:${EL_HEX[h.element]}">${this.heroSvg(h.id)}</span><div class="grow"><b>${r.me ? 'Ты' : `<span translate="no">${r.name}</span>`}</b><small>${h.name} · сила ${r.power}${r.me ? '' : ' · тест'}</small></div><span class="rwave"><b>${none ? '—' : this.evScore(ev, r.score)}</b><small>${ev === 'storm' ? 'стена' : ev === 'boss' || ev === 'bossorb' ? 'урон' : 'убийств'}</small></span>${chest}</div>`; }).join('');
+      // Ш103: marble rows — gold / silver / bronze frames and laurel medals for 1–3, a stone tile with the number after
+      const chest = none ? '<span class="rchest none"></span>' : `<button class="rchest q${q}" data-a="evChest" data-v="${place}" aria-label="Награда"><img src="orb/ui/m_chest${q >= 3 ? 1 : q === 2 ? 2 : 3}.webp" alt=""></button>`;
+      const pos = none ? '<span class="rpos tile">—</span>' : place <= 3 ? `<span class="rpos med" style="background-image:url(orb/ui/m_medal${place}.webp)"></span>` : `<span class="rpos tile">${place}</span>`;
+      return `<div class="rrow evr${none ? '' : place <= 3 ? ' p' + place : ''}${r.me ? ' me' : ''}">${pos}<span class="rava" style="--c:${EL_HEX[h.element]}">${this.heroSvg(h.id)}<i class="rel"></i></span><div class="grow"><b>${r.me ? 'Ты' : `<span translate="no">${r.name}</span>`}</b><small>${h.name} · сила ${r.power}${r.me ? '' : ' · тест'}</small></div><span class="rwave"><b><i class="rico">${ev === 'storm' ? '⏳' : '⚔'}</i>${none ? '—' : this.evScore(ev, r.score)}</b><small>${ev === 'storm' ? 'стена' : ev === 'boss' || ev === 'bossorb' ? 'урон' : 'убийств'}</small></span>${chest}</div>`; }).join('');
     const cp = this.sel.evChest;
     let pop = '';
     if (cp) {
@@ -1542,10 +1545,10 @@ export class Hub {
       const QN = ['Серый сундук', 'Синий сундук', 'Фиолетовый сундук', 'Золотой сундук'];
       pop = `<div class="evcpop" data-a="evChest" data-v=""><div class="evcbox q${3 - band}"><span class="rchest q${3 - band} big">${chestSvg(2, 110)}</span><b>${QN[3 - band]}</b><small>${from === to ? `${to} место` : `${from}–${to} места`}</small><div class="evcrw">${rw[band][1]}</div><em>Выдаётся в конце дня</em></div></div>`;
     }
-    return `<div class="modal" data-a="close"><div class="mbox lvpanel ratepanel">
+    return `<div class="modal" data-a="close"><div class="mbox lvpanel ratepanel mrate">
       <div class="lvtabs"><b class="wtitle">${ev === 'bossorb' ? 'Атака на босса' : ev === 'storm' ? 'Шквал шаров' : ev === 'boss' ? 'Убийство босса' : 'Фраги'}</b><button class="lvsq x" data-a="close">✕</button></div>
-      <div class="panelbox" data-k="evrate">${this.lvBanner('Рейтинг дня', 'sm')}<div class="evrows">${body}</div>
-        <div class="rsoon"><small>Нажми на сундук, чтобы увидеть награду за место.</small><small>Соперники с пометкой «тест» — до сервера (этап 2). Твой лучший забег дня сохранён с записью боя — сервер проверит его повтором.</small></div>
+      <div class="panelbox" data-k="evrate"><div class="mrhead"><span>Рейтинг дня</span></div><div class="evrows">${body}</div>
+        <div class="rsoon mr"><i class="rinfo"></i><div><small>Нажми на сундук, чтобы увидеть награду за место.</small><small>Соперники с пометкой «тест» — до сервера (этап 2). Твой лучший забег дня сохранён с записью боя — сервер проверит его повтором.</small></div></div>
         <button class="lvbtn wide alt" data-a="evOpen" data-v="${ev}"><b>Назад</b></button></div>${pop}</div></div>`;
   }
 
@@ -1892,7 +1895,7 @@ export class Hub {
     // what the rarity opens: a crystal of that rarity's colour, lit when open
     const lines = gearLines(it.slot, it.set).map(l => {
       const on = it.rarity >= l.at;
-      return `<div class="gl2${on ? ' on' : ''}" style="--d:${RARITY_COLOR[l.at]}"><i class="dia"></i><span><em>${RARITIES[l.at]}</em> ${l.fx && l.at === EPIC ? `<b>${l.fx.name}:</b> ${l.fx.e}` : l.text}</span>${on ? '' : '<i class="lk2">🔒</i>'}</div>`;
+      return `<div class="gl2 t${R_TIER[l.at]}${on ? ' on' : ''}" style="--d:${RARITY_COLOR[l.at]}"><i class="dia"></i><span><em>${RARITIES[l.at]}</em> ${l.fx && l.at === EPIC ? `<b>${l.fx.name}:</b> ${l.fx.e}` : l.text}</span>${on ? '' : '<i class="lk2">🔒</i>'}</div>`;
     }).join('');
     // the next rarity step: what it takes and which items go in
     let up = '';

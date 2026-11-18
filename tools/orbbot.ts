@@ -1,13 +1,15 @@
 // Orb Defense balance bot: plays stages with the auto aim. Usage: npx tsx tools/orbbot.ts [stages] [atk] [hp] [seeds]
-declare const process: { argv: string[] };
+declare const process: { argv: string[]; env: Record<string, string | undefined> };
+// Ш104: OGEAR=1|2 — all six «Лес» effects epic|mythic; OGEAR=thorn:2,bark:1 — some of them
+const GE = process.env.OGEAR, GEAR = !GE ? undefined : /^\d$/.test(GE) ? Object.fromEntries(['thorn', 'bark', 'spikes', 'roots', 'breath', 'thicket'].map(k => [k, +GE])) : Object.fromEntries(GE.split(',').map(x => { const [k, v] = x.split(':'); return [k, +v]; }));
 import { Orb, OrbConfig, replayOrb, Act } from '../src/core/orb';
 import { BALL_IDS } from '../src/core/orbContent';
-const N = +(process.argv[2] ?? 5), atk = +(process.argv[3] ?? 110), hp = +(process.argv[4] ?? 110), seeds = +(process.argv[5] ?? 3);
-for (let st = 1; st <= N; st++) {
+const S0 = +(process.env.OFROM ?? 1), N = +(process.argv[2] ?? 5), atk = +(process.argv[3] ?? 110), hp = +(process.argv[4] ?? 110), seeds = +(process.argv[5] ?? 3);
+for (let st = S0; st <= N; st++) {
   const res: string[] = [];
   for (let sd = 1; sd <= seeds; sd++) {
     const cfg: OrbConfig = { seed: sd * 7919 + st, stage: st, heroId: 'prometheus', heroBall: 'fire', atk: atk * Math.pow(1.1, st - 1), hp, crit: 0.05, critDmg: 1.5, boss: 0,
-      ballLv: Object.fromEntries(BALL_IDS.map(b => [b, 1])), normals: 4, spirit: { id: 'fire', rarity: 0, lv: 1 }, wall: { id: 'start', rarity: 0, lv: 1 } };
+      ballLv: Object.fromEntries(BALL_IDS.map(b => [b, 1])), normals: 4, spirit: { id: 'fire', rarity: 0, lv: 1 }, wall: { id: 'start', rarity: 0, lv: 1 }, ...(GEAR ? { gear: GEAR } : {}) };
     const o = new Orb(cfg); const acts: Act[] = []; const t0 = Date.now(); let ticks = 0;
     while (o.s.phase !== 'win' && o.s.phase !== 'lose' && o.s.turn < 200) {
       let a: Act;

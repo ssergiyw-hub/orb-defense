@@ -4,7 +4,7 @@ import { Rng } from './rng';
 import { fsin, fcos, fatan2, PI } from './fmath';
 import {
   wallMaxOf, COLS, ROWS, LAUNCH_DY, STORM, BOSS_EV, BALL_V, BALL_R, VOLLEY_GAP, ENEMY_T, BallId, BALLS, BALL_FX, elemHit, runLvMul, BALL_IDS,
-  EnemyId, ENEMY, ECHIDNA_ARMOR, SpiritId, spiritEvery, WallId, wallFx, stageDef, StageDef, MINIS, BASE_WALL_HP,
+  EnemyId, ENEMY, ECHIDNA_ARMOR, SpiritId, spiritEvery, WallId, wallFx, stageDef, StageDef, MINIS, BASE_WALL_HP, GEAR_FX, GearFxId,
 } from './orbContent';
 
 export interface OrbConfig {
@@ -25,6 +25,8 @@ export interface OrbConfig {
   wallHp?: number; wallArmor?: number;
   /** runes of the new system (fractions): dmg vs boss, normal ball, every ball, effect duration … */
   rune?: Partial<Record<RuneFx, number>>;
+  /** Ш104: the «Лес» set effects of the worn items: 1 — epic, 2 — mythic */
+  gear?: Partial<Record<GearFxId, number>>;
   god?: boolean;
 }
 /** правка Ш7: what the runes in the sockets give (fractions): elite — minibosses and bosses; dur — chance of +1 turn;
@@ -46,6 +48,8 @@ export interface Ball {
   kind: BallId | 'normal' | 'shard'; lv: number;
   x: number; y: number; vx: number; vy: number; age: number; alive: boolean; bounces: number;
   hit: Record<number, number>;
+  /** Ш104: «Ловкость рук» — a copy of a special ball that leaves after the volley */
+  copy?: boolean;
 }
 export interface Bush { c: number; r: number; t: number; dmg: number }
 export interface Card { k: 'new' | 'up' | 'normal' | 'power' | 'repair'; ball?: BallId; title: string; desc: string; lv?: number }
@@ -69,6 +73,10 @@ export type Fx =
   | { t: 'freeze'; x: number; y: number }
   | { t: 'thorn'; c: number; r: number }
   | { t: 'summon'; x: number; y: number }
+  | { t: 'block'; x: number; kind: 'immune' | 'miss' }
+  | { t: 'breath' }
+  | { t: 'pierce'; x1: number; y1: number; x2: number; y2: number }
+  | { t: 'twin' }
   | { t: 'level' }
   | { t: 'launch' };
 
@@ -81,6 +89,8 @@ export interface OrbState {
   stormT?: number; nextBoss?: number;
   /** Ш101: the boss's phases (every full health bar), the boss tick timer */
   bossPhase?: number; bossT?: number;
+  /** Ш104: «Кора» — this enemy turn (or until a tick in the storm) nothing hurts; «Второе дыхание» used */
+  immune?: boolean; immuneUntil?: number; breathUsed?: number;
   enemies: Enemy[]; balls: Ball[]; bushes: Bush[]; nextId: number;
   queue: (BallId | 'normal')[]; launchT: number; aim: number;
   specials: { id: BallId; lv: number }[]; normals: number; power: number;
@@ -157,17 +167,23 @@ export class Orb {
       const k = s.queue.shift()!;
       const lv = k === 'normal' ? 0 : s.specials.find(x => x.id === k)!.lv;
       s.balls.push({ kind: k, lv, x: COLS / 2, y: ROWS + LAUNCH_DY, vx: BALL_V * fcos(s.aim), vy: BALL_V * fsin(s.aim), age: 0, alive: true, bounces: 0, hit: {} });
+      if (k !== 'normal' && s.cfg.gear?.spikes && this.rng.chance(this.gx('spikes', GEAR_FX.twin))) { // Ш104: «Ловкость рук» — the special ball flies twice
+        const a = clamp(s.aim + 0.09, -PI + 0.12, -0.12);
+        s.balls.push({ kind: k, lv, x: COLS / 2, y: ROWS + LAUNCH_DY, vx: BALL_V * fcos(a), vy: BALL_V * fsin(a), age: 0, alive: true, bounces: 0, hit: {}, copy: true });
+        this.fx.push({ t: 'twin' });
+      }
       s.launchT = s.cfg.storm ? STORM.gap : VOLLEY_GAP; this.fx.push({ t: 'launch' });
     }
     s.launchT--;
     for (const b of s.balls) if (b.alive) this.moveBall(b);
-    if (s.cfg.storm) for (const b of s.balls) if (!b.alive && b.kind !== 'shard') s.queue.push(b.kind as BallId | 'normal'); // Ш98: a ball back in the queue
+    if (s.cfg.storm) for (const b of s.balls) if (!b.alive && b.kind !== 'shard' && !b.copy) s.queue.push(b.kind as BallId | 'normal'); // Ш98: a ball back in the queue
     s.balls = s.balls.filter(b => b.alive);
     if (!s.cfg.storm && !s.queue.length && !s.balls.length) this.endVolley();
   }
   private moveBall(b: Ball): void {
     const s = this.s, SUB = 3;
     b.age++;
+    if (b.age > 3600) { b.alive = false; return; } // a ball locked behind a packed field comes home after 60 s (the replay limit is 20 000 ticks)
     if (b.age > 1080) b.vy += 0.001; // no endless loops — after 18 s the ball sinks back (Ш74: slower balls, ×2 time)
     for (let k = 0; k < SUB && b.alive; k++) {
       b.x += b.vx / SUB; b.y += b.vy / SUB;
@@ -182,6 +198,10 @@ export class Orb {
         const nx = clamp(b.x, x0, x1), ny = clamp(b.y, y0, y1);
         const dx = b.x - nx, dy = b.y - ny, d2 = dx * dx + dy * dy;
         if (d2 >= BALL_R * BALL_R) continue;
+        // Ш104: «Шипы» — now and then a normal ball's hit goes through: this enemy and the one behind it take ×N.
+        // The ball itself still bounces: a ball let through behind the rows bounces there for the whole volley (the bot: +50% wins)
+        const fresh = (b.hit[e.id] ?? -99) <= b.age - 6, vx0 = b.vx, vy0 = b.vy;
+        const thorn = fresh && b.kind === 'normal' && !!s.cfg.gear?.thorn && this.rng.chance(this.gx('thorn', GEAR_FX.thorn));
         const pierce = b.kind === 'ghost';
         if (!pierce) {
           // push out and reflect along the normal
@@ -199,11 +219,26 @@ export class Orb {
         }
         if ((b.hit[e.id] ?? -99) > b.age - (pierce ? 80 : 6)) continue;
         b.hit[e.id] = b.age;
-        this.ballHit(b, e);
+        this.ballHit(b, e, thorn ? this.gx('thorn', GEAR_FX.thornMul) : 1);
+        if (thorn) this.thornThrough(e, vx0, vy0);
         if (b.kind === 'shard') { b.alive = false; return; }
         if (!pierce) break;
       }
     }
+  }
+  /** Ш104: «Шипы» — the hit goes on along the flight: the first enemy behind (up to 2.5 cells) takes the same ×N hit */
+  private thornThrough(e: Enemy, vx: number, vy: number): void {
+    const s = this.s, l = Math.sqrt(vx * vx + vy * vy) || 1, ux = vx / l, uy = vy / l;
+    const x0 = e.c + e.w / 2, y0 = e.r + e.h / 2;
+    for (let k = 1; k <= 6; k++) {
+      const x = x0 + ux * (e.w / 2 + 0.4 * k), y = y0 + uy * (e.h / 2 + 0.4 * k);
+      const o = s.enemies.find(t => t !== e && t.hp > 0 && x >= t.c && x < t.c + t.w && y >= t.r && y < t.r + t.h);
+      if (!o) continue;
+      this.fx.push({ t: 'pierce', x1: x0, y1: y0, x2: o.c + o.w / 2, y2: o.r + o.h / 2 });
+      this.damage(o, this.atkOf('normal', 0) * (1 + (s.cfg.rune?.impact ?? 0)) * this.gx('thorn', GEAR_FX.thornMul), 'normal', true, 'normal');
+      return;
+    }
+    this.fx.push({ t: 'pierce', x1: x0, y1: y0, x2: x0 + ux * 1.2, y2: y0 + uy * 1.2 });
   }
   /** no near-horizontal flights: they bore the player and never come back */
   private keepAngle(b: Ball): void {
@@ -213,6 +248,8 @@ export class Orb {
 
   // ---------------- damage ----------------
   /** Ш70: the hero's own ball hits harder with the hero's stars 1–5 */
+  /** Ш104: the value of a set effect for the worn rarity (epic / mythic), 0 when not worn */
+  private gx(k: GearFxId, v: readonly number[]): number { const l = this.s.cfg.gear?.[k]; return l ? v[l - 1] : 0; }
   private heroMul(kind: string): number { const c = this.s.cfg; return kind === c.heroBall ? 1 + 0.15 * Math.min(5, c.stars ?? 0) : 1; }
   /** Ш72: the hit of a ball for the level-up cards (no crit) */
   hitOf(kind: BallId, lv: number): number { return this.atkOf(kind, lv); }
@@ -248,11 +285,11 @@ export class Orb {
     } else if (e.hp <= 0) this.kill(e);
     return dealt;
   }
-  private ballHit(b: Ball, e: Enemy): void {
+  private ballHit(b: Ball, e: Enemy, mul = 1): void {
     const s = this.s, c = s.cfg, lv = b.lv, rn = c.rune ?? {};
     // правка Ш7: «урон при ударе» — the direct hit of every ball (shards count as area); the ghost — «пробивание»
     const direct = (b.kind === 'shard' ? 1 : 1 + (rn.impact ?? 0)) * (b.kind === 'ghost' ? 1 + (rn.pierce ?? 0) : 1);
-    this.damage(e, this.atkOf(b.kind, lv) * direct, b.kind, true, b.kind);
+    this.damage(e, this.atkOf(b.kind, lv) * direct * mul, b.kind, true, b.kind);
     const ex = e.c + e.w / 2, ey = e.r + e.h / 2;
     const A = c.atk * (1 + s.power) * (1 + (rn.allBalls ?? 0)) * this.heroMul(b.kind);
     // правка Ш7: the duration rune is a chance of one more turn, rolled only when an effect is put on
@@ -348,6 +385,7 @@ export class Orb {
   private afterEnemies(): void {
     const s = this.s;
     if (s.phase !== 'enemy') return;
+    s.immune = false;
     if (s.pendingLv > 0) { s.phase = 'choose'; this.rollCards(); } else s.phase = 'aim';
   }
   private checkEnd(): boolean {
@@ -361,6 +399,7 @@ export class Orb {
   private enemyTurn(): void {
     const s = this.s, c = s.cfg, A = c.atk * (1 + s.power);
     s.turn++; s.healThisTurn = 0;
+    if (!c.storm && c.gear?.bark) s.immune = s.turn % this.gx('bark', GEAR_FX.bark) === 0; // Ш104: «Кора» — a turn nothing hurts
     for (const e of s.enemies) { e.pr = e.r; e.pc = e.c; }
     // 1. damage over time (the rune «урон всех шаров и их эффектов» counts here too)
     const Ad = A * (1 + (c.rune?.allBalls ?? 0));
@@ -374,6 +413,7 @@ export class Orb {
     if (c.spirit) { s.spiritT++; if (s.spiritT >= spiritEvery(c.spirit.rarity)) { s.spiritT = 0; this.spiritAct(); } }
     // 3. the wall heals itself / the shield comes back
     if (c.wall.id === 'heal') this.wallHeal(s.wallMax * wallFx.heal(c.wall.rarity));
+    if (!c.storm && c.gear?.roots && s.wallHp > 0) this.wallHeal(s.wallMax * this.gx('roots', GEAR_FX.roots)); // Ш104: «Корни»
     if (c.wall.id === 'shield' && s.wallHp > 0) s.wallShield = Math.round(s.wallMax * wallFx.shield(c.wall.rarity));
     // 4. enemies act, the nearest to the wall first
     const order = [...s.enemies].sort((a, b) => (b.r + b.h) - (a.r + a.h) || a.c - b.c);
@@ -383,6 +423,7 @@ export class Orb {
       e.cd++;
       const d = ENEMY[e.kind], front = e.r + e.h >= ROWS;
       const hitWall = (mul: number, kind: 'hit' | 'shot' | 'rock') => {
+        if (this.blocked(e.c + e.w / 2)) return; // Ш104: «Кора» / «Чаща» — before the shield takes anything
         let dmg = s.sd.dmgUnit * d.atk * mul * (e.curse > 0 ? 0.7 : 1);
         if (firstHit) { firstHit = false; dmg = 0; }
         const armor = c.wallArmor ?? 0; if (armor > 0 && dmg > 0) dmg = Math.max(1, dmg - Math.min(armor, dmg / 2));
@@ -391,7 +432,7 @@ export class Orb {
           if (c.wall.id === 'shield' && c.wall.rarity >= 9 && s.wallShield >= Math.round(s.wallMax * wallFx.shield(c.wall.rarity))) this.damage(e, dmg, 'wall', false, 'counter');
           const a = Math.min(s.wallShield, dmg); s.wallShield -= a; dmg -= a;
         }
-        this.hurt(dmg, e.c + e.w / 2, kind, { x: e.c + e.w / 2, y: e.r + e.h }); // Ш102: the wall first, then the hero
+        this.hurt(dmg, e.c + e.w / 2, kind, { x: e.c + e.w / 2, y: e.r + e.h }, true); // Ш102: the wall first, then the hero
         if (c.wall.id === 'counter' && e.hp > 0) {
           const cd = A * wallFx.counter(c.wall.rarity);
           this.fx.push({ t: 'counter', x: e.c + e.w / 2, y: e.r + e.h / 2 });
@@ -452,14 +493,35 @@ export class Orb {
     this.hurt(dmg, e.c + e.w / 2, 'shot', { x: e.c + e.w / 2, y: e.r + e.h }); // Ш102: the shooters hit the wall too while it stands
   }
   /** Ш102: every blow goes into the wall; when the wall has fallen — into the hero (the last stand). A repair raises it again */
-  private hurt(dmg: number, x: number, kind: 'hit' | 'shot' | 'rock', from: { x: number; y: number }): void {
-    const s = this.s;
+  private hurt(dmg: number, x: number, kind: 'hit' | 'shot' | 'rock', from: { x: number; y: number }, checked = false): void {
+    const s = this.s, g = s.cfg.gear;
+    if (!checked && this.blocked(x)) return;
     if (s.wallHp > 0) {
       const w = Math.min(s.wallHp, dmg); s.wallHp -= w; dmg -= w;
       this.fx.push({ t: 'wall', c: x, dmg: w, kind });
-      if (s.wallHp <= 0) { s.wallHp = 0; this.fx.push({ t: 'wallFall' }); }
+      if (s.wallHp <= 0) {
+        s.wallHp = 0;
+        if (g?.breath && (s.breathUsed ?? 0) < GEAR_FX.breathN[g.breath - 1]) { // Ш104: «Второе дыхание» — the wall rises once (twice)
+          s.breathUsed = (s.breathUsed ?? 0) + 1; s.wallHp = Math.round(s.wallMax * this.gx('breath', GEAR_FX.breath)); dmg = 0;
+          this.fx.push({ t: 'breath' });
+        } else this.fx.push({ t: 'wallFall' });
+      }
     }
     if (dmg > 0) { s.heroHp -= dmg; this.fx.push({ t: 'hero', dmg, from }); }
+  }
+  /** Ш104: «Кора» (a turn / a few seconds of immunity) and «Чаща» (a chance the blow misses) */
+  private blocked(x: number): boolean {
+    const s = this.s, g = s.cfg.gear;
+    if (!g) return false;
+    if (s.immune || (s.immuneUntil ?? 0) > s.tick) { this.fx.push({ t: 'block', x, kind: 'immune' }); return true; }
+    if (g.thicket && this.rng.chance(this.gx('thicket', GEAR_FX.thicket))) { this.fx.push({ t: 'block', x, kind: 'miss' }); return true; }
+    return false;
+  }
+  /** Ш104: the storm and the boss attack count seconds: «Кора» — 3 s of immunity every 20 (12) s, «Корни» — a repair every 5 s */
+  private gearTick(): void {
+    const s = this.s, g = s.cfg.gear; if (!g) return;
+    if (g.bark && s.tick % (this.gx('bark', GEAR_FX.barkSec) * 60) === 0) s.immuneUntil = s.tick + GEAR_FX.barkLen;
+    if (g.roots && s.wallHp > 0 && s.tick % (GEAR_FX.rootsSec * 60) === 0) { s.healThisTurn = 0; this.wallHeal(s.wallMax * this.gx('roots', GEAR_FX.roots)); }
   }
   private wallHeal(amt: number, force = false): void {
     const s = this.s, cap = 0.2 * s.wallMax - s.healThisTurn; // правка Ш20: all healing ≤ 20% of the wall per turn
@@ -591,6 +653,7 @@ export class Orb {
     this.flyTick();
     if (s.enemies.some(e => e.hp <= 0)) s.enemies = s.enemies.filter(e => e.hp > 0); // Ш100: the dead leave at once (the aim line saw them)
     if ((s.phase as Phase) !== 'fly') return;
+    this.gearTick();
     s.stormT = (s.stormT ?? 0) + 1;
     const every = Math.max(STORM.stepMin, Math.round(STORM.step * Math.pow(STORM.stepGrow, Math.floor(s.tick / STORM.wave))));
     if (s.stormT >= every) {
@@ -620,6 +683,7 @@ export class Orb {
     if ((s.phase as Phase) !== 'fly') return;
     const boss = s.enemies.find(e => e.kind === c.bossEv);
     if (!boss) { s.phase = 'lose'; return; }
+    this.gearTick();
     s.bossT = (s.bossT ?? 0) + 1; s.stormT = (s.stormT ?? 0) + 1;
     if (s.bossT % BOSS_EV.shotEvery === 0) {
       const k = Math.pow(BOSS_EV.shotGrow, Math.floor(s.tick / STORM.wave)) * (1 + BOSS_EV.phaseShot * (s.bossPhase ?? 0));
@@ -631,6 +695,7 @@ export class Orb {
       if (boss.poisonT > 0) { const d = A * BALL_FX.poison(this.lvOf('poison')) * boss.poisonN * (1 + (c.rune?.dot ?? 0)); this.fx.push({ t: 'dot', x: boss.c + boss.w / 2, y: boss.r + boss.h / 2, dmg: Math.round(d), kind: 'poison' }); this.damage(boss, d, 'poison', false, 'poison'); boss.poisonT--; if (boss.poisonT <= 0) boss.poisonN = 0; }
       if (boss.freeze > 0) boss.freeze--; if (boss.wet > 0) boss.wet--; if (boss.curse > 0) boss.curse--;
       if (c.spirit) { s.spiritT++; if (s.spiritT >= spiritEvery(c.spirit.rarity)) { s.spiritT = 0; this.spiritAct(); } }
+      s.healThisTurn = 0; // the 20% cap counts per shot (3 s) here
       if (c.wall.id === 'heal') this.wallHeal(s.wallMax * wallFx.heal(c.wall.rarity) * 0.5);
       if (this.checkEnd()) return;
     }

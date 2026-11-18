@@ -12,6 +12,16 @@ export const LAUNCH_DY = 1.4;
  *  enemy health ×0.5 of the stage (the boss ×0.6), +20% every 30 s; a miniboss every 15 rows, a boss every 3 minutes */
 /** Ш101 «Атака на босса»: one boss phase = stage health unit × boss hp × 3; a shot every 3 s for 0.7% of the wall,
  *  +20% every 30 s and +10% every phase; one step down and a choice of 3 skills every minute */
+/** Ш104: the «Лес» set effects in the ball game — [epic, mythic]; the storm and the boss attack count seconds instead of turns */
+export const GEAR_FX = {
+  thorn: [0.15, 0.22], thornMul: [2, 3],
+  bark: [6, 4], barkSec: [20, 12], barkLen: 180,
+  twin: [0.10, 0.18],
+  roots: [0.015, 0.03], rootsSec: 5,
+  breath: [0.3, 0.4], breathN: [1, 2],
+  thicket: [0.12, 0.20],
+} as const;
+export type GearFxId = 'thorn' | 'bark' | 'spikes' | 'roots' | 'breath' | 'thicket';
 export const BOSS_EV = { phaseHp: 3, shotEvery: 180, shot: 0.007, shotGrow: 1.2, phaseShot: 0.1, stepEvery: 3600 };
 export const STORM = { gap: 15, step: 210, stepGrow: 0.92, stepMin: 90, wave: 1800, hp: 0.5, bossHp: 0.6, hpGrow: 1.2, miniEvery: 15, boss: 10800 };
 export const BALL_R = 0.15;     // ball radius in cells

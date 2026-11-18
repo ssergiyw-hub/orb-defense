@@ -1,8 +1,9 @@
 // Orb Defense: the meta of the new game on top of the «Призванный герой» profile — balls (books), spirits (tavern),
 // walls, and what a stage gives. Gear, gems, heroes, shop and tasks stay from the old game.
 import * as P from './profile';
-import { BallId, BALL_IDS, SpiritId, SPIRIT_IDS, WallId, WALL_IDS, HERO_BALL, stageDef, wallMaxOf, BOSSES, EnemyId } from '../core/orbContent';
+import { BallId, BALL_IDS, SpiritId, SPIRIT_IDS, WallId, WALL_IDS, HERO_BALL, stageDef, wallMaxOf, BOSSES, EnemyId, GearFxId } from '../core/orbContent';
 import type { OrbConfig, Orb } from '../core/orb';
+import { SLOTS, SET_FX, EPIC, MYTHIC } from './defs';
 
 export interface OrbProfile {
   balls: Record<BallId, { lv: number; cards: number }>;
@@ -93,19 +94,35 @@ export function wallGems(p: P.Profile): { hp: number; armor: number } {
 const wallNow = (p: P.Profile) => { const o = orb(p), w = o.walls[o.wall].owned ? o.wall : 'start'; return { id: w, rarity: w === 'start' ? 0 : rarityOf(o.walls[w].lv), lv: o.walls[w].lv }; };
 /** what the wall has in battle: health (level, gems, reinforced wall, rune) and armor */
 export function wallStats(p: P.Profile): { hp: number; armor: number } {
-  const g = wallGems(p);
-  return { hp: wallMaxOf(wallNow(p), g.hp, P.runeTotals(p).wallhp ?? 0), armor: g.armor };
+  const g = wallGems(p), gw = gearWall(p);
+  return { hp: wallMaxOf(wallNow(p), g.hp + gw.hp, (P.runeTotals(p).wallhp ?? 0) + gw.pct), armor: g.armor };
+}
+/** Ш104: the «Лес» items' second line — wall health (number), 4 items of the set — wall health +10% */
+export function gearWall(p: P.Profile): { hp: number; pct: number } {
+  let hp = 0, guard = 0;
+  for (const s of SLOTS) { const it = P.equippedItem(p, s); if (!it) continue; hp += P.itemBase(it).wall ?? 0; if (it.set === 'guard') guard++; }
+  return { hp: Math.round(hp), pct: guard >= 4 ? 0.10 : 0 };
+}
+/** Ш104: the set effects the worn items open — epic 1, mythic 2 (only the «Лес» set drops now) */
+export function gearFx(p: P.Profile): Partial<Record<GearFxId, number>> {
+  const out: Partial<Record<GearFxId, number>> = {};
+  for (const s of SLOTS) {
+    const it = P.equippedItem(p, s); if (!it || it.set !== 'guard' || it.rarity < EPIC) continue;
+    out[SET_FX.guard[s].id as GearFxId] = it.rarity >= MYTHIC ? 2 : 1;
+  }
+  return out;
 }
 
 // ---------------- a battle from the profile ----------------
 export function makeConfig(p: P.Profile, stage: number, heroId: string, seed: number): OrbConfig {
-  const o = orb(p), st = P.statSheet(p, heroId), mods = P.computeMods(p, heroId), rt = P.runeTotals(p), wg = wallGems(p);
+  const o = orb(p), st = P.statSheet(p, heroId), mods = P.computeMods(p, heroId), rt = P.runeTotals(p), wg0 = wallGems(p), gw = gearWall(p), gfx = gearFx(p);
+  const wg = { hp: wg0.hp + gw.hp, armor: wg0.armor };
   const sp = o.spirit && o.spirits[o.spirit].owned ? { id: o.spirit, rarity: rarityOf(o.spirits[o.spirit].lv), lv: o.spirits[o.spirit].lv } : undefined;
   // правка Ш7: the rune lines go to the battle; attack and hero health are already in the stat sheet
   const rune: OrbConfig['rune'] = {
     normal: rt.normal, allBalls: rt.allballs, afflicted: rt.afflicted, dur: rt.dur, plusBall: rt.plusball, spirit: rt.spirit,
     impact: rt.impact, area: rt.area, beamLight: rt.beamlight, pierce: rt.pierce, dot: rt.dot, wetFrozen: rt.wetfrozen,
-    repair: rt.repair, gold: rt.gold, elite: rt.elite, wallPct: rt.wallhp,
+    repair: rt.repair, gold: rt.gold, elite: rt.elite, wallPct: (rt.wallhp ?? 0) + gw.pct,
   };
   // Ш70: hero stars 6–10 — +4% to every ball a star
   const stars = p.heroes[heroId]?.stars ?? 0;
@@ -118,7 +135,7 @@ export function makeConfig(p: P.Profile, stage: number, heroId: string, seed: nu
     ballLv: Object.fromEntries(BALL_IDS.map(b => [b, o.balls[b].lv])),
     normals: NORMALS, spirit: sp, wall: wallNow(p),
     ...(wg.hp ? { wallHp: wg.hp } : {}), ...(wg.armor ? { wallArmor: wg.armor } : {}),
-    ...(Object.keys(rune).length ? { rune } : {}),
+    ...(Object.keys(rune).length ? { rune } : {}), ...(Object.keys(gfx).length ? { gear: gfx } : {}),
   };
 }
 
