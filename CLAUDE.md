@@ -125,5 +125,9 @@ python3 art/orb/enemies.py && python3 art/orb/process.py   # пересобра�
 - «Шквал шаров» (Ш98): `cfg.storm` в `Orb` — `stormTick`, `stormRefill`, `stormAim`, `stormSec`, константы `STORM` в `orbContent.ts`; прицел — act с `at` (тик), `replayOrb` повторяет по тикам. Мета — `finishStorm` (`orbMeta.ts`), событие `'storm'` в `EventId`, награды `EV_REWARDS.storm`, группа дня `evGroup`. Бот: `npx tsx tools/stormbot.ts <этап> <множитель силы> <сиды>`; скриншоты: `node tools/stormshot.mjs` → `shots/s-*.png`.
 - Окно энергии (Ш99): `vEnergy` в `hub.ts`, открывается с `#hEn` (`energyOpen`).
 
+## Правки Ш100–Ш102 (18.11)
+- Сначала стена, потом герой (Ш102): все удары — через `Orb.hurt()`; стена пала — fx `wallFall`, удары в героя, поражение только при `heroHp <= 0`.
+- «Атака на босса» (Ш101): `cfg.bossEv` (+ `cfg.storm`), `BOSS_EV`, `bossStart`/`bossTick`, мета `finishBossEv`, событие `'bossorb'`, босс дня `bossOfDay()`. Бот: `npx tsx tools/stormbot.ts <этап> <мн.> <сиды> <id босса>`; скриншоты `node tools/bossshot.mjs` → `shots/b-*.png` (бой виден как `window.__orb`).
+
 ## Не сделано (на 18.11)
 Медуза — 3D (нет поз спиной), батл пасс / рынок / колесо / события — только через общие рамки, без отдельной доводки. События, итерация 2 (слияния, пассивки), баланс живой игрой.
