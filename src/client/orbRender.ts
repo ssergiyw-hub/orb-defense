@@ -96,6 +96,12 @@ export class OrbRenderer {
       case 'shard': this.burst(f.x, f.y, 4, '#ffffff', 0.5); break;
       case 'thorn': this.burst(f.c + 0.5, f.r + 0.5, 6, '#7bdc6a', 0.7); break;
       case 'summon': this.burst(f.x, f.y, 10, '#ffe08a', 1); break;
+      case 'bossShot': this.flashes.push({ t: 'shot', age: 0, life: 0.35, a: f.x, b: f.y, c: f.x, d: ROWS, col: '#ff9a3a' }); this.burst(f.x, f.y, 6, '#ffb36a', 0.6); break; // Ш101
+      case 'phase': { // Ш101: the boss's bar refilled — a new phase
+        const b = o.s.enemies.find(e => e.kind === o.s.cfg.bossEv);
+        if (b) { this.burst(b.c + b.w / 2, b.r + b.h / 2, 30, '#ff5a3a', 2); this.text(b.c + b.w / 2, b.r - 0.2, '×' + (1 + 0.1 * f.n).toFixed(1), '#ff7a4a', true); }
+        this.shake = Math.max(this.shake, 0.25); break;
+      }
       default: break;
     }
     void C; void o;
@@ -251,7 +257,25 @@ export class OrbRenderer {
     c.fillStyle = '#2a2018'; c.fillRect(0, this.wallY, this.W, this.H - this.wallY + 20);
     if (!im || !a) return;
     const sc = this.W / a.w, y = this.wallY - a.solid * sc;
+    const fallen = o.s.wallHp <= 0; // Ш102: a fallen wall — dark, cracked, the hero holds the line
+    if (fallen) { c.save(); c.filter = 'grayscale(.7) brightness(.55) sepia(.3)'; }
     c.drawImage(im, 0, y, this.W, a.h * sc);
+    if (fallen) {
+      c.restore(); c.save(); c.strokeStyle = 'rgba(20,10,6,.85)'; c.lineWidth = Math.max(2, this.cell * 0.05);
+      const top = y + a.solid * sc * 0.15, bot = this.wallY + this.cell * 0.15;
+      const X = [0.09, 0.27, 0.44, 0.63, 0.82, 0.95], J = [0.3, -0.5, 0.6, -0.2, 0.45, -0.6, 0.25, -0.35];
+      c.lineCap = 'round'; c.lineJoin = 'round';
+      X.forEach((fx, i) => { // cracks: jagged lines running down the parapet, with one short branch each (fixed, no flicker)
+        const pts: [number, number][] = [];
+        for (let k = 0; k <= 5; k++) pts.push([this.W * fx + J[(i + k) % 8] * this.cell * 0.22, top + (bot - top) * k / 5]);
+        for (const [w, col] of [[Math.max(3, this.cell * 0.09), 'rgba(15,8,5,.9)'], [Math.max(1, this.cell * 0.03), 'rgba(255,90,50,.55)']] as const) {
+          c.lineWidth = w; c.strokeStyle = col; c.beginPath(); pts.forEach(([px, py], k) => k ? c.lineTo(px, py) : c.moveTo(px, py));
+          const [bx, by] = pts[2]; c.moveTo(bx, by); c.lineTo(bx + (i % 2 ? 1 : -1) * this.cell * 0.4, by + (bot - top) * 0.12); c.stroke();
+        }
+      });
+      c.fillStyle = `rgba(255,40,30,${0.08 + 0.05 * Math.sin(this.t * 4)})`; c.fillRect(0, top, this.W, bot - top);
+      c.restore();
+    }
     if (y + a.h * sc < this.H) { // a long phone: the last strip of the walkway is stretched to the bottom
       const sh = 40; c.drawImage(im, 0, a.h - sh, a.w, sh, 0, y + a.h * sc - 1, this.W, this.H - (y + a.h * sc) + 2);
     }
@@ -278,8 +302,12 @@ export class OrbRenderer {
     if (!ok) { c.fillStyle = '#e8d6a8'; c.beginPath(); c.arc(x, gy - C * 0.6, C * 0.35, 0, 6.283); c.fill(); }
     // hero hp
     const bw = C * 1.6, bx = x - bw / 2, by = gy + C * 0.3, bh = Math.max(6, C * 0.11);
+    // Ш102: dim while the wall stands (nothing hits the hero then), red and pulsing on the last stand
+    const last = s.wallHp <= 0;
+    c.save(); c.globalAlpha = last ? 1 : 0.45;
     c.fillStyle = 'rgba(20,10,8,.85)'; roundRect(c, bx - 2, by - 2, bw + 4, bh + 4, 4); c.fill();
-    c.fillStyle = '#4ad66a'; roundRect(c, bx, by, bw * Math.max(0, s.heroHp / s.heroMax), bh, 3); c.fill();
+    c.fillStyle = last ? `rgb(${230 + 25 * Math.sin(this.t * 6)},70,60)` : '#4ad66a'; roundRect(c, bx, by, bw * Math.max(0, s.heroHp / s.heroMax), bh, 3); c.fill();
+    c.restore();
   }
   private drawSpirit(o: Orb): void {
     const s = o.s; if (!s.cfg.spirit) return;
@@ -369,7 +397,7 @@ export class OrbRenderer {
       if (x < BALL_R || x > COLS - BALL_R) { vx = -vx; bounces++; pts.push([x, y]); }
       if (y < BALL_R) { vy = -vy; bounces++; pts.push([x, y]); }
       if (y > ROWS + LAUNCH_DY + 0.01) break;
-      const hit = s.enemies.find(e => x > e.c + 0.04 - BALL_R && x < e.c + e.w - 0.04 + BALL_R && y > e.r + 0.04 - BALL_R && y < e.r + e.h - 0.04 + BALL_R);
+      const hit = s.enemies.find(e => e.hp > 0 && x > e.c + 0.04 - BALL_R && x < e.c + e.w - 0.04 + BALL_R && y > e.r + 0.04 - BALL_R && y < e.r + e.h - 0.04 + BALL_R);
       if (hit) { pts.push([x, y]); bounces = 9; break; }
     }
     if (pts[pts.length - 1][0] !== x || pts[pts.length - 1][1] !== y) pts.push([x, y]);

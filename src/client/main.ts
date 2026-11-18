@@ -89,7 +89,7 @@ function readInput(): Input {
 }
 
 // ---------------- hub ----------------
-const hub = new Hub($('ui'), (map, _mods, heroId, _wm, ev) => startOrbBattle(map, heroId, ev === 'storm'));
+const hub = new Hub($('ui'), (map, _mods, heroId, _wm, ev) => startOrbBattle(map, heroId, ev === 'storm' || ev === 'bossorb', ev === 'bossorb'));
 void startBattle;
 startI18n(); // правка 121: translate the page into the chosen language
 (window as unknown as { __hub: Hub }).__hub = hub; // screenshot scripts open windows directly
@@ -503,16 +503,26 @@ requestAnimationFrame(frame);
 
 // ================= Orb Defense: the ball battle =================
 const orbBattle = new OrbBattle(canvas, (o, cfg, acts, quit) => orbDone(o, cfg, acts, quit));
-function startOrbBattle(stage: number, heroId: string, storm = false): void {
+function startOrbBattle(stage: number, heroId: string, storm = false, bossEv = false): void {
   if (!hub.p) return;
   const cfg = OM.makeConfig(hub.p, stage, heroId, (Math.random() * 2 ** 31) >>> 0);
   if (storm) cfg.storm = true; // Ш98: «Шквал шаров» — the player's best stage, the stream, survival
+  if (bossEv) cfg.bossEv = OM.bossOfDay(); // Ш101: «Атака на босса» — the boss of the day
   if (location.hash.includes('god')) cfg.god = true;
   const g = P.GFX[hub.p.gfx ?? 'mid'];
   orbBattle.start(cfg, g.dpr);
 }
 function orbDone(o: Orb, cfg: OrbConfig, acts: Act[], quit: boolean): void {
   if (!hub.p) return;
+  if (cfg.bossEv) { // Ш101: the damage to the boss, the place in today's group
+    const before = hub.snap(), r = OM.finishBossEv(hub.p, o, acts), items = hub.diff(before);
+    const mmss = (t: number) => `${Math.floor(t / 60)}:${String(t % 60).padStart(2, '0')}`;
+    const st = (k: string, v: string) => `<span><small>${k}</small><b>${v}</b></span>`;
+    const note = `<div class="rstats">${st('Урон', fmtN(r.dmg))}${st('Лучший сегодня', fmtN(r.best))}${st('Место', r.place + '/20')}${st('Продержался', mmss(r.sec))}</div>`;
+    hub.show('events');
+    hub.showReward(r.record ? 'Новый рекорд дня!' : 'Атака на босса', items, note);
+    return;
+  }
   if (cfg.storm) { // Ш98: the time held, the place in today's group, a little gold and hero xp
     const before = hub.snap(), r = OM.finishStorm(hub.p, o, acts), items = hub.diff(before);
     const mmss = (t: number) => `${Math.floor(t / 60)}:${String(t % 60).padStart(2, '0')}`;
@@ -536,5 +546,5 @@ function orbDone(o: Orb, cfg: OrbConfig, acts: Act[], quit: boolean): void {
   const st = (k: string, v: string) => `<span><small>${k}</small><b>${v}</b></span>`;
   const note = `<div class="rstats">${st('Ходов', String(o.s.turn))}${st('Убито', String(o.s.kills))}${st('Уровень', String(o.s.level))}${st('Стена', Math.max(0, Math.round(100 * o.s.wallHp / o.s.wallMax)) + '%')}</div>` + (rw.lines.length ? `<div class="rextra">${rw.lines.join(' · ')}</div>` : '');
   hub.show('hub');
-  hub.showReward(win ? 'Этап пройден!' : quit ? 'Бой окончен' : 'Стена пала', items, note, chest);
+  hub.showReward(win ? 'Этап пройден!' : quit ? 'Бой окончен' : 'Герой пал', items, note, chest); // Ш102
 }

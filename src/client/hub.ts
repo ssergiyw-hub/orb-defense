@@ -17,7 +17,7 @@ import { wikiSections, WikiSection } from './wiki';
 import * as P from '../meta/profile';
 import * as OM from '../meta/orbMeta';
 import { orbBalls, orbModal, spiritFloat, wallSlot } from './orbHub';
-import { BIOME_NAME, stageBiome, BALLS, HERO_BALL } from '../core/orbContent';
+import { BIOME_NAME, stageBiome, BALLS, HERO_BALL, ENEMY } from '../core/orbContent';
 import type { BallId, SpiritId, WallId } from '../core/orbContent';
 import * as cloud from './cloud';
 import * as sfx from './sfx';
@@ -1481,7 +1481,7 @@ export class Hub {
       const dots = Array.from({ length: max }, (_, i) => `<i class="${i < left ? 'on' : ''}"></i>`).join('');
       const att = ok && P.evAttention(p, (v || 'wall') as EventId | 'wall'); // правка 142
       return `<div class="evc${ok ? '' : ' locked'}">
-        <div class="evart" style="background-image:url(${art === 'storm' ? 'orb/bg/lightning.webp' : `ev/${art}.webp`})">
+        <div class="evart" style="background-image:url(${art === 'storm' ? 'orb/bg/lightning.webp' : art === 'bossorb' ? 'orb/bg/fire.webp' : `ev/${art}.webp`})">${art === 'bossorb' ? `<img class="evboss" src="orb/en/olymp_${ENEMY[OM.bossOfDay()].art}.webp" alt="">` : ''}
           <span class="evtime">⏳ ${ok ? `конец дня через ${hh}ч ${mm}м` : '🔒 этап 2'}</span>
           ${ok ? `<span class="evtries">${dots}</span>` : ''}
         </div>
@@ -1492,16 +1492,17 @@ export class Hub {
     };
     // Ш98: one event for the ball game — «Шквал шаров» (the old Archero events are off)
     return this.title('События') + `<p class="muted small evnote">Рейтинг — в группах по 20 игроков, награды по месту в конце дня.</p>` +
-      card('storm', 'Шквал шаров', 'Шары летят без остановки, враги идут без пауз — продержись как можно дольше', P.EV_REWARDS.storm[0][1], 'evOpen', 'storm', open ? P.evFreeLeft(p, 'storm') : 0, EVENT.freePerDay, open);
+      card('storm', 'Шквал шаров', 'Шары летят без остановки, враги идут без пауз — продержись как можно дольше', P.EV_REWARDS.storm[0][1], 'evOpen', 'storm', open ? P.evFreeLeft(p, 'storm') : 0, EVENT.freePerDay, open) +
+      card('bossorb', 'Атака на босса', 'Босс не умирает — набей как можно больше урона, пока держится стена', P.EV_REWARDS.bossorb[0][1], 'evOpen', 'bossorb', open ? P.evFreeLeft(p, 'bossorb') : 0, EVENT.freePerDay, open); // Ш101
   }
 
   /** правки 125, 126: the window of an event — arena of the day, tries, best of the day, place, rewards by place */
   private vEvent(p: P.Profile): string {
     const ev = this.evSel, st = P.evState(p, ev), idx = P.wallMapToday(), map = WALL_MAPS[idx], left = P.evFreeLeft(p, ev), ms = P.evDayLeft();
     const hh = Math.floor(ms / 3600000), mm = Math.floor(ms / 60000) % 60;
-    const boss = ev === 'boss', storm = ev === 'storm', name = storm ? 'Шквал шаров' : boss ? 'Убийство босса' : 'Фраги';
+    const boss = ev === 'boss', storm = ev === 'storm', bo = ev === 'bossorb', name = bo ? 'Атака на босса' : storm ? 'Шквал шаров' : boss ? 'Убийство босса' : 'Фраги';
     const place = st.used > 0 ? P.evPlace(st, st.best) : 0;
-    const desc = storm ? 'Держи палец на экране — шары летят без остановки туда, куда целишься. Враги идут без пауз и каждые 30 секунд становятся быстрее и крепче, каждые 3 минуты — босс. Очки — сколько продержалась стена.' : boss
+    const desc = bo ? 'Босс не умирает: каждая полная полоска здоровья — новая фаза, он бьёт сильнее. Каждые 3 секунды стреляет по стене, раз в минуту шагает на ряд. Со старта — 3 случайных навыка, потом каждую минуту выбор из трёх. Очки — урон по боссу.' : storm ? 'Держи палец на экране — шары летят без остановки туда, куда целишься. Враги идут без пауз и каждые 30 секунд становятся быстрее и крепче, каждые 3 минуты — босс. Очки — сколько продержалась стена.' : boss
       ? 'Медведь не умирает. За 3 минуты набей как можно больше урона. Перед ударом на земле красная зона — уходи из неё. Навык — каждые 15 секунд.'
       : 'Шестигранная арена, 5 минут. Волна из 30 врагов, следующая — как только погиб последний. С каждой волной враги крепче.';
     const go = left > 0
@@ -1511,7 +1512,8 @@ export class Hub {
     return `<div class="modal" data-a="close"><div class="mbox lvpanel wallpanel evpanel">
       <div class="lvtabs"><b class="wtitle">${name}</b><button class="lvsq x" data-a="close">✕</button></div>
       <div class="panelbox" data-k="ev-${ev}">
-        ${storm ? `<div class="evmap evstorm"><span style="background-image:url(orb/bg/lightning.webp)"></span><div class="wmname"><small>Событие дня</small><b>Шквал шаров</b><em>конец дня через ${hh}ч ${mm}м</em></div></div>`
+        ${bo ? `<div class="evmap evstorm evbo"><span style="background-image:url(orb/bg/fire.webp)"><img class="evboss" src="orb/en/olymp_${ENEMY[OM.bossOfDay()].art}.webp" alt=""></span><div class="wmname"><small>Босс дня</small><b>${ENEMY[OM.bossOfDay()].name}</b><em>конец дня через ${hh}ч ${mm}м</em></div></div>`
+          : storm ? `<div class="evmap evstorm"><span style="background-image:url(orb/bg/lightning.webp)"></span><div class="wmname"><small>Событие дня</small><b>Шквал шаров</b><em>конец дня через ${hh}ч ${mm}м</em></div></div>`
           : `<div class="evmap ${boss ? 'evround' : 'evhex'}"><span style="background-image:url(ev/card_${ev}.webp)"></span><div class="wmname"><small>Арена дня</small><b>${map.name}</b><em>конец дня через ${hh}ч ${mm}м</em></div></div>
         <div class="welrow">${this.elBadge(map.strong, true)}${this.elBadge(map.weak, false)}</div>`}
         ${last ? `<div class="evlast">Вчера: <b>${last.place} место</b> · ${this.evScore(ev, last.score)} — получено: ${last.label}</div>` : ''}
@@ -1521,7 +1523,7 @@ export class Hub {
         <button class="lvbtn wide alt" data-a="evRate"><b>Рейтинг</b><small>награды — в сундуках</small></button>
       </div></div></div>`;
   }
-  private evScore(ev: EventId, n: number): string { if (ev === 'storm') { const t = Math.floor(n); return `${Math.floor(t / 60)}:${String(t % 60).padStart(2, '0')}`; } return ev === 'boss' ? fmt(n) : String(n); } // Ш98: mm:ss
+  private evScore(ev: EventId, n: number): string { if (ev === 'storm') { const t = Math.floor(n); return `${Math.floor(t / 60)}:${String(t % 60).padStart(2, '0')}`; } return ev === 'boss' || ev === 'bossorb' ? fmt(Math.floor(n)) : String(n); } // Ш98: mm:ss
   /** правки 125, 126: the group of 20. Until the server the other 19 are test players (marked «тест») */
   private vEvRating(p: P.Profile): string {
     const ev = this.evSel, st = P.evState(p, ev), played = st.used > 0;
@@ -1532,7 +1534,7 @@ export class Hub {
     const body = rows.map((r, i) => { const h = hero(r.hero), place = i + 1, none = r.me && !played;
       const band = P.EV_REWARDS[ev].findIndex(([to]) => place <= to), q = 3 - band;
       const chest = none ? '<span class="rchest none"></span>' : `<button class="rchest q${q}" data-a="evChest" data-v="${place}" aria-label="Награда">${chestSvg(1, 40)}</button>`;
-      return `<div class="rrow${r.me ? ' me' : ''}"><span class="rpos">${none ? '—' : place}</span><span class="rava" style="--c:${EL_HEX[h.element]}">${this.heroSvg(h.id)}</span><div class="grow"><b>${r.me ? 'Ты' : `<span translate="no">${r.name}</span>`}</b><small>${h.name} · сила ${r.power}${r.me ? '' : ' · тест'}</small></div><span class="rwave"><b>${none ? '—' : this.evScore(ev, r.score)}</b><small>${ev === 'storm' ? 'стена' : ev === 'boss' ? 'урон' : 'убийств'}</small></span>${chest}</div>`; }).join('');
+      return `<div class="rrow${r.me ? ' me' : ''}"><span class="rpos">${none ? '—' : place}</span><span class="rava" style="--c:${EL_HEX[h.element]}">${this.heroSvg(h.id)}</span><div class="grow"><b>${r.me ? 'Ты' : `<span translate="no">${r.name}</span>`}</b><small>${h.name} · сила ${r.power}${r.me ? '' : ' · тест'}</small></div><span class="rwave"><b>${none ? '—' : this.evScore(ev, r.score)}</b><small>${ev === 'storm' ? 'стена' : ev === 'boss' || ev === 'bossorb' ? 'урон' : 'убийств'}</small></span>${chest}</div>`; }).join('');
     const cp = this.sel.evChest;
     let pop = '';
     if (cp) {
@@ -1541,7 +1543,7 @@ export class Hub {
       pop = `<div class="evcpop" data-a="evChest" data-v=""><div class="evcbox q${3 - band}"><span class="rchest q${3 - band} big">${chestSvg(2, 110)}</span><b>${QN[3 - band]}</b><small>${from === to ? `${to} место` : `${from}–${to} места`}</small><div class="evcrw">${rw[band][1]}</div><em>Выдаётся в конце дня</em></div></div>`;
     }
     return `<div class="modal" data-a="close"><div class="mbox lvpanel ratepanel">
-      <div class="lvtabs"><b class="wtitle">${ev === 'storm' ? 'Шквал шаров' : ev === 'boss' ? 'Убийство босса' : 'Фраги'}</b><button class="lvsq x" data-a="close">✕</button></div>
+      <div class="lvtabs"><b class="wtitle">${ev === 'bossorb' ? 'Атака на босса' : ev === 'storm' ? 'Шквал шаров' : ev === 'boss' ? 'Убийство босса' : 'Фраги'}</b><button class="lvsq x" data-a="close">✕</button></div>
       <div class="panelbox" data-k="evrate">${this.lvBanner('Рейтинг дня', 'sm')}<div class="evrows">${body}</div>
         <div class="rsoon"><small>Нажми на сундук, чтобы увидеть награду за место.</small><small>Соперники с пометкой «тест» — до сервера (этап 2). Твой лучший забег дня сохранён с записью боя — сервер проверит его повтором.</small></div>
         <button class="lvbtn wide alt" data-a="evOpen" data-v="${ev}"><b>Назад</b></button></div>${pop}</div></div>`;

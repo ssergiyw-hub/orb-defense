@@ -123,7 +123,7 @@ export const WALL = {
 };
 
 // ---- правки 125, 126: events ----
-export type EventId = 'frags' | 'boss' | 'storm'; // Ш98: «Шквал шаров»
+export type EventId = 'frags' | 'boss' | 'storm' | 'bossorb'; // Ш98: «Шквал шаров»; Ш101: «Атака на босса»
 /** «Фраги»: hexagon arena, waves of 30, next wave when the last one dies; score = kills */
 export const FRAGS = {
   time: 300, perWave: 30, spawnEvery: 0.08, hp0: 1.5, hpGrow: 1.12, dmgGrow: 0.04,

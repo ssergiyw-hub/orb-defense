@@ -10,6 +10,9 @@ export const BALL_V = 0.15;     // cells per tick (Ш74: was 0.3 — twice slowe
 export const LAUNCH_DY = 1.4;
 /** Ш98 «Шквал шаров»: a ball every 15 ticks (0.25 s); enemies step every 3.5 s, 8% faster every 30 s (not under 1.5 s);
  *  enemy health ×0.5 of the stage (the boss ×0.6), +20% every 30 s; a miniboss every 15 rows, a boss every 3 minutes */
+/** Ш101 «Атака на босса»: one boss phase = stage health unit × boss hp × 3; a shot every 3 s for 0.7% of the wall,
+ *  +20% every 30 s and +10% every phase; one step down and a choice of 3 skills every minute */
+export const BOSS_EV = { phaseHp: 3, shotEvery: 180, shot: 0.007, shotGrow: 1.2, phaseShot: 0.1, stepEvery: 3600 };
 export const STORM = { gap: 15, step: 210, stepGrow: 0.92, stepMin: 90, wave: 1800, hp: 0.5, bossHp: 0.6, hpGrow: 1.2, miniEvery: 15, boss: 10800 };
 export const BALL_R = 0.15;     // ball radius in cells
 export const VOLLEY_GAP = 10;   // ticks between two balls of a volley (Ш74: ×2 — the same gap in cells)

@@ -1,7 +1,7 @@
 // Orb Defense: the meta of the new game on top of the «Призванный герой» profile — balls (books), spirits (tavern),
 // walls, and what a stage gives. Gear, gems, heroes, shop and tasks stay from the old game.
 import * as P from './profile';
-import { BallId, BALL_IDS, SpiritId, SPIRIT_IDS, WallId, WALL_IDS, HERO_BALL, stageDef, wallMaxOf } from '../core/orbContent';
+import { BallId, BALL_IDS, SpiritId, SPIRIT_IDS, WallId, WALL_IDS, HERO_BALL, stageDef, wallMaxOf, BOSSES, EnemyId } from '../core/orbContent';
 import type { OrbConfig, Orb } from '../core/orb';
 
 export interface OrbProfile {
@@ -176,4 +176,25 @@ export function finishStorm(p: P.Profile, o: Orb, acts: unknown[]): StormResult 
   }
   P.save(p);
   return { sec, best: Math.floor(st.best), record, place: P.evPlace(st, st.best), gold, xp, lvUp };
+}
+
+// ---------------- Ш101: «Атака на босса» ----------------
+/** the boss of the day (by the UTC day): the five bosses in turn */
+export const bossOfDay = (): EnemyId => BOSSES[Math.floor(Date.now() / 86400000) % BOSSES.length];
+export interface BossEvResult { dmg: number; sec: number; best: number; record: boolean; place: number; gold: number }
+/** after a boss attack: the score is the damage to the boss (the time held breaks a tie), a little gold and hero xp */
+export function finishBossEv(p: P.Profile, o: Orb, acts: unknown[]): BossEvResult {
+  const st = P.evState(p, 'bossorb'), sec = o.stormSec, dmg = Math.round(o.s.dealt);
+  const score = dmg + Math.min(0.999, sec / 1e5);
+  p.runs++;
+  const gold = Math.round((150 + 30 * Math.max(1, p.maxMap)) * Math.min(1.5, sec / 270));
+  p.gold += gold;
+  P.addHeroXp(p, p.active, 10 + Math.floor(sec / 30));
+  const record = score > st.best;
+  if (record) {
+    st.best = score; st.bestTime = sec;
+    try { localStorage.setItem('mw-run-bossorb', JSON.stringify({ day: st.day, dmg, sec, cfg: o.s.cfg, acts })); } catch { /* no storage */ }
+  }
+  P.save(p);
+  return { dmg, sec, best: Math.floor(st.best), record, place: P.evPlace(st, st.best), gold };
 }

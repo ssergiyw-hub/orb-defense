@@ -486,6 +486,13 @@ export const EV_REWARDS: Record<EventId, [number, string, (p: Profile) => void][
     [20, '2500 золота + малая эссенция', p => { p.gold += 2500; p.essSmall += 1; }],
   ],
   // Ш98: «Шквал шаров» — the place by how long the wall held
+  // Ш101: «Атака на босса» — the place by the damage to the boss (the same rewards as the storm for now)
+  bossorb: [
+    [1, '500💎 + легендарная руна', p => { p.crystals += 500; randomRune(p, 5); }],
+    [3, '300💎 + эпический предмет', p => { p.crystals += 300; addItem(p, pick(SLOTS), pick(ACTIVE_SETS), 2); }],
+    [10, '150💎 + 30 карт шара', p => { p.crystals += 150; stormCards(p, 30); }],
+    [20, '50💎 + 10 свитков', p => { p.crystals += 50; p.scrolls += 10; }],
+  ],
   storm: [
     [1, '500💎 + легендарная руна', p => { p.crystals += 500; randomRune(p, 5); }],
     [3, '300💎 + эпический предмет', p => { p.crystals += 300; addItem(p, pick(SLOTS), pick(ACTIVE_SETS), 2); }],
@@ -506,14 +513,14 @@ const OPP_NAMES = ['Grom', 'Lisa_K', 'Тарас', 'Dima77', 'NightOwl', 'Мир
 /** what a player of this power usually scores (from bot runs): kills in 5 min, damage to the bear in 3 min */
 export const evExpect = (ev: EventId, power: number) => ev === 'frags' ? 250 * Math.sqrt(power / 100) : ev === 'storm' ? 165 * power / 100 : 15000 * (power / 100);
 function evGroup(p: Profile, ev: EventId, day: number): EvOpp[] {
-  let h = (day * 2654435761 + (ev === 'boss' ? 97 : ev === 'storm' ? 41 : 13)) >>> 0;
+  let h = (day * 2654435761 + (ev === 'boss' ? 97 : ev === 'storm' ? 41 : ev === 'bossorb' ? 71 : 13)) >>> 0;
   const r = () => { h = Math.imul(h ^ (h >>> 15), 2246822507) >>> 0; h = Math.imul(h ^ (h >>> 13), 3266489909) >>> 0; return (h >>> 0) / 4294967296; };
   const me = powerScore(p), names = [...OPP_NAMES], out: EvOpp[] = [];
   for (let i = 0; i < EVENT.group - 1; i++) {
     const name = names.splice(Math.floor(r() * names.length), 1)[0];
     const power = Math.round(me * (0.7 + r() * 0.6));
     // Ш98: the storm's enemies grow with the player's own best stage, so a rival's time depends on power relative to the player
-    const exp = ev === 'storm' ? 165 * power / Math.max(1, me) : evExpect(ev, power);
+    const exp = ev === 'storm' ? 165 * power / Math.max(1, me) : ev === 'bossorb' ? 1250 * statSheet(p, p.active).atk * power / Math.max(1, me) : evExpect(ev, power); // Ш101: ≈ damage of a 4.5-min fight
     out.push({ name, hero: HEROES[Math.floor(r() * HEROES.length)].id, power, score: Math.round(exp * (0.45 + r() * 1.15)) });
   }
   return out;

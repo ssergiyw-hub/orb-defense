@@ -46,11 +46,15 @@ export class OrbBattle {
 
   start(cfg: OrbConfig, dprCap: number): void {
     this.cfg = cfg; this.o = new Orb(cfg); this.acts = []; this.done = false; this.quit = false; this.paused = false; this.shownCards = '';
+    (window as unknown as { __orb?: Orb }).__orb = this.o; // screenshot scripts look at the fight (tools/bossshot.mjs)
     if (!ORB_HERO_ART[cfg.heroId]) preload3D(cfg.heroId); preloadOrb(this.o); // Ш58: a drawn hero needs no 3D atlas
     this.r.dprCap = dprCap; this.r.resize();
     $('ohud').hidden = false; $('oCards').hidden = true; $('oPauseMenu').hidden = true;
     const sd = this.o.s.sd;
-    if (cfg.storm) { $('oTitle').textContent = tr('Шквал шаров'); this.banner(tr('Продержись как можно дольше')); this.stormAimT = 0; } // Ш98
+    $('oXpBar').hidden = !!cfg.bossEv;
+    $('oCards').classList.toggle('obev', !!cfg.bossEv); $('oCards').querySelector('.oribbon span')!.textContent = tr(cfg.bossEv ? 'Новый навык' : 'Новый уровень'); // Ш101: no xp in the boss attack — a skill choice every minute
+    if (cfg.bossEv) { $('oTitle').textContent = tr('Атака на босса'); this.banner(`${tr(ENEMY[cfg.bossEv].name)}: ${tr('набей как можно больше урона')}`); this.stormAimT = 0; }
+    else if (cfg.storm) { $('oTitle').textContent = tr('Шквал шаров'); this.banner(tr('Продержись как можно дольше')); this.stormAimT = 0; } // Ш98
     else { $('oTitle').textContent = `${tr('Этап')} ${cfg.stage} · ${tr(BIOME_NAME[sd.biome])}`; this.banner(`${tr(BIOME_NAME[sd.biome])}: ${tr('защити стену')}`); }
     this.hintShown = false;
     this.hud(true);
@@ -147,7 +151,9 @@ export class OrbBattle {
             for (const f of o.fx) {
               if (f.t === 'wall') sfx.vibrate(f.kind === 'rock' ? 'heavy' : 'hit');
               if (f.t === 'hero') sfx.vibrate('heavy');
-              if (f.t === 'level') this.banner(tr('Новый уровень!'));
+              if (f.t === 'level' && !s.cfg.bossEv) this.banner(tr('Новый уровень!'));
+              if (f.t === 'phase') { this.banner(`${tr('Фаза')} ${f.n + 1} — ${tr('босс бьёт сильнее')}`); sfx.vibrate('heavy'); } // Ш101
+              if (f.t === 'wallFall') { this.banner(tr('Стена пала — герой держит рубеж!')); sfx.vibrate('heavy'); } // Ш102
             }
           }
         }
@@ -184,7 +190,11 @@ export class OrbBattle {
       hb.classList.toggle('gold', hn >= 20); hb.classList.toggle('hot', hn >= 50); }
     else if (s.phase === 'aim') hb.hidden = true;
     $('oAuto').classList.toggle('on', this.auto);
-    if (s.cfg.storm) { // Ш98: the time held; the bar fills to the next «stronger» wave every 30 s
+    if (s.cfg.bossEv) { // Ш101: the damage to the boss; the bar fills to the boss's next step (once a minute)
+      const sec = o.stormSec;
+      ($('oProgFill') as HTMLElement).style.width = (100 * ((s.bossT ?? 0) % 3600) / 3600).toFixed(1) + '%';
+      this.set('oProgTxt', `⚔ ${fmtN(s.dealt)} · ${Math.floor(sec / 60)}:${String(sec % 60).padStart(2, '0')}`);
+    } else if (s.cfg.storm) { // Ш98: the time held; the bar fills to the next «stronger» wave every 30 s
       const sec = o.stormSec;
       ($('oProgFill') as HTMLElement).style.width = (100 * (s.tick % 1800) / 1800).toFixed(1) + '%';
       this.set('oProgTxt', `⏱ ${Math.floor(sec / 60)}:${String(sec % 60).padStart(2, '0')}`);
@@ -196,10 +206,11 @@ export class OrbBattle {
     this.set('oLvl', String(s.level));
     ($('oXpFill') as HTMLElement).style.width = (100 * s.xp / s.xpNext).toFixed(1) + '%';
     // правка Ш44: the thin wall bar at the very bottom (the shield shows as a blue part from the right)
-    const wf = Math.max(0, s.wallHp / s.wallMax);
+    // Ш102: the wall bar; once the wall has fallen it is the hero's bar (red, pulsing)
+    const fallen = s.wallHp <= 0, wf = fallen ? Math.max(0, s.heroHp / s.heroMax) : Math.max(0, s.wallHp / s.wallMax);
     ($('oWallFill') as HTMLElement).style.width = (100 * wf).toFixed(1) + '%';
-    $('oWallFill').className = wf > 0.5 ? '' : wf > 0.25 ? 'mid' : 'low';
-    this.set('oWallTxt', `${tr('Стена')} ${fmtN(Math.max(0, s.wallHp))}${s.wallShield > 0 ? ' +' + fmtN(s.wallShield) : ''}`);
+    $('oWallFill').className = fallen ? 'hero' : wf > 0.5 ? '' : wf > 0.25 ? 'mid' : 'low';
+    this.set('oWallTxt', fallen ? `${tr('Герой')} ${fmtN(Math.max(0, s.heroHp))}` : `${tr('Стена')} ${fmtN(Math.max(0, s.wallHp))}${s.wallShield > 0 ? ' +' + fmtN(s.wallShield) : ''}`);
     const boss = s.enemies.find(e => ENEMY[e.kind].tier === 'boss');
     $('oBoss').hidden = !boss;
     if (boss) { this.set('oBossName', tr(ENEMY[boss.kind].name)); ($('oBossFill') as HTMLElement).style.width = (100 * boss.hp / boss.max).toFixed(1) + '%'; }

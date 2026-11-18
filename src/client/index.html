@@ -2981,6 +2981,16 @@ div.rstats span{flex:1 1 auto;min-width:0}div.rstats small{letter-spacing:0;line
 .enpanel .lvbtn.wide.enbuy b,.enpanel .lvbtn.wide.enbuy small{color:#3a2200!important;-webkit-text-stroke:0!important;text-shadow:0 1px 0 #fff8!important;font-family:Georgia,serif!important}
 .enpanel .ennote{text-align:center;margin-top:10px}
 .evmap.evstorm span{background-size:cover;background-position:center}
+/* Ш102: the last stand — the bottom bar is the hero's */
+#oWallFill.hero{background:linear-gradient(#ff8a7a,#c8241a)!important;animation:ohero .8s ease-in-out infinite}
+@keyframes ohero{50%{filter:brightness(1.35)}}
+
+/* Ш101: «Атака на босса» — the boss of the day over the fire background */
+.evart{position:relative}
+.evart .evboss{position:absolute;left:50%;bottom:4%;height:86%;transform:translateX(-50%);filter:drop-shadow(0 6px 10px rgba(0,0,0,.7));pointer-events:none}
+.evmap.evbo{position:relative}
+.evmap.evbo>span .evboss{position:absolute!important;left:50%!important;top:auto!important;right:auto!important;bottom:2%!important;width:auto!important;height:98%!important;transform:translateX(-50%);filter:drop-shadow(0 6px 10px rgba(0,0,0,.7));pointer-events:none}
+#oCards.obev .olvtop{visibility:hidden}
 </style>
 </head>
 <body>

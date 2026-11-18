@@ -3,7 +3,7 @@
 import { Rng } from './rng';
 import { fsin, fcos, fatan2, PI } from './fmath';
 import {
-  wallMaxOf, COLS, ROWS, LAUNCH_DY, STORM, BALL_V, BALL_R, VOLLEY_GAP, ENEMY_T, BallId, BALLS, BALL_FX, elemHit, runLvMul, BALL_IDS,
+  wallMaxOf, COLS, ROWS, LAUNCH_DY, STORM, BOSS_EV, BALL_V, BALL_R, VOLLEY_GAP, ENEMY_T, BallId, BALLS, BALL_FX, elemHit, runLvMul, BALL_IDS,
   EnemyId, ENEMY, ECHIDNA_ARMOR, SpiritId, spiritEvery, WallId, wallFx, stageDef, StageDef, MINIS, BASE_WALL_HP,
 } from './orbContent';
 
@@ -11,6 +11,8 @@ export interface OrbConfig {
   seed: number; stage: number; heroId: string; heroBall: BallId;
   /** Ш98: «Шквал шаров» — balls fly without a stop, enemies step on a timer, survival without a limit */
   storm?: boolean;
+  /** Ш101: «Атака на босса» (with storm): one boss of the day that does not die, shoots the wall, steps once a minute */
+  bossEv?: EnemyId;
   /** Ш70: hero stars — ★1–5: the hero's ball +15% a star (★3: it grows to level 4 in the run) */
   stars?: number;
   atk: number; hp: number; crit: number; critDmg: number; boss: number;
@@ -56,6 +58,9 @@ export type Fx =
   | { t: 'dot'; x: number; y: number; dmg: number; kind: 'burn' | 'poison' }
   | { t: 'wall'; c: number; dmg: number; kind: 'hit' | 'shot' | 'rock' }
   | { t: 'hero'; dmg: number; from: { x: number; y: number } }
+  | { t: 'wallFall' }
+  | { t: 'phase'; n: number }
+  | { t: 'bossShot'; x: number; y: number }
   | { t: 'spirit'; id: SpiritId; targets: { x: number; y: number }[] }
   | { t: 'heal'; x: number; y: number; amt: number }
   | { t: 'wallHeal'; amt: number }
@@ -74,6 +79,8 @@ export interface OrbState {
   hits?: number; bestHits?: number;
   /** Ш98 storm: ticks since the last enemy step; the tick of the next boss */
   stormT?: number; nextBoss?: number;
+  /** Ш101: the boss's phases (every full health bar), the boss tick timer */
+  bossPhase?: number; bossT?: number;
   enemies: Enemy[]; balls: Ball[]; bushes: Bush[]; nextId: number;
   queue: (BallId | 'normal')[]; launchT: number; aim: number;
   specials: { id: BallId; lv: number }[]; normals: number; power: number;
@@ -107,8 +114,9 @@ export class Orb {
       spiritT: 0, healThisTurn: 0, dmgBy: {},
     };
     if (cfg.wall.id === 'shield') this.s.wallShield = Math.round(wallMax * wallFx.shield(cfg.wall.rarity));
+    if (cfg.bossEv) this.bossStart();
     // the first rows: the field starts with three rows of enemies
-    for (let i = 0; i < 3; i++) { this.spawnRow(); for (const e of this.s.enemies) { e.r += 1; e.pr = e.r; } }
+    else for (let i = 0; i < 3; i++) { this.spawnRow(); for (const e of this.s.enemies) { e.r += 1; e.pr = e.r; } }
     this.s.rng = this.rng.state();
   }
   clone(): Orb { const o = new Orb(structuredClone({ ...this.s, rng: this.rng.state() })); return o; }
@@ -235,7 +243,9 @@ export class Orb {
     e.hp -= d; e.flash = 8;
     s.dealt += dealt; s.dmgBy[src] = (s.dmgBy[src] ?? 0) + dealt;
     this.fx.push({ t: 'hit', x: e.c + e.w / 2, y: e.r + e.h / 2, dmg: d, crit, kind: fxKind });
-    if (e.hp <= 0) this.kill(e);
+    if (e.hp <= 0 && c.bossEv && e.kind === c.bossEv) { // Ш101: the boss never dies — a new phase, its shots grow stronger
+      e.hp = e.max; s.bossPhase = (s.bossPhase ?? 0) + 1; this.fx.push({ t: 'phase', n: s.bossPhase });
+    } else if (e.hp <= 0) this.kill(e);
     return dealt;
   }
   private ballHit(b: Ball, e: Enemy): void {
@@ -342,9 +352,9 @@ export class Orb {
   }
   private checkEnd(): boolean {
     const s = this.s;
-    if (s.cfg.storm) { if (s.wallHp <= 0 || s.heroHp <= 0) { s.phase = 'lose'; return true; } return false; } // Ш98: no win, only how long
+    if (s.cfg.storm) { if (s.heroHp <= 0) { s.phase = 'lose'; return true; } return false; } // Ш98: no win, only how long
     if (s.bossDead && s.enemies.some(e => e.hp > 0)) { for (const e of s.enemies) if (e.hp > 0) { e.hp = 0; this.fx.push({ t: 'die', x: e.c, y: e.r, w: e.w, h: e.h, kind: e.kind }); } s.enemies = []; }
-    if (s.wallHp <= 0 || s.heroHp <= 0) { s.phase = 'lose'; return true; }
+    if (s.heroHp <= 0) { s.phase = 'lose'; return true; } // Ш102: the wall falling is not the end — the hero is
     if (s.spawned >= s.sd.turns && s.bossSpawned && !s.enemies.some(e => e.hp > 0)) { s.phase = 'win'; return true; }
     return false;
   }
@@ -364,7 +374,7 @@ export class Orb {
     if (c.spirit) { s.spiritT++; if (s.spiritT >= spiritEvery(c.spirit.rarity)) { s.spiritT = 0; this.spiritAct(); } }
     // 3. the wall heals itself / the shield comes back
     if (c.wall.id === 'heal') this.wallHeal(s.wallMax * wallFx.heal(c.wall.rarity));
-    if (c.wall.id === 'shield') s.wallShield = Math.round(s.wallMax * wallFx.shield(c.wall.rarity));
+    if (c.wall.id === 'shield' && s.wallHp > 0) s.wallShield = Math.round(s.wallMax * wallFx.shield(c.wall.rarity));
     // 4. enemies act, the nearest to the wall first
     const order = [...s.enemies].sort((a, b) => (b.r + b.h) - (a.r + a.h) || a.c - b.c);
     let firstHit = c.wall.id === 'reinf' && c.wall.rarity >= 9;
@@ -381,8 +391,7 @@ export class Orb {
           if (c.wall.id === 'shield' && c.wall.rarity >= 9 && s.wallShield >= Math.round(s.wallMax * wallFx.shield(c.wall.rarity))) this.damage(e, dmg, 'wall', false, 'counter');
           const a = Math.min(s.wallShield, dmg); s.wallShield -= a; dmg -= a;
         }
-        s.wallHp -= dmg;
-        this.fx.push({ t: 'wall', c: e.c + e.w / 2, dmg, kind });
+        this.hurt(dmg, e.c + e.w / 2, kind, { x: e.c + e.w / 2, y: e.r + e.h }); // Ш102: the wall first, then the hero
         if (c.wall.id === 'counter' && e.hp > 0) {
           const cd = A * wallFx.counter(c.wall.rarity);
           this.fx.push({ t: 'counter', x: e.c + e.w / 2, y: e.r + e.h / 2 });
@@ -440,8 +449,17 @@ export class Orb {
   }
   private hitHero(e: Enemy, share: number): void {
     const s = this.s, dmg = Math.round(s.heroMax * share * (1 + 0.04 * (s.cfg.stage - 1)));
-    s.heroHp -= dmg;
-    this.fx.push({ t: 'hero', dmg, from: { x: e.c + e.w / 2, y: e.r + e.h } });
+    this.hurt(dmg, e.c + e.w / 2, 'shot', { x: e.c + e.w / 2, y: e.r + e.h }); // Ш102: the shooters hit the wall too while it stands
+  }
+  /** Ш102: every blow goes into the wall; when the wall has fallen — into the hero (the last stand). A repair raises it again */
+  private hurt(dmg: number, x: number, kind: 'hit' | 'shot' | 'rock', from: { x: number; y: number }): void {
+    const s = this.s;
+    if (s.wallHp > 0) {
+      const w = Math.min(s.wallHp, dmg); s.wallHp -= w; dmg -= w;
+      this.fx.push({ t: 'wall', c: x, dmg: w, kind });
+      if (s.wallHp <= 0) { s.wallHp = 0; this.fx.push({ t: 'wallFall' }); }
+    }
+    if (dmg > 0) { s.heroHp -= dmg; this.fx.push({ t: 'hero', dmg, from }); }
   }
   private wallHeal(amt: number, force = false): void {
     const s = this.s, cap = 0.2 * s.wallMax - s.healThisTurn; // правка Ш20: all healing ≤ 20% of the wall per turn
@@ -569,7 +587,9 @@ export class Orb {
   /** one tick of the storm: the stream flies, enemies step every few seconds (faster every 30 s), a level-up pauses */
   private stormTick(): void {
     const s = this.s;
+    if (s.cfg.bossEv) return this.bossTick();
     this.flyTick();
+    if (s.enemies.some(e => e.hp <= 0)) s.enemies = s.enemies.filter(e => e.hp > 0); // Ш100: the dead leave at once (the aim line saw them)
     if ((s.phase as Phase) !== 'fly') return;
     s.stormT = (s.stormT ?? 0) + 1;
     const every = Math.max(STORM.stepMin, Math.round(STORM.step * Math.pow(STORM.stepGrow, Math.floor(s.tick / STORM.wave))));
@@ -579,6 +599,46 @@ export class Orb {
       this.enemyTurn();
       if (s.bossDead) { s.bossDead = false; s.bossSpawned = false; }
       if (this.checkEnd()) return;
+    }
+    if (s.pendingLv > 0) { s.phase = 'choose'; this.rollCards(); }
+  }
+  // ---------------- Ш101: the boss attack ----------------
+  /** the boss of the day in the middle of the top, 3 random special balls besides the hero's */
+  private bossStart(): void {
+    const s = this.s, c = s.cfg, kind = c.bossEv!, d = ENEMY[kind];
+    const e = this.makeEnemy(kind, Math.floor((COLS - d.w) / 2), 0);
+    e.max = e.hp = Math.round(s.sd.hpUnit * d.hp * BOSS_EV.phaseHp); e.shield = e.shieldMax = 0;
+    s.enemies.push(e); s.bossSpawned = true;
+    const owned = BALL_IDS.filter(b => b !== c.heroBall && (c.ballLv[b] ?? 0) > 0), pool = owned.length >= 3 ? owned : BALL_IDS.filter(b => b !== c.heroBall);
+    for (let i = 0; i < 3 && pool.length; i++) s.specials.push({ id: pool.splice(this.rng.int(pool.length), 1)[0], lv: 1 });
+  }
+  /** a tick of the boss attack: the stream flies; every 3 s the boss shoots the wall (stronger every 30 s and every phase),
+   *  burns, poison and the spirit tick; every minute it steps one row down and a choice of 3 skills comes */
+  private bossTick(): void {
+    const s = this.s, c = s.cfg, A = c.atk * (1 + s.power) * (1 + (c.rune?.allBalls ?? 0));
+    this.flyTick();
+    if ((s.phase as Phase) !== 'fly') return;
+    const boss = s.enemies.find(e => e.kind === c.bossEv);
+    if (!boss) { s.phase = 'lose'; return; }
+    s.bossT = (s.bossT ?? 0) + 1; s.stormT = (s.stormT ?? 0) + 1;
+    if (s.bossT % BOSS_EV.shotEvery === 0) {
+      const k = Math.pow(BOSS_EV.shotGrow, Math.floor(s.tick / STORM.wave)) * (1 + BOSS_EV.phaseShot * (s.bossPhase ?? 0));
+      const dmg = Math.round(s.wallMax * BOSS_EV.shot * k);
+      this.fx.push({ t: 'bossShot', x: boss.c + boss.w / 2, y: boss.r + boss.h });
+      this.hurt(dmg, boss.c + boss.w / 2, 'rock', { x: boss.c + boss.w / 2, y: boss.r + boss.h });
+      // burns and poison on the boss, its statuses, the spirit — every shot (3 s), like a turn
+      if (boss.burnT > 0) { const d = A * BALL_FX.burn(this.lvOf('fire')) * boss.burnN * (1 + (c.rune?.dot ?? 0)); this.fx.push({ t: 'dot', x: boss.c + boss.w / 2, y: boss.r + boss.h / 2, dmg: Math.round(d), kind: 'burn' }); this.damage(boss, d, 'fire', false, 'burn'); boss.burnT--; if (boss.burnT <= 0) boss.burnN = 0; }
+      if (boss.poisonT > 0) { const d = A * BALL_FX.poison(this.lvOf('poison')) * boss.poisonN * (1 + (c.rune?.dot ?? 0)); this.fx.push({ t: 'dot', x: boss.c + boss.w / 2, y: boss.r + boss.h / 2, dmg: Math.round(d), kind: 'poison' }); this.damage(boss, d, 'poison', false, 'poison'); boss.poisonT--; if (boss.poisonT <= 0) boss.poisonN = 0; }
+      if (boss.freeze > 0) boss.freeze--; if (boss.wet > 0) boss.wet--; if (boss.curse > 0) boss.curse--;
+      if (c.spirit) { s.spiritT++; if (s.spiritT >= spiritEvery(c.spirit.rarity)) { s.spiritT = 0; this.spiritAct(); } }
+      if (c.wall.id === 'heal') this.wallHeal(s.wallMax * wallFx.heal(c.wall.rarity) * 0.5);
+      if (this.checkEnd()) return;
+    }
+    if (s.bossT % BOSS_EV.stepEvery === 0) {
+      boss.pr = boss.r; boss.pc = boss.c; s.stormT = 0;
+      if (boss.r + boss.h + 1 > ROWS) { s.heroHp = 0; s.phase = 'lose'; return; } // it reached the wall — the end
+      boss.r++;
+      s.pendingLv++; this.fx.push({ t: 'level' });
     }
     if (s.pendingLv > 0) { s.phase = 'choose'; this.rollCards(); }
   }
