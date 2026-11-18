@@ -482,7 +482,7 @@ export class Orb {
       burnN: 0, burnT: 0, poisonN: 0, poisonT: 0, freeze: 0, wet: 0, skipped: false, curse: 0,
       pr: r, pc: c, cd: 0, flash: 0, atk: d.atk,
     };
-    if (kind === 'shield') { e.shieldMax = Math.round(hp * 0.35); e.shield = e.shieldMax; }
+    if (kind === 'shield') { e.shieldMax = Math.round(hp * 0.25); e.shield = e.shieldMax; }
     return e;
   }
   private spawnRow(): void {

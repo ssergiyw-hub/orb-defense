@@ -33,7 +33,7 @@ export function orb(p: P.Profile): OrbProfile {
 }
 
 // ---------------- balls (books) ----------------
-export const ballCost = (lv: number) => ({ cards: Math.round(4 * Math.pow(1.32, lv - 1)), gold: Math.round(120 * Math.pow(1.27, lv - 1)) });
+export const ballCost = (lv: number) => ({ cards: Math.round(4 * Math.pow(1.32, lv - 1)), gold: Math.round(120 * Math.pow(1.22, lv - 1)) }); // Ш86: ×1.22 a level (was ×1.27)
 /** правка Ш5: every ball level gives the common crit damage bonus */
 export const ballCritStep = (lv: number) => lv <= 5 ? 0.01 : lv <= 12 ? 0.02 : lv <= 20 ? 0.03 : 0.04;
 export function ballCritTotal(p: P.Profile): number {
@@ -129,8 +129,8 @@ export function finishOrb(p: P.Profile, m: Orb, stage: number, quit: boolean): O
   const lines: string[] = [];
   p.runs++; if (win) p.wins++;
   P.taskAdd(p, 'kills', s.kills); if (share > 0.3) P.taskAdd(p, 'runs', 1); if (win) P.taskAdd(p, 'wins', 1);
-  const gold = Math.round(((140 + 25 * stage) * share + s.kills * 1.5) * (1 + (s.cfg.rune?.gold ?? 0))); // правка Ш7: rune «золото за бой»
-  p.gold += gold;
+  const gold = Math.round(((150 + 30 * stage) * share + s.kills * 1.5) * (1 + (s.cfg.rune?.gold ?? 0))); // правка Ш7: rune «золото за бой»
+  p.gold += gold; // Ш86: 150 + 30 × stage (was 140 + 25 × stage; 160 + 40 left 29 000 unspent by day 7 — cards are the limit then)
   const scrolls = share > 0.3 ? Math.max(1, Math.round(P.STAGE.scrolls(stage) * share)) : 0;
   p.scrolls += scrolls;
   const shards = share > 0.3 ? Math.max(1, Math.round(P.STAGE.shards(stage) * share)) : 0;

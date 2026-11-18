@@ -101,7 +101,7 @@ function wallsModal(p: P.Profile): string {
     const x = o.walls[w], r = w === 'start' ? 0 : OM.rarityOf(x.lv), cost = OM.wallCost(x.lv), use = o.wall === w;
     const btn = !x.owned
       ? `<button class="btn ${p.crystals >= OM.WALL_PRICE[w] ? 'big2' : ''}" data-a="o:wlBuy" data-v="${w}" ${p.crystals >= OM.WALL_PRICE[w] ? '' : 'disabled'}>Купить · 💎${OM.WALL_PRICE[w]}</button>`
-      : `${use ? '<span class="ouse">стоит</span>' : `<button class="btn" data-a="o:wlUse" data-v="${w}">Поставить</button>`}${w === 'start' ? '' : `<button class="btn ${o.wallStones >= cost ? 'big2' : ''}" data-a="o:wlUp" data-v="${w}" ${o.wallStones >= cost && x.lv < OM.MAX_LV ? '' : 'disabled'}>Укрепить · 🧱${cost}</button>`}`;
+      : `${use ? '<span class="ouse">✓ Установлена</span>' : `<button class="btn" data-a="o:wlUse" data-v="${w}">Поставить</button>`}${w === 'start' ? '' : `<button class="btn ${o.wallStones >= cost ? 'big2' : ''}" data-a="o:wlUp" data-v="${w}" ${o.wallStones >= cost && x.lv < OM.MAX_LV ? '' : 'disabled'}>Укрепить · 🧱${cost}</button>`}`;
     return `<div class="orow wrow${use ? ' on' : ''}${x.owned ? '' : ' locked'}">
       <img class="wpic" src="${wallPic(w, x.lv)}" alt="">
       <div class="otxt"><b>${WALLS[w].name}</b>${w === 'start' ? '' : `<span>ур. ${x.lv} · ${rar(r)}</span>`}<small>${trS(WALLS[w].desc(r))}</small>

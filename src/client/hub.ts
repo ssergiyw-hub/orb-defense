@@ -1532,7 +1532,7 @@ export class Hub {
 
   private vSettings(p: P.Profile): string {
     return this.title('Настройки') + `
-      <button class="wkopen" data-a="wikiOpen"><span class="wkbook">📖</span><span><b>Справочник</b><small>Всё об игре: бой, навыки, герои, снаряжение, гемы, руны, враги, магазин</small></span><i>›</i></button>
+      <button class="wkopen" data-a="wikiOpen"><span class="wkbook">📖</span><span><b>Справочник</b><small>Всё об игре: бой, шары, духи, герои, снаряжение, гемы, руны, враги, магазин</small></span><i>›</i></button>
       <div class="card langc" translate="no"><b>🌐 ${LANG_WORD[curLang]}</b>
         <div class="btns langb">${LANGS.map(([id, n]) => `<button class="btn ${id === curLang ? 'big2' : 'ghost'}" data-a="lang" data-v="${id}">${id === curLang ? '✓ ' : ''}${n}</button>`).join('')}</div></div>
       <div class="card"><b>Прогресс</b><div class="muted">Забегов ${p.runs}, побед ${p.wins}, пройдено этапов ${p.maxMap}.</div>

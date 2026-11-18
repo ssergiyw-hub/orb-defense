@@ -369,9 +369,9 @@ export function finishRun(p: Profile, m: Match, map: number): RunReward {
 /** правка 145: what the stage chest gives — one prize. Stone: 38% resources, 25% essence, 12% gear, 8% gem, 15% tavern coupon, 2% rune
  *  (coupons stay at the old 15% a win: the free player gets heroes from them; econ/model.py — payer 347 days instead of 360, free 1226 as before).
  *  Gold (first clear of a stage): a rare item or 2 small essences + 30 crystals */
-export const STAGE_CHEST = [0.38, 0.30, 0.12, 0.03, 0.15, 0.02]; // Ш61: gem 8% → 3%, the rest to essence
+export const STAGE_CHEST = [0.25, 0.30, 0.25, 0.03, 0.15, 0.02]; // Ш61: gem 8% → 3%; Ш87: an item 12% → 25% (from resources)
 export function openStageChest(p: Profile, kind: StageChest, runGold: number): void {
-  if (kind === 'gold') { if (rnd() < 0.5) addItem(p, pick(SLOTS), pick(ACTIVE_SETS), 1); else { p.essSmall += 2; p.crystals += 30; } return; }
+  if (kind === 'gold') { addItem(p, pick(SLOTS), pick(ACTIVE_SETS), 1); p.essSmall += 2; return; } // Ш87: the first win always gives an item
   switch (roll(STAGE_CHEST)) {
     case 0: { const k = rnd();
       if (k < 1 / 3) p.gold += Math.max(100, Math.round(runGold * (1 + 0.5 * rnd())));
@@ -1084,7 +1084,9 @@ function dayHash(d: string): number { let h = 7; for (const ch of d) h = (h * 31
 export function dailyOffers(): Offer[] {
   const d = today(); let h = dayHash(d);
   const pool = [...OFFER_POOL], out: Offer[] = [];
-  out.push({ id: 'free', label: h % 2 ? '10 энергии' : '3 000 золота', icon: h % 2 ? '⚡' : '🪙', price: 0, cur: 'free', give: h % 2 ? (p => { p.energy += 10; }) : (p => { p.gold += 3000; }) });
+  // Ш87: every 3rd day the gift is an item of the set
+  if (Math.floor(Date.parse(d) / 86400000) % 3 === 0) out.push({ id: 'free', label: 'Предмет комплекта', icon: '🎁', price: 0, cur: 'free', give: p => { addItem(p, pick(SLOTS), pick(ACTIVE_SETS), 0); } });
+  else out.push({ id: 'free', label: h % 2 ? '10 энергии' : '3 000 золота', icon: h % 2 ? '⚡' : '🪙', price: 0, cur: 'free', give: h % 2 ? (p => { p.energy += 10; }) : (p => { p.gold += 3000; }) });
   for (let i = 0; i < 5; i++) { h = (h * 1103515245 + 12345) >>> 0; const o = pool.splice(h % pool.length, 1)[0]; out.push({ ...o, id: 'o' + i }); }
   return out;
 }

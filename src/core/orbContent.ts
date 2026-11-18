@@ -72,14 +72,15 @@ export const ENEMY: Record<EnemyId, EnemyDef> = {
   summoner: { id: 'summoner', name: 'Призыватель', tier: 'mini', w: 1, h: 1, hp: 7, atk: 1, step: 1, xp: 6, art: 'summoner' },
   brute: { id: 'brute', name: 'Громила', tier: 'mini', w: 3, h: 2, hp: 16, atk: 2.5, step: 1, xp: 8, art: 'brute' },
   bigslime: { id: 'bigslime', name: 'Большой слайм', tier: 'mini', w: 2, h: 2, hp: 10, atk: 1.5, step: 1, xp: 6, art: 'bigslime' },
-  shield: { id: 'shield', name: 'Щитоносец', tier: 'boss', w: 2, h: 2, hp: 22, atk: 4, step: 1, xp: 20, art: 'shield' },
+  shield: { id: 'shield', name: 'Щитоносец', tier: 'boss', w: 2, h: 2, hp: 18, atk: 4, step: 1, xp: 20, art: 'shield' },
   cannon: { id: 'cannon', name: 'Пушкарь', tier: 'boss', w: 2, h: 2, hp: 20, atk: 4, step: 1, xp: 20, art: 'cannon' },
   bhealer: { id: 'bhealer', name: 'Жрец', tier: 'boss', w: 2, h: 2, hp: 19, atk: 3, step: 1, xp: 20, art: 'bhealer' },
   split1: { id: 'split1', name: 'Колосс', tier: 'boss', w: 2, h: 2, hp: 15, atk: 4, step: 1, xp: 14, art: 'split1' },
-  split2: { id: 'split2', name: 'Половина колосса', tier: 'mini', w: 1, h: 1, hp: 8, atk: 2, step: 1, xp: 3, art: 'split2' },
-  split3: { id: 'split3', name: 'Осколок колосса', tier: 'normal', w: 1, h: 1, hp: 1.6, atk: 1, step: 1, xp: 1, art: 'split3' },
+  split2: { id: 'split2', name: 'Половина колосса', tier: 'mini', w: 1, h: 1, hp: 5, atk: 2, step: 1, xp: 3, art: 'split2' },
+  split3: { id: 'split3', name: 'Осколок колосса', tier: 'normal', w: 1, h: 1, hp: 1, atk: 1, step: 1, xp: 1, art: 'split3' },
   hydra: { id: 'hydra', name: 'Гидра', tier: 'boss', w: 3, h: 2, hp: 24, atk: 3, step: 1, xp: 24, art: 'hydra' },
 };
+// Ш85: the Colossus (halves 8 → 5, shards 1.6 → 1: 41 → 31 units in all) and the Shieldbearer (22 → 18, shield 35% → 25%) were the walls of stages 6, 9 and 11
 export const BOSSES: readonly EnemyId[] = ['shield', 'cannon', 'bhealer', 'split1', 'hydra'];
 export const MINIS: readonly EnemyId[] = ['archer', 'cyclops', 'summoner', 'brute', 'bigslime'];
 /** flat armor of the echidna: share of the stage hp unit cut from every hit */
@@ -131,7 +132,8 @@ export interface StageDef { stage: number; biome: Biome; turns: number; hpUnit: 
 /** правка Ш42: on the 7-wide field a row holds fewer enemies, so each one is tougher (checked by tools/orbbot.ts) */
 export const FIELD_HP = 1.15;
 export function stageDef(s: number): StageDef {
-  const k = Math.pow(1.17, s - 1);
+  // Ш85: +17% a stage up to the 5th, then +12% — the free player hit a wall at stages 6, 9 and 11 (tools/orbsim.ts)
+  const k = Math.pow(1.17, Math.min(s, 5) - 1) * Math.pow(1.12, Math.max(0, s - 5));
   const pool: EnemyId[] = ['base', 'base2', 'fast'];
   if (s >= 2) pool.push('slime', 'healer');
   if (s >= 3) pool.push('ram', 'echidna');

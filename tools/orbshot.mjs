@@ -26,6 +26,7 @@ await p.screenshot({ path: `shots/o-${tag}-aim.png` });
 await p.mouse.up(); await p.waitForTimeout(120);
 await p.screenshot({ path: `shots/o-${tag}-cast.png` }); await p.waitForTimeout(780);
 await p.screenshot({ path: `shots/o-${tag}-fly.png` });
+await p.waitForTimeout(5200); await p.screenshot({ path: `shots/o-${tag}-fast.png` }); // Ш88: the speed-up badge after 5 s of flight
 await p.evaluate(() => document.getElementById('oAuto').click());
 // правка Ш72: catch the level-up cards (auto picks after 0.45 s)
 for (let k = 0; k < 600; k++) { if (await p.evaluate(() => !document.getElementById('oCards').hidden)) { await p.waitForTimeout(60); await p.screenshot({ path: `shots/o-${tag}-cards.png` }); break; } await p.waitForTimeout(50); }

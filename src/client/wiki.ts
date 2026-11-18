@@ -8,6 +8,7 @@ import {
   GEM_SLOTS, GEM_LV_BASE, gemSlotsOf,
 } from '../meta/defs';
 import * as P from '../meta/profile';
+import { BALLS, BALL_IDS, HERO_BALL, ENEMY, EnemyId, SPIRITS, SpiritId, COLS, ROWS, stageDef } from '../core/orbContent';
 import { RFX, RfxId, RUNE_COMMON, RUNE_REROLL, PLUSBALL_FROM, runeLine } from '../meta/runeDefs';
 
 export interface WikiArticle { icon: string; title: string; body: string }
@@ -23,25 +24,33 @@ const li = (xs: string[]) => `<ul>${xs.map(x => `<li>${x}</li>`).join('')}</ul>`
 const tbl = (head: string[], rows: (string | number)[][]) => `<table><tr>${head.map(h => `<th>${h}</th>`).join('')}</tr>${rows.map(r => `<tr>${r.map(c => `<td>${c}</td>`).join('')}</tr>`).join('')}</table>`;
 const col = (r: number, t: string) => `<b style="color:${RARITY_COLOR[r]}">${t}</b>`;
 
+/** a ball description sentence by sentence in spans, so each one is translated */
+const trSafe = (t: string) => t.split(/(?<=[.!?])\s+/).map(x => `<span>${x}</span>`).join(' ');
+
 export function wikiSections(A: WikiArt): WikiSection[] {
   const skills = (Object.keys(SKILLS) as SkillId[]);
   const elemSkills = skills.filter(k => SKILLS[k].kind === 'element'), others = skills.filter(k => SKILLS[k].kind !== 'element');
   const enemyKinds = (Object.keys(ENEMIES) as EnemyKind[]).filter(k => k !== 'bear'); // the event bear is a 3D model, not in the bestiary
   return [
+    // Ш89: the help is about the ball game now (it still described the old one: a 5-minute run, a joystick, arrows)
     {
       id: 'battle', icon: A.res('energy'), name: 'Бой', items: [
-        { icon: A.res('energy'), title: 'Забег', body: `Забег длится ${RUN.duration / 60} минут. Стоит ${ENERGY.run} энергии; энергия копится до ${ENERGY.max}, +1 каждые ${ENERGY.regenSec / 60} минут. На ${RUN.minibossAt / 60}-й минуте приходит минибосс, в конце — босс карты. Победа открывает следующий этап, враги каждого следующего этапа на 20% крепче.` },
-        { icon: A.skill('arrow'), title: 'Управление', body: 'Двигай героя пальцем в любом месте экрана — появится джойстик. Стреляет герой сам, по ближайшему врагу. Пауза — кнопка справа сверху.' },
-        { icon: A.skill('pXp'), title: 'Уровни и навыки', body: `Враги роняют кристаллы опыта. Каждый уровень — выбор из 3 навыков. За забег до ${RUN.maxUpgrades} улучшений: стрела героя, до ${RUN.maxElementSkills} навыков стихий и до ${RUN.maxPassives} пассивных. Уже взятые атакующие навыки выпадают в 3 раза чаще.` },
-        { icon: A.skill('ult'), title: 'Ультимейт', body: 'Когда навык стихии прокачан до 5-го уровня, может выпасть ультимейт: стрела наносит ×2 урона, летит быстрее, +2 стрелы и получает эффект этой стихии.' },
-        { icon: A.res('gold'), title: '«Обновить»', body: 'Меняет три карточки навыков. Первое обновление в забеге бесплатное, дальше — 10💎, 20💎, 30💎… Месячный пропуск даёт ещё одно бесплатное.' },
-        { icon: A.chest(), title: 'Награды забега', body: `Каждый бой: золото, свитки, осколки рун и опыт героя (при поражении — доля по прожитому времени, от ${P.STAGE.minTime / 60} минут). За победу — сундук этапа: ресурсы ${pc(P.STAGE_CHEST[0])}, эссенции ${pc(P.STAGE_CHEST[1])}, снаряжение ${pc(P.STAGE_CHEST[2])}, гем ${pc(P.STAGE_CHEST[3])}, купон ${pc(P.STAGE_CHEST[4])}, руна ${pc(P.STAGE_CHEST[5])}; первое прохождение этапа — золотой сундук. Пассивный навык «Умножитель наград» увеличивает золото, свитки, осколки и опыт.` },
+        { icon: A.res('energy'), title: 'Ход', body: `<span>Поле — ${COLS} × ${ROWS} клеток, враги идут сверху к стене.</span> <span>Целься пальцем и отпусти — герой выпускает залп шаров.</span> <span>Шары отскакивают от краёв поля и от врагов.</span> <span>Когда все шары вернулись, враги делают шаг к стене.</span> <span>Если ход затянулся, бой сам ускоряется: через 5 с ×2, через 10 с ×3.</span>` },
+        { icon: A.chest(), title: 'Стена и победа', body: `<span>Враг у стены бьёт её каждый ход.</span> <span>Стена разрушена — поражение.</span> <span>На ${stageDef(1).miniAt.join(' / ')}-м ходу приходит минибосс, на ${stageDef(1).turns}-м — босс этапа.</span> <span>Убей босса — этап пройден.</span> <span>Каждый следующий этап — враги крепче.</span>` },
+        { icon: A.res('energy'), title: 'Энергия', body: `<span>Бой стоит ${ENERGY.run} энергии.</span> <span>Энергия копится до ${ENERGY.max}, +1 каждые ${ENERGY.regenSec / 60} минут.</span>` },
+        { icon: A.res('particles'), title: 'Уровни забега', body: `<span>Убитые враги дают опыт забега.</span> <span>Новый уровень — выбор из 3 карт: новый особый шар (до 4), уровень шара (до 3-го), +1 обычный шар, «Сила Олимпа» или починка стены.</span> <span>Шар своего героя есть с начала забега.</span>` },
+        { icon: A.res('gold'), title: 'Награды', body: `<span>Победа: золото, свитки, осколки рун, карты двух случайных шаров, частички духа, камни стены, опыт героя и сундук этапа.</span> <span>Первая победа на этапе — всегда предмет снаряжения.</span> <span>Поражение — часть награды по пройденному пути.</span>` },
       ],
     },
     {
-      id: 'skills', icon: A.skill('fireball'), name: 'Навыки', items: [
-        ...others.map(k => ({ icon: A.skill(k), title: SKILLS[k].name, body: `${SKILLS[k].desc}. Уровней: ${SKILLS[k].max}. ${SKILLS[k].kind === 'passive' ? 'Пассивный.' : 'Стрела героя.'}` })),
-        ...elemSkills.map(k => ({ icon: A.skill(k), title: SKILLS[k].name, body: `${SKILLS[k].desc}. Стихия: ${ELEMENT_NAME[SKILLS[k].element!]}. Уровней: ${SKILLS[k].max}.${SKILLS[k].rune ? ' <b>Выпадает только с руной этого навыка.</b>' : ''}` })),
+      id: 'skills', icon: `<img class="wki" src="orb/ball/fire.webp" alt="">`, name: 'Шары', items: [
+        { icon: `<img class="wki" src="orb/ball/normal.webp" alt="">`, title: 'Книги шаров', body: `<span>Каждый шар — книга во вкладке «Шары».</span> <span>Книга растёт за карты шара и золото.</span> <span>Каждое улучшение любой книги прибавляет общий крит-урон всех шаров.</span>` },
+        ...BALL_IDS.map(b => ({ icon: `<img class="wki" src="orb/ball/${b}.webp" alt="">`, title: BALLS[b].name, body: trSafe(BALLS[b].desc(1)) })),
+      ],
+    },
+    {
+      id: 'spirits', icon: `<img class="wki" src="orb/spirit/fire1f.webp" alt="">`, name: 'Духи', items: [
+        ...(Object.keys(SPIRITS) as SpiritId[]).map(id => ({ icon: `<img class="wki" src="orb/spirit/${id}1f.webp" alt="">`, title: SPIRITS[id].name, body: SPIRITS[id].desc })),
       ],
     },
     {
@@ -49,7 +58,7 @@ export function wikiSections(A: WikiArt): WikiSection[] {
         { icon: A.res('particles'), title: 'Звёзды и частицы', body: `Новый герой открывается за ${HERO_UNLOCK_PARTICLES} частиц. Звезда героя стоит частиц и требует уровня:` + tbl(['★', 'частиц', 'уровень'], STAR_PARTICLES.map((x, i) => [i + 1, x, STAR_LEVEL[i]])) + `★1–5: эффект стрелы +20% за звезду. ★6–10: урон своей стихии +5% за звезду. Слоты рун: 2 + звёзды (максимум 6).` },
         { icon: A.res('energy'), title: 'Атака и здоровье', body: `Герой 1-го уровня: атака ${HERO_STAT.atk}, здоровье ${HERO_STAT.hp} — это и есть здоровье в бою. Каждый уровень героя: атака +${HERO_STAT.atkLv}, здоровье +${HERO_STAT.hpLv}. Снаряжение и гемы прибавляют числа: оружие, амулет, кольцо и рубин — атаку; мантия, перчатки, сапоги и изумруд — здоровье. Сверху — проценты от всей суммы: комплекты и руны «Атака» и «Здоровье героя». Топаз прибавляет здоровье стены, сапфир — броню стены. Атака ${HERO_STAT.atk * 2} — навыки бьют вдвое сильнее, чем при ${HERO_STAT.atk}.` },
         { icon: A.coupon(true), title: 'Поиск героев', body: `Малый купон: герой с шансом ${pc(SMALL_COUPON.hero)}, иначе ${SMALL_COUPON.particles} частиц. Средний купон (${BIG_COUPON.price}💎): герой ${pc(BIG_COUPON.hero)}, иначе ${BIG_COUPON.particles} частиц, гарантия героя за ${BIG_COUPON.pity} купонов. Уже открытый герой даёт ${DUP_PARTICLES} частиц. «Герой дня» выпадает в 5 раз чаще.` },
-        ...HEROES.map(h => ({ icon: A.hero(h.id), title: h.name, body: `Стихия: ${ELEMENT_NAME[h.element]}. Стрела с начала забега: ${ELEMENT_EFFECT[h.element]}.` })),
+        ...HEROES.map(h => ({ icon: A.hero(h.id), title: h.name, body: `<span>Шар героя</span>: <b>${BALLS[HERO_BALL[h.id]]?.name ?? ''}</b>` })),
       ],
     },
     {
@@ -80,8 +89,8 @@ export function wikiSections(A: WikiArt): WikiSection[] {
     },
     {
       id: 'enemies', icon: A.loc(2), name: 'Враги', items: [
-        ...enemyKinds.map(k => ({ icon: A.res(k.includes('boss') ? 'shards' : 'energy'), title: ENEMIES[k].name, body: `Здоровье ${ENEMIES[k].hp}, урон ${ENEMIES[k].dmg}, скорость ${ENEMIES[k].speed}${ENEMIES[k].armor ? `, броня ${pc(ENEMIES[k].armor)}` : ''}, опыт ${ENEMIES[k].xp}.` })),
-        ...BIOMES.map(b => ({ icon: A.loc(1), title: `Местность: ${b.name}`, body: `Сначала: ${[...new Set(b.early)].map(k => ENEMIES[k].name).join(', ')}. Позже: ${[...new Set(b.late)].map(k => ENEMIES[k].name).join(', ')}.` })),
+        ...[...new Map((Object.keys(ENEMY) as EnemyId[]).map(k => [ENEMY[k].name, k])).values()].map(k => ({ icon: `<img class="wki" src="orb/en/stone_${ENEMY[k].art}.webp" alt="" onerror="this.style.display='none'">`, title: ENEMY[k].name,
+          body: `<span>Здоровье ×${ENEMY[k].hp}</span>, <span>урон ×${ENEMY[k].atk}</span>, <span>шаг ${ENEMY[k].step}</span>` })),
       ],
     },
     {

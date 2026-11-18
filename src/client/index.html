@@ -2926,6 +2926,20 @@ div.rstats span{flex:1 1 auto;min-width:0}div.rstats small{letter-spacing:0;line
 .rbanner::after,.lvbanner::after{content:""!important;position:absolute;left:50%;top:0;width:58%;aspect-ratio:1101/230;transform:translate(-50%,-52%);
   background:url(orb/ui/crest.webp) center/contain no-repeat!important;clip-path:none!important;inset:auto!important;z-index:3;pointer-events:none}
 .rbanner::after,.lvbanner::after{left:50%!important;top:0!important}
+/* Ш88: the turn speed-up badge */
+.ofast{position:absolute;left:50%;top:calc(env(safe-area-inset-top,0px) + 92px);transform:translateX(-50%);z-index:6;padding:3px 12px;border-radius:12px;
+  font:800 13px/1 system-ui,sans-serif;color:#fff3c0;background:rgba(10,20,14,.72);box-shadow:inset 0 0 0 1.5px #d9b25a;pointer-events:none;animation:ofastp 1s ease-in-out infinite}
+@keyframes ofastp{50%{opacity:.6}}
+/* Ш91: the wall in use — a gold plate, not a bare word */
+.ouse{display:inline-block;padding:4px 10px;border-radius:8px;font:800 12px/1 system-ui,sans-serif;color:#3a2200;background:linear-gradient(#ffe9a0,#e0b04a);box-shadow:0 0 0 1.5px #8a5a10,0 2px 3px rgba(0,0,0,.35)}
+/* Ш92: the jewellery in marble — the gem field in a dark marble frame, the buttons: emerald (search), stone (synthesis), gold (crystals) */
+.gfield{border:14px solid transparent!important;border-image:url(orb/ui/f_oct.webp) 40 fill / 14px stretch!important;background:none!important;box-shadow:none!important}
+.jbtns .gbtn{border-style:solid!important;border-color:transparent!important;border-radius:0!important;box-shadow:none!important;background:none!important;
+  font-family:Georgia,'Times New Roman',serif!important;-webkit-text-stroke:1.5px #2a1a04;paint-order:stroke fill;text-shadow:0 2px 0 #1a1004!important;color:#ffd96a!important}
+.jbtns .gbtn:not(.violet):not(.red){border-width:9px 16px!important;border-image:url(orb/ui/btn_emerald.webp) 62 118 62 118 fill / 9px 16px stretch!important;filter:drop-shadow(0 3px 3px rgba(0,0,0,.5))}
+.jbtns .gbtn.violet{border-width:8px!important;border-image:url(orb/ui/btn_stone.webp) 30 fill / 8px stretch!important;color:#2a2418!important;-webkit-text-stroke:0;text-shadow:0 1px 0 #fff8!important}
+.jbtns .gbtn.red{border-width:0!important;border-radius:14px!important;background:linear-gradient(#ffe9a0,#e8b23a)!important;box-shadow:0 0 0 2px #fff3c0,0 0 0 3.5px #8a5a10,0 4px 6px rgba(0,0,0,.5)!important;color:#3a2200!important;-webkit-text-stroke:0;text-shadow:0 1px 0 #fff8!important}
+.jbtns .gbtn b{color:inherit!important}
 </style>
 </head>
 <body>
@@ -2952,7 +2966,7 @@ div.rstats span{flex:1 1 auto;min-width:0}div.rstats small{letter-spacing:0;line
     <div id="fps"></div>
   </div>
   <div id="ohud" hidden>
-    <div class="otop"><button id="oPause" class="obtn">II</button><div class="omid"><div id="oTitle"></div><div class="oprog"><i id="oProgFill"></i><em id="oProgTxt"></em></div></div><button id="oSpeed" class="obtn">×1</button><button id="oAuto" class="obtn oauto">Авто</button></div>
+    <div id="oFast" class="ofast" hidden></div><div class="otop"><button id="oPause" class="obtn">II</button><div class="omid"><div id="oTitle"></div><div class="oprog"><i id="oProgFill"></i><em id="oProgTxt"></em></div></div><button id="oSpeed" class="obtn">×1</button><button id="oAuto" class="obtn oauto">Авто</button></div>
     <div class="oxp"><span id="oLvl">1</span><div class="oxpbar" id="oXpBar"><i id="oXpFill"><b class="oxb"></b><b class="oxb b2"></b><b class="oxb b3"></b><b class="oxb b4"></b></i></div></div>
     <div id="oBoss" hidden><b id="oBossName"></b><div class="obossbar"><i id="oBossFill"></i></div></div>
     <div id="oBanner" hidden></div>

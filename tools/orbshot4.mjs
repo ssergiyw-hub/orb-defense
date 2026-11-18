@@ -41,4 +41,7 @@ await click('[data-a="chest"][data-v="set:1"]'); await shot('reward', 1500); awa
 await click('[data-a="go"][data-v="hub"]'); await p.waitForTimeout(300); await click('[data-a="idleOpen"]'); await shot('idle'); await click('.x');
 await p.waitForTimeout(300); await click('[data-a="wheel"]'); await shot('wheel', 900); await click('.whtop .x');
 await click('[data-a="go"][data-v="hub"]'); await p.waitForTimeout(300); await click('#hTask'); await click('[data-a="taskTab"][data-v="week"]'); await shot('tasks'); await click('.x');
+// Ш89: the help — the battle section
+await click('[data-a="go"][data-v="settings"]'); await p.waitForTimeout(300); await click('[data-a="wikiOpen"]'); await p.waitForTimeout(300); await click('[data-a="wikiSec"][data-v="battle"]'); await shot('wiki');
+await click('[data-a="wikiSec"][data-v=""]'); await click('[data-a="wikiSec"][data-v="skills"]'); await shot('wiki2'); await click('[data-a="wikiClose"]');
 console.log(JSON.stringify(errs.slice(0, 8))); await b.close();

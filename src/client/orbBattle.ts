@@ -19,7 +19,7 @@ export class OrbBattle {
   private cfg: OrbConfig | null = null;
   private acts: Act[] = [];
   private r: OrbRenderer;
-  private speed = 1; private auto = false; private paused = false; private quit = false; private done = false;
+  private speed = 1; private turnT = 0; private fast = 1; private auto = false; private paused = false; private quit = false; private done = false;
   private acc = 0; private last = 0; private looping = false;
   private aiming = false; private shownCards = ''; private sling: boolean | null = null;
   private hintShown = false;
@@ -86,6 +86,7 @@ export class OrbBattle {
     this.fire(Math.round(a * 1000));
   }
   private fire(aim: number): void {
+    this.turnT = 0; this.fast = 1; $('oFast').hidden = true; // Ш88: a new turn starts at the chosen speed
     if (!this.o) return;
     const a = { aim }; this.acts.push(a); this.o.act(a); this.r.cast();
     this.o.s.aim = aim / 1000;
@@ -115,7 +116,10 @@ export class OrbBattle {
         else if (!this.hintShown) $('oHint').hidden = false;
       } else if (s.phase === 'choose') this.cards();
       else if (o.busy) {
-        this.acc += dt * 60 * this.speed;
+        // Ш88: a long turn speeds itself up — after 5 s of flight ×2, after 10 s ×3 (never slower than the chosen speed)
+        this.turnT += dt; const f = this.turnT > 10 ? 3 : this.turnT > 5 ? 2 : 1;
+        if (f !== this.fast) { this.fast = f; const b = $('oFast'); b.hidden = f <= this.speed; b.textContent = '⏩ ×' + f; }
+        this.acc += dt * 60 * Math.max(this.speed, this.fast);
         let n = 0;
         while (this.acc >= 1 && n < 400 && o.busy) {
           o.step(); this.acc -= 1; n++;
@@ -133,7 +137,7 @@ export class OrbBattle {
       if ((s.phase === 'win' || s.phase === 'lose') && !this.done) { this.done = true; sfx.vibrate(s.phase === 'win' ? 'level' : 'death'); setTimeout(() => this.finish(), 900); }
       this.hud();
     }
-    if (o) this.r.draw(o, this.paused ? 0 : dt * Math.min(this.speed, 2));
+    if (o) this.r.draw(o, this.paused ? 0 : dt * Math.min(Math.max(this.speed, this.fast), 2));
     if (this.bannerT > 0) { this.bannerT -= dt; if (this.bannerT <= 0) $('oBanner').hidden = true; }
     if (this.o) requestAnimationFrame(t => this.frame(t)); else { this.looping = false; }
   }
