@@ -1122,11 +1122,11 @@ export class Hub {
     if (b.atk) parts.push(`<b class="stm">⚔️ атака +${P.statNum(b.atk)}</b>`); // правка 155: plain numbers
     if (b.hp) parts.push(`<b class="stm">❤️ здоровье +${P.statNum(b.hp)}</b>`);
     if (b.wall) parts.push(`<b class="stm">🧱 здоровье стены +${Math.round(b.wall)}</b>`); // Ш104
-    if (b.def) parts.push(`защита +${f(b.def)}%`);
-    if (b.speed) parts.push(`скорость +${f(b.speed)}%`);
-    if (b.atkSpeed) parts.push(`скор. атаки +${f(b.atkSpeed)}%`);
-    if (b.crit) parts.push(`крит +${f(b.crit)}%`);
-    return parts.join(', ') || '—';
+    if (b.def) parts.push(`<span>защита +${f(b.def)}%</span>`);
+    if (b.speed) parts.push(`<span>скорость +${f(b.speed)}%</span>`);
+    if (b.atkSpeed) parts.push(`<span>скор. атаки +${f(b.atkSpeed)}%</span>`);
+    if (b.crit) parts.push(`<span>крит +${f(b.crit)}%</span>`);
+    return parts.join('') || '—'; // Ш108: one stat a line (the wall health hung «+2» alone on the second line)
   }
 
   /** правка 134: scroll place of the list on each hero tab */
@@ -1402,7 +1402,7 @@ export class Hub {
             ${c.pity ? `<div class="c3pity"><span>Гарантия ${id === 'runes' ? ['обычной', 'редкой', 'эпической'][c.pity.rarity] + ' руны' : ['обычного', 'редкого', 'эпического'][c.pity.rarity]} через</span><b>${pity}</b></div>` : ''}</div></div>
           <div class="c3btns"><button class="c3b one" data-a="chest" data-v="${id}:1"><span>Открыть ×1</span><b>${c.price}💎</b></button>
           <button class="c3b ten" data-a="chest" data-v="${id}:10"><span>Открыть ×10</span><b>${c.price * CHEST_X10}💎</b></button></div>
-          ${id === 'set' ? this.adBtn(p, 'chest', 'Сундук бесплатно за рекламу') : id === 'runes' ? this.adBtn(p, 'runes', 'Сундук рун бесплатно за рекламу') : ''}
+          ${id === 'set' ? this.adBtn(p, 'chest', 'Сундук за рекламу') : id === 'runes' ? this.adBtn(p, 'runes', 'Сундук рун за рекламу') : ''}
           ${id === 'set' ? `<div class="c3sets">${SETS.map(st => ACTIVE_SETS.includes(st) ? `<button class="${set === st ? 'on' : ''}" style="--sc:${SET_COLOR[st]}" data-a="shopSet" data-v="${st}"><img src="${ICONS['set_' + st]}" alt="">${SET_NAME[st]}</button>` : `<button class="c3soon" data-a="shopSet" data-v="${st}"><img src="${ICONS['set_' + st]}" alt=""><span>${SET_NAME[st]}</span><small>🔒 Скоро</small></button>`).join('')}</div>
             <div class="c3bonus">2 шт. — ${SET_DESC[set].b2} · 4 шт. — ${SET_DESC[set].b4} · 6 шт. — ${SET_DESC[set].b6}</div>` : ''}</div>`;
       };
@@ -1440,14 +1440,18 @@ export class Hub {
   private tavernCard(p: P.Profile): string {
     const day = hero(P.heroOfDay()), c = EL_HEX[day.element];
     const pity = BIG_COUPON.pity - p.pityCoupon;
+    // Ш110: three equal coupon cards; under each its own button: emerald — a coupon you have, gold — for crystals, pale — nothing to open
+    const cp = (k: string, big: boolean, name: string, v: string, price: number | null, have: number) => {
+      const btn = price === null ? `<button class="cpb emer" data-a="hsearch" data-v="${v}"><b>Открыть</b><small>есть ${have}</small></button>`
+        : price < 0 ? `<button class="cpb off" disabled><b>Открыть</b><small>нет купонов</small></button>`
+        : `<button class="cpb gold" data-a="hsearch" data-v="${v}"${p.crystals >= price ? '' : ' disabled'}><b>${price}💎</b></button>`;
+      return `<div class="cpc ${k}"><span class="cpi">${couponSvg(big, 44)}</span><b class="cpn">${name}</b>${btn}</div>`;
+    };
     return `<div class="ch3 th-tav" style="--c:${c}">${CORNERS}
       <div class="c3top"><div class="tvmed card"><span class="mhero">${this.heroCard(day.id, 112)}</span><span class="x5">×5</span></div>
         <div class="c3info"><b class="c3title">Поиск героев</b><div class="c3odds">Герой дня: <b class="hn">${day.name}</b> — выпадает в 5 раз чаще. Меняется каждый день.</div>
-        <div class="c3pity"><span>Средний купон: гарантия героя через</span><b>${pity}</b></div></div></div>
-      <div class="c3btns three">
-        <button class="c3b one" data-a="hsearch" data-v="small:1" ${p.couponsSmall ? '' : 'disabled'}><span class="cpi">${couponSvg(false, 40)}</span><span>Малый ×1</span><b>есть ${p.couponsSmall}</b></button>
-        <button class="c3b one" data-a="hsearch" data-v="big:1"><span class="cpi">${couponSvg(true, 40)}</span><span>Средний ×1</span><b>${p.couponsBig ? `есть ${p.couponsBig}` : `${BIG_COUPON.price}💎`}</b></button>
-        <button class="c3b ten" data-a="hsearch" data-v="big:10"><i class="bsp"></i><span class="cpi">${couponSvg(true, 40)}</span><span>Средний ×10</span><b>${p.couponsBig >= 10 ? `есть ${p.couponsBig}` : `${BIG_COUPON.price * Math.max(0, 10 - p.couponsBig)}💎`}</b></button></div>
+        <div class="c3pity hp1"><span>Гарантия героя через</span><b>${pity}</b></div></div></div>
+      <div class="cpcards">${cp('small', false, 'Малый ×1', 'small:1', p.couponsSmall ? null : -1, p.couponsSmall)}${cp('big1', true, 'Средний ×1', 'big:1', p.couponsBig ? null : BIG_COUPON.price, p.couponsBig)}${cp('big10', true, 'Средний ×10', 'big:10', p.couponsBig >= 10 ? null : BIG_COUPON.price * Math.max(0, 10 - p.couponsBig), p.couponsBig)}</div>
       ${this.adBtn(p, 'hero', 'Малый поиск за рекламу')}
       <div class="c3bonus">Малый: герой 3%, иначе 5 частиц · Средний: герой 20%, иначе 30 частиц · Повтор героя — 20 частиц</div></div>`;
   }
@@ -1482,7 +1486,7 @@ export class Hub {
       const dots = Array.from({ length: max }, (_, i) => `<i class="${i < left ? 'on' : ''}"></i>`).join('');
       const att = ok && P.evAttention(p, (v || 'wall') as EventId | 'wall'); // правка 142
       return `<div class="evc${ok ? '' : ' locked'}">
-        <div class="evart" style="background-image:url(${art === 'storm' ? 'orb/bg/lightning.webp' : art === 'bossorb' ? 'orb/bg/fire.webp' : `ev/${art}.webp`})">${art === 'bossorb' ? `<img class="evboss" src="orb/en/olymp_${ENEMY[OM.bossOfDay()].art}.webp" alt="">` : ''}
+        <div class="evart" style="background-image:url(${art === 'storm' ? 'orb/ui/ev_storm.webp' : art === 'bossorb' ? 'orb/bg/fire.webp' : `ev/${art}.webp`})">${art === 'bossorb' ? `<img class="evboss" src="orb/en/olymp_${ENEMY[OM.bossOfDay()].art}.webp" alt="">` : ''}
           <span class="evtime">⏳ ${ok ? `конец дня через ${hh}ч ${mm}м` : '🔒 этап 2'}</span>
           ${ok ? `<span class="evtries">${dots}</span>` : ''}
         </div>
@@ -1507,19 +1511,19 @@ export class Hub {
       ? 'Медведь не умирает. За 3 минуты набей как можно больше урона. Перед ударом на земле красная зона — уходи из неё. Навык — каждые 15 секунд.'
       : 'Шестигранная арена, 5 минут. Волна из 30 врагов, следующая — как только погиб последний. С каждой волной враги крепче.';
     const go = left > 0
-      ? `<button class="lvbtn wide" data-a="evGo"><b>В бой</b><small>бесплатно · осталось ${left} из ${EVENT.freePerDay}</small></button>`
+      ? `<button class="lvbtn wide" data-a="evGo"><b>В бой</b><small>бесплатно · ${left} из ${EVENT.freePerDay}</small></button>`
       : `<button class="lvbtn wide" data-a="evGo" data-v="paid"><b>Ещё попытка</b><small>${EVENT.extraCost} ${GEM_ICON}</small></button>`;
     const last = this.sel.evLast;
     return `<div class="modal" data-a="close"><div class="mbox lvpanel wallpanel evpanel mrate mev">
       <div class="lvtabs"><b class="wtitle">${name}</b><button class="lvsq x" data-a="close">✕</button></div>
       <div class="panelbox" data-k="ev-${ev}">
-        ${bo ? `<div class="evmap evstorm evbo"><span style="background-image:url(orb/bg/fire.webp)"><img class="evboss" src="orb/en/olymp_${ENEMY[OM.bossOfDay()].art}.webp" alt=""></span><div class="wmname"><small>Босс дня</small><b>${ENEMY[OM.bossOfDay()].name}</b><em>конец дня через ${hh}ч ${mm}м</em></div></div>`
-          : storm ? `<div class="evmap evstorm"><span style="background-image:url(orb/bg/lightning.webp)"></span><div class="wmname"><small>Событие дня</small><b>Шквал шаров</b><em>конец дня через ${hh}ч ${mm}м</em></div></div>`
+        ${bo ? `<div class="evsub"><span>Босс дня</span>: <b>${ENEMY[OM.bossOfDay()].name}</b> · <span>конец дня через ${hh}ч ${mm}м</span></div><div class="evpic bo"><span style="background-image:url(orb/bg/fire.webp)"></span><img class="evboss" src="orb/en/olymp_${ENEMY[OM.bossOfDay()].art}.webp" alt=""></div>`
+          : storm ? `<div class="evsub"><span>Событие дня</span> · <span>конец дня через ${hh}ч ${mm}м</span></div><div class="evpic"><span style="background-image:url(orb/ui/ev_storm.webp)"></span></div>`
           : `<div class="evmap ${boss ? 'evround' : 'evhex'}"><span style="background-image:url(ev/card_${ev}.webp)"></span><div class="wmname"><small>Арена дня</small><b>${map.name}</b><em>конец дня через ${hh}ч ${mm}м</em></div></div>
         <div class="welrow">${this.elBadge(map.strong, true)}${this.elBadge(map.weak, false)}</div>`}
         ${last ? `<div class="evlast">Вчера: <b>${last.place} место</b> · ${this.evScore(ev, last.score)} — получено: ${last.label}</div>` : ''}
         <div class="lvsub">${desc}</div>
-        <div class="wrec"><span><small>Лучший сегодня</small><b>${this.evScore(ev, st.best)}</b></span><span><small>Место</small><b>${place ? `${place}/${EVENT.group}` : '—'}</b></span><span><small>Попыток</small><b>${st.used}</b></span></div>
+        <div class="wrec"><span><small>Рекорд</small><b>${this.evScore(ev, st.best)}</b></span><span><small>Место</small><b>${place ? `${place}/${EVENT.group}` : '—'}</b></span><span><small>Попыток</small><b>${st.used}</b></span></div>
         ${go}
         <button class="lvbtn wide alt" data-a="evRate"><b>Рейтинг</b><small>награды — в сундуках</small></button>
       </div></div></div>`;

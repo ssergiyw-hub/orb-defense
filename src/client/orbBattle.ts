@@ -8,6 +8,10 @@ import { ORB_HERO_ART } from './orbHeroArt';
 import { HAS_BALL_ART } from './orbBallArt';
 import * as sfx from './sfx';
 import { tr, trS } from './i18n';
+import { showRewardAd } from './ads';
+/** Ш111: what the card reroll needs from the profile (set by main.ts) */
+export interface RerollShop { adSkip: () => boolean; crystals: () => number; spend: (n: number) => void; monthFree: boolean }
+export const REROLL_GEMS = [20, 40, 80];
 
 const $ = <T extends HTMLElement = HTMLElement>(id: string) => document.getElementById(id) as T;
 const BOOK = (b: string) => `orb/book/${BALLS[b as keyof typeof BALLS]?.book ?? b}.webp`;
@@ -44,7 +48,31 @@ export class OrbBattle {
   }
   private keep(): void { try { localStorage.setItem('od-auto', this.auto ? '1' : '0'); localStorage.setItem('od-speed', String(this.speed)); } catch { /* storage unavailable */ } }
 
+  /** Ш111: the card reroll — 1 for an ad, 1 free with the month pass, then crystals 20 → 40 → 80; the rating events — the ad only */
+  shop?: RerollShop; private rollAd = 0; private rollFree = 0; private rollGem = 0; private rollBusy = false;
+  private rerollState(): { ad: boolean; free: boolean; gem: number | null } {
+    const ev = !!this.cfg?.storm;
+    return { free: this.rollFree > 0, ad: this.rollAd < 1, gem: ev || !this.shop ? null : REROLL_GEMS[Math.min(this.rollGem, REROLL_GEMS.length - 1)] };
+  }
+  private async reroll(kind: 'ad' | 'gem'): Promise<void> {
+    const o = this.o; if (!o || o.s.phase !== 'choose' || this.rollBusy) return;
+    const st = this.rerollState();
+    if (kind === 'ad') {
+      if (st.free) this.rollFree--;
+      else {
+        if (!st.ad) return;
+        if (!this.shop?.adSkip()) { this.rollBusy = true; const ok = await showRewardAd().finally(() => { this.rollBusy = false; }); if (!ok || this.o !== o) return; }
+        this.rollAd++;
+      }
+    } else {
+      if (st.gem === null || !this.shop || this.shop.crystals() < st.gem) return;
+      this.shop.spend(st.gem); this.rollGem++;
+    }
+    const a: Act = { reroll: true }; this.acts.push(a); o.act(a);
+    sfx.play('pick'); this.shownCards = ''; this.cards();
+  }
   start(cfg: OrbConfig, dprCap: number): void {
+    this.rollAd = 0; this.rollGem = 0; this.rollFree = this.shop?.monthFree && !cfg.storm ? 1 : 0;
     this.cfg = cfg; this.o = new Orb(cfg); this.acts = []; this.done = false; this.quit = false; this.paused = false; this.shownCards = '';
     (window as unknown as { __orb?: Orb }).__orb = this.o; // screenshot scripts look at the fight (tools/bossshot.mjs)
     if (!ORB_HERO_ART[cfg.heroId]) preload3D(cfg.heroId); preloadOrb(this.o); // Ш58: a drawn hero needs no 3D atlas
@@ -243,6 +271,13 @@ export class OrbBattle {
       return `<button class="ocard" data-i="${i}" style="--c:${col}"><small>${tag}</small>${pic}${dmg}<b>${tr(c.title)}</b><span>${trS(c.desc)}</span>${pips}</button>`;
     }).join('');
     $('oCardList').querySelectorAll<HTMLElement>('.ocard').forEach(b => { b.onclick = () => this.pick(+b.dataset.i!); });
+    // Ш111: the reroll buttons under the cards
+    const rs = this.rerollState(), have = this.shop?.crystals() ?? 0;
+    const adB = rs.free ? `<button class="oroll ad" data-k="ad"><b>${tr('Обновить')}</b><small>${tr('бесплатно')}</small></button>`
+      : `<button class="oroll ad" data-k="ad"${rs.ad ? '' : ' disabled'}><b>▶ ${tr('Обновить')}</b><small>${rs.ad ? tr('за рекламу') : '0/1'}</small></button>`;
+    const gemB = rs.gem === null ? '' : `<button class="oroll gem" data-k="gem"${have >= rs.gem ? '' : ' disabled'}><b>${tr('Обновить')}</b><small>${rs.gem}💎</small></button>`;
+    $('oRoll').innerHTML = adB + gemB;
+    $('oRoll').querySelectorAll<HTMLElement>('.oroll').forEach(b => { b.onclick = () => void this.reroll(b.dataset.k as 'ad' | 'gem'); });
     $('oCards').hidden = false;
     sfx.vibrate('level');
   }

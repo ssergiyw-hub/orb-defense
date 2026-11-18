@@ -35,7 +35,7 @@ export interface OrbConfig {
 export type RuneFx = 'normal' | 'allBalls' | 'afflicted' | 'dur' | 'plusBall' | 'spirit' | 'impact' | 'area' | 'beamLight' | 'pierce' | 'dot' | 'wetFrozen' | 'repair' | 'gold' | 'elite' | 'wallPct';
 export type Phase = 'aim' | 'fly' | 'enemy' | 'choose' | 'win' | 'lose';
 /** at: the tick an aim was given (Ш98, storm: the aim can change any time — a replay applies it at the same tick) */
-export interface Act { aim?: number; choice?: number; at?: number }
+export interface Act { aim?: number; choice?: number; at?: number; /** Ш111: new three cards (ad / crystals — the client pays) */ reroll?: boolean }
 
 export interface Enemy {
   id: number; kind: EnemyId; c: number; r: number; w: number; h: number;
@@ -139,6 +139,8 @@ export class Orb {
       s.aim = clamp(a.aim / 1000, -PI + 0.12, -0.12);
       s.queue = [...s.specials.map(x => x.id), ...Array.from({ length: s.normals }, () => 'normal' as const)];
       s.launchT = 0; s.phase = 'fly'; s.phaseT = 0; s.hits = 0;
+    } else if (s.phase === 'choose' && a.reroll) { // Ш111: three new cards, the ones just shown left out when there are enough others
+      this.rollCards(s.cards.map(c => c.k + (c.ball ?? '')));
     } else if (s.phase === 'choose' && a.choice !== undefined && s.cards[a.choice]) {
       this.applyCard(s.cards[a.choice]);
       s.pendingLv--; s.cards = [];
@@ -621,12 +623,13 @@ export class Orb {
   }
 
   // ---------------- level-up cards ----------------
-  private rollCards(): void {
-    const s = this.s, c = s.cfg, pool: Card[] = [];
+  private rollCards(avoid: string[] = []): void {
+    const s = this.s, c = s.cfg; let pool: Card[] = [];
     const owned = BALL_IDS.filter(b => (c.ballLv[b] ?? 0) > 0 && !s.specials.some(x => x.id === b));
     if (s.specials.length < 4) for (const b of owned) pool.push({ k: 'new', ball: b, title: BALLS[b].name, desc: BALLS[b].desc(1), lv: 1 });
     for (const x of s.specials) if (x.lv < this.maxLv(x.id)) pool.push({ k: 'up', ball: x.id, title: BALLS[x.id].name, desc: BALLS[x.id].desc(x.lv + 1), lv: x.lv + 1 });
     if (s.normals < c.normals + 4) pool.push({ k: 'normal', title: '+1 обычный шар', desc: 'Ещё один обычный шар в каждом залпе' });
+    if (avoid.length) { const rest = pool.filter(x => !avoid.includes(x.k + (x.ball ?? ''))); if (rest.length >= 3) pool = rest; }
     const picks: Card[] = [];
     while (picks.length < 3 && pool.length) picks.push(pool.splice(this.rng.int(pool.length), 1)[0]);
     if (picks.length < 3) picks.push({ k: 'power', title: 'Сила Олимпа', desc: 'Урон всех шаров +12%' });
@@ -756,7 +759,7 @@ export class Orb {
 export function replayOrb(cfg: OrbConfig, acts: Act[]): Orb {
   const o = new Orb(cfg);
   if (cfg.storm) { // Ш98: every act at its tick, then to the end
-    for (const a of acts) { let g = 0; if (a.choice !== undefined) while (o.s.phase !== 'choose' && o.busy && g++ < 2e6) o.step(); else while (a.at !== undefined && o.s.tick < a.at && o.busy && g++ < 2e6) o.step(); o.act(a); }
+    for (const a of acts) { let g = 0; if (a.choice !== undefined || a.reroll) while (o.s.phase !== 'choose' && o.busy && g++ < 2e6) o.step(); else while (a.at !== undefined && o.s.tick < a.at && o.busy && g++ < 2e6) o.step(); o.act(a); }
     let g = 0; while (o.busy && g++ < 2e6) o.step();
     return o;
   }

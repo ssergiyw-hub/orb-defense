@@ -3098,6 +3098,86 @@ div.rstats span{flex:1 1 auto;min-width:0}div.rstats small{letter-spacing:0;line
 .mev .wrec{padding:0;border-style:solid;border-width:10px;border-color:transparent;border-radius:0;border-image:url(orb/ui/m_plate.webp) 40 fill / 10px stretch;background:none}
 .mev .wrec small{color:#7a6650}.mev .wrec b{color:#3a2a1a}.mev .wrec span+span{border-left-color:#c8b08066}
 .mev .evlast{color:#1e4a1a;background:#cfe8b8;border-color:#6aa04a}
+
+/* Ш106: outside the Portal the side buttons of the header are off — invisible AND not catching taps (onhero / fadetop gave them taps back) */
+#ui:not(.onhub)>.hdr .side,#ui:not(.onhub)>.hdr .side *{pointer-events:none!important;visibility:hidden}
+/* Ш108: the rarity diamond had a square glow from the old style */
+.itembox2 .gl2 .dia,.itembox2 .gl2.on .dia{box-shadow:none!important}
+.itembox2 .statline>*{display:block;line-height:1.35}
+.itembox2 .sock.full{background:url(orb/ui/m_sock_gem.webp) center/contain no-repeat,radial-gradient(circle,color-mix(in srgb,var(--g) 45%,#2a1e14) 0,#1a1210 60%,transparent 62%);filter:drop-shadow(0 0 6px var(--g))}
+.itembox2 .ibart{border-width:13px;border-image-width:16px}
+
+/* Ш111: reroll the three cards — emerald for the ad (free), gold for crystals */
+.orollrow{display:flex;justify-content:center;gap:10px;margin:12px 10px 0}
+.oroll{flex:1;max-width:170px;height:54px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:1px;border:14px solid transparent;border-image:url(orb/ui/btn_emerald.webp) 62 118 62 118 fill / 14px 26px stretch;background:none;padding:0;color:#ffe9a8;filter:drop-shadow(0 3px 3px #0008)}
+.oroll b{font:900 15px/1 Georgia,serif;color:#ffe9a8;text-shadow:0 2px 0 #0a2a14,0 0 4px #000a;white-space:nowrap}.oroll small{font-size:10.5px;font-weight:800;color:#e8ffe0;white-space:nowrap}
+.oroll.gem{border-width:12px;border-image:url(orb/ui/m_btn_gold.webp) 56 fill / 14px stretch}
+.oroll.gem b{color:#4a2a06;text-shadow:0 1px 0 #fff6a0}.oroll.gem small{color:#6a4210}
+.oroll[disabled]{filter:grayscale(.7) brightness(.7);opacity:.75}
+.oroll:active{transform:translateY(2px)}
+/* Ш107: the event window — no dark block: one line under the title, the picture in a gold frame */
+.mev .evsub{margin:-2px 4px 8px;text-align:center;font-size:12.5px;color:#5a4630}.mev .evsub b{color:#3a2412;font-family:Georgia,serif}
+.mev .evpic{position:relative;height:170px;border:10px solid transparent;border-image:url(orb/ui/m_frame.webp) 44 / 14px stretch;filter:drop-shadow(0 3px 4px #0005)}
+.mev .evpic>span{position:absolute;inset:0;background:center/cover no-repeat;border-radius:4px}
+.mev .evpic.bo>span{background-position:center 60%}
+.mev .evpic .evboss{position:absolute;left:50%;bottom:4%;height:88%;transform:translateX(-50%);filter:drop-shadow(0 6px 10px #000b);pointer-events:none}
+.mev .wrec small{white-space:nowrap;font-size:9.5px}.mev .wrec span{justify-content:flex-start}
+
+/* ---- Ш109: the tasks in light marble ---- */
+.tasks2 .task2{border-style:solid!important;border-width:10px 10px 10px 12px!important;border-color:transparent!important;border-radius:0!important;border-image:url(orb/ui/m_row.webp) 46 46 46 46 fill / 10px 10px 10px 12px stretch!important;background:none!important;box-shadow:none!important;padding:0 2px!important;min-height:58px;filter:drop-shadow(0 2px 2px #0005)}
+.tasks2 .task2.ready{filter:drop-shadow(0 0 5px #2fe080) drop-shadow(0 0 2px #2fe080)!important}
+.tasks2 .task2.taken{filter:grayscale(.4) opacity(.7)!important}
+.tasks2 .task2 .grow>b{color:#2a1a0a!important;text-shadow:none!important}
+.tasks2 .task2 .tlock{color:#7a5a30}
+.tasks2 .task2 .lvbar{height:14px}
+.tasks2 .tpts2{transform:none!important;width:34px!important;height:40px!important;background:url(orb/ui/m_place.webp) center/contain no-repeat!important;box-shadow:none!important;border:0!important}
+.tasks2 .tpts2::before{transform:none!important;font:900 11.5px/1 Georgia,serif!important;color:#3a2412!important;-webkit-text-stroke:0!important}
+.tasks2 .tclaim{width:82px!important;height:42px!important;border-style:solid!important;border-color:transparent!important;border-width:10px 12px!important;border-radius:0!important;border-image:url(orb/ui/m_btn_stone.webp) 56 fill / 10px 12px stretch!important;background:none!important;box-shadow:none!important;animation:none!important;color:#7a6a5a!important;font:900 13px/1 Georgia,serif!important;-webkit-text-stroke:0!important;text-shadow:0 1px 0 #fff8!important;padding:0!important;opacity:1!important}
+.tasks2 .tclaim[disabled]{opacity:.6!important}
+.tasks2 .tclaim.on{border-width:9px 16px!important;border-image:url(orb/ui/btn_emerald.webp) 62 118 62 118 fill / 9px 16px stretch!important;color:#ffd96a!important;-webkit-text-stroke:1.5px #1a3a10!important;paint-order:stroke fill;text-shadow:0 1px 0 #0a2008!important;filter:drop-shadow(0 0 6px rgba(47,224,128,.6))!important}
+.tasks2 .tauto{color:#4a3a2a!important}
+/* ---- Ш109: the black market in light marble ---- */
+.mkscreen.lv .mpack,.mkscreen.lv .mo{border-width:22px!important;border-image:url(orb/ui/m_panel.webp) 66 fill / 22px stretch!important;background:none!important;box-shadow:none!important;color:#3a2a1a}
+.mkscreen.lv .mo{border-width:14px!important;border-image-width:14px!important}
+.mkscreen.lv .mpinfo>b,.mkscreen.lv .mo small{color:#3a2412!important;text-shadow:0 1px 0 #fff8!important;-webkit-text-stroke:0!important}
+.mkscreen.lv .mmed{background:radial-gradient(circle at 50% 40%,#fff4dc,#d8c6a0 75%)!important;box-shadow:0 0 0 2px #c99a3a,0 0 0 4px #7a5014,0 2px 4px 4px #0003!important}
+.mkscreen.lv .mpt{border:8px solid transparent!important;border-image:url(orb/ui/m_frame.webp) 44 / 10px stretch!important;background:radial-gradient(circle,#fffaf0,#d8c8a8)!important;background-clip:padding-box!important;filter:drop-shadow(0 2px 2px #0004)!important}
+.mkscreen.lv .mpt em{color:#3a2412!important;-webkit-text-stroke:2px #fff!important;paint-order:stroke fill}
+.mkscreen.lv .mdesc,.mkscreen.lv .cyc2{border-width:10px!important;border-image:url(orb/ui/m_plate.webp) 40 fill / 10px stretch!important;color:#3a2a1a!important;text-shadow:none!important}
+.mkscreen.lv .cyc2 span{color:#3a2a1a!important}.mkscreen.lv .cyc2 i{color:#b07a1a!important;text-shadow:none!important}
+.mkscreen.lv .mpbot small{border-image:url(orb/ui/m_plate.webp) 40 fill / 6px stretch!important;color:#5a4630!important}
+.mkscreen.lv .mbuy{border-style:solid!important;border-color:transparent!important;border-width:12px 14px!important;border-image:url(orb/ui/m_btn_gold.webp) 56 fill / 14px stretch!important;background:none!important;filter:drop-shadow(0 3px 3px #0006)!important}
+.mkscreen.lv .mbuy b{color:#4a2a06!important;-webkit-text-stroke:0!important;text-shadow:0 1px 0 #fff6a0!important}
+.mkscreen.lv .mbuy s{color:#8a5a20!important}
+.mkscreen.lv .mprice{border-image:url(orb/ui/m_btn_gold.webp) 56 fill / 8px stretch!important;color:#4a2a06!important;text-shadow:none!important;-webkit-text-stroke:0!important}
+.mkscreen.lv .mo.free .mprice{border-image:url(orb/ui/btn_emerald.webp) 62 118 62 118 fill / 8px 12px stretch!important;color:#ffd96a!important}
+.mkscreen.lv .parch2{border:0!important;border-style:solid!important;border-width:0 22px!important;border-image:url(orb/ui/m_hex.webp) 0 100 fill / 0 22px stretch!important;background:none!important;color:#4a2c12!important;text-shadow:0 1px 0 #fff8!important;padding:5px 2px!important}
+.mkscreen .mtabs2>button{border-image:url(orb/ui/m_plate.webp) 40 fill / 10px stretch!important;border-style:solid!important;border-width:10px!important;border-color:transparent!important;background:none!important;color:#6a5640!important;text-shadow:0 1px 0 #fff8!important;-webkit-text-stroke:0!important}
+.mkscreen .mtabs2>button.on{border-image-source:url(orb/ui/m_btn_gold.webp)!important;color:#4a2a06!important}
+.mkscreen .rlabel.mdiv2 span{color:#ffe9a8}
+/* ---- Ш110: the hero search — three equal coupon cards, gold for crystals ---- */
+.th-tav .hn{filter:brightness(.62) saturate(1.3)!important;font-weight:900}
+.c3pity.hp1{flex-direction:row;justify-content:center;gap:6px;align-items:baseline}
+.c3pity.hp1 span{font-size:12px}.c3pity.hp1 b{font-size:24px}
+.cpcards{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:6px;margin:10px 0 6px}
+.cpc{display:flex;flex-direction:column;align-items:center;gap:4px;padding:0 0 2px;border:10px solid transparent;border-image:url(orb/ui/m_plate.webp) 40 fill / 10px stretch;filter:drop-shadow(0 2px 3px #0006)}
+.cpc.big10{filter:drop-shadow(0 0 6px #ffcf4a) drop-shadow(0 2px 3px #0006)}
+.cpc .cpi svg{width:46px;height:34px}
+.cpc .cpn{font:900 13px/1.1 Georgia,serif;color:#3a2412;white-space:nowrap}
+.cpb{width:100%;height:40px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:0;padding:0;border:9px solid transparent;border-radius:0;background:none;box-shadow:none}
+.cpb b{font:900 14px/1 Georgia,serif;white-space:nowrap}.cpb small{font-size:9.5px;font-weight:800;white-space:nowrap}
+.cpb.emer{border-width:8px 14px;border-image:url(orb/ui/btn_emerald.webp) 62 118 62 118 fill / 8px 14px stretch}.cpb.emer b{color:#ffd96a;-webkit-text-stroke:1.5px #1a3a10;paint-order:stroke fill}.cpb.emer small{color:#e8ffe0}
+.cpb.gold{border-image:url(orb/ui/m_btn_gold.webp) 56 fill / 10px stretch}.cpb.gold b{color:#4a2a06;text-shadow:0 1px 0 #fff6a0}
+.cpb.off{border-image:url(orb/ui/m_btn_stone.webp) 56 fill / 10px stretch;opacity:.6}.cpb.off b,.cpb.off small{color:#5a4a3a}
+.cpb[disabled]:not(.off){filter:grayscale(.6);opacity:.65}
+.cpb:active{transform:translateY(2px)}
+/* chests: «Открыть ×1» is a crystal spend too — gold, like ×10 */
+.ch3 .c3b.one{border-style:solid!important;border-color:transparent!important;border-width:12px 14px!important;border-image:url(orb/ui/m_btn_gold.webp) 56 fill / 14px stretch!important;filter:drop-shadow(0 3px 3px #0006)!important}
+.ch3 .c3b.one span,.ch3 .c3b.one b{color:#4a2a06!important;-webkit-text-stroke:0!important;text-shadow:0 1px 0 #fff6a0!important;font-family:Georgia,serif!important}
+.orollrow{width:100%;max-width:360px;margin:14px auto 0}
+.oroll{flex:1 1 0;max-width:none;min-width:0;height:56px}
+.oroll.ad{border-width:11px 20px;border-image-width:11px 20px}
+.mrate>.lvtabs .wtitle{padding:14px 40px 6px}
 </style>
 </head>
 <body>
@@ -3137,6 +3217,7 @@ div.rstats span{flex:1 1 auto;min-width:0}div.rstats small{letter-spacing:0;line
     <div id="oTaken" class="otaken"></div>
     <h3 class="opickh">Выбери шар или усиление</h3>
     <div id="oCardList"></div>
+    <div id="oRoll" class="orollrow"></div>
   </div>
   <div id="oPauseMenu" class="overlay" hidden>
     <h2>Пауза</h2>

@@ -1,4 +1,4 @@
-"""Ш103, Ш105: the light marble kit from Seryoga's sheets (purple background, no Meshy):
+"""Ш103, Ш105, Ш108: the light marble kit from Seryoga's sheets (purple background, no Meshy):
   ref/2537.png — the rating window: the laurel title plaque, the panel with columns and green banners
   ref/2538.png — rating rows (gold / silver / bronze / plain), medals 1–3, chests, the place tile, ×, i
   ref/2540.png — the item window: the big panel with emerald corners, the panel with a header band, the plain panel
@@ -114,7 +114,37 @@ def main():
     for i, n in enumerate(('m_dia_blue', 'm_dia_violet', 'm_dia_gold', 'm_dia_red')): save(im, near(bl, 160 + 222 * i, 684), n)
     save(im, near(bl, 265, 860), 'm_btn_gold')
     save(im, near(bl, 757, 860), 'm_btn_stone')
+    new_sheets()
     if '--show' in sys.argv: print(bl)
+
+
+def clean(path, purge_purple=True):
+    """Ш108: sheets 2552 / 2553 come with a transparent background, but with violet haze left between the rows"""
+    a = np.asarray(Image.open(path).convert('RGBA')).astype(np.int16)
+    r, g, b, al = a[..., 0], a[..., 1], a[..., 2], a[..., 3]
+    if purge_purple: a[(b > r + 10) & (r > g + 8) & (b > g + 35) & (al < 245), 3] = 0
+    a[..., 3][a[..., 3] < 18] = 0
+    return Image.fromarray(a.astype(np.uint8), 'RGBA')
+
+
+def new_sheets():
+    """Ш108: what is cleaner on the transparent sheets 2552 / 2553 replaces the purple-keyed cut (diamonds without a dark halo,
+    the item frame and the gem ring empty inside, the medals, the green chest, ×, i, the lock, buttons). The rows, the ribbon and the
+    violet / blue chests stay from the purple sheets: on 2553 the rows carry haze and on 2552 the ribbon is washed out."""
+    s3 = clean(os.path.join(REF, '2553.png'))
+    for i, (y0, y1) in enumerate(((85, 282), (282, 472), (472, 665))): save(s3, (590, y0, 785, y1), f'm_medal{i + 1}')
+    save(s3, (785, 88, 1010, 285), 'm_chest1')
+    tile = save(s3, (610, 662, 765, 862), 'm_place_src'); w, h = tile.size
+    erase(tile, (int(w * 0.27), int(h * 0.3), int(w * 0.73), int(h * 0.7))).save(os.path.join(OUT, 'm_place.webp'), quality=95, method=6)
+    os.remove(os.path.join(OUT, 'm_place_src.webp'))
+    save(s3, (770, 700, 895, 840), 'm_x'); save(s3, (900, 715, 1010, 830), 'm_info')
+    s2 = clean(os.path.join(REF, '2552.png'), purge_purple=False)
+    for name, box in {'m_hex': (95, 22, 930, 204), 'm_sock_gem': (30, 338, 292, 605), 'm_sock_lock': (303, 338, 563, 605), 'm_frame': (576, 362, 828, 600),
+                      'm_x2': (855, 333, 995, 473), 'm_lock': (878, 492, 960, 590), 'm_dia_blue': (96, 620, 224, 750), 'm_dia_violet': (318, 620, 445, 750),
+                      'm_dia_gold': (555, 620, 682, 750), 'm_dia_red': (788, 620, 914, 750), 'm_btn_gold': (28, 756, 506, 966), 'm_btn_stone': (516, 756, 998, 966)}.items():
+        save(s2, box, name)
+    lock = Image.open(os.path.join(OUT, 'm_sock_lock.webp')).convert('RGBA'); w, h = lock.size
+    erase(lock, (int(w * 0.3), int(h * 0.27), int(w * 0.7), int(h * 0.7))).save(os.path.join(OUT, 'm_sock.webp'), quality=95, method=6)
 
 
 if __name__ == '__main__':

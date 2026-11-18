@@ -503,6 +503,8 @@ requestAnimationFrame(frame);
 
 // ================= Orb Defense: the ball battle =================
 const orbBattle = new OrbBattle(canvas, (o, cfg, acts, quit) => orbDone(o, cfg, acts, quit));
+// Ш111: the card reroll pays from the profile: an ad (or the forever pass), the month pass, crystals
+orbBattle.shop = { adSkip: () => !!hub.p && P.adSkip(hub.p), crystals: () => hub.p?.crystals ?? 0, spend: n => { if (hub.p) { hub.p.crystals -= n; P.save(hub.p); } }, monthFree: false };
 function startOrbBattle(stage: number, heroId: string, storm = false, bossEv = false): void {
   if (!hub.p) return;
   const cfg = OM.makeConfig(hub.p, stage, heroId, (Math.random() * 2 ** 31) >>> 0);
@@ -510,6 +512,7 @@ function startOrbBattle(stage: number, heroId: string, storm = false, bossEv = f
   if (bossEv) cfg.bossEv = OM.bossOfDay(); // Ш101: «Атака на босса» — the boss of the day
   if (location.hash.includes('god')) cfg.god = true;
   const g = P.GFX[hub.p.gfx ?? 'mid'];
+  orbBattle.shop!.monthFree = P.passActive(hub.p, 'month');
   orbBattle.start(cfg, g.dpr);
 }
 function orbDone(o: Orb, cfg: OrbConfig, acts: Act[], quit: boolean): void {

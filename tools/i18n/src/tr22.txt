@@ -1,0 +1,9 @@
+1581|Відкрити|Open|Öffnen|Abrir|Abrir|Otwórz|Aç|Ouvrir|Apri
+1582|безкоштовно · {} з {}|free · {} of {}|gratis · {} von {}|gratis · {} de {}|grátis · {} de {}|za darmo · {} z {}|ücretsiz · {}/{}|gratuit · {} sur {}|gratis · {} su {}
+1583|за рекламу|for an ad|für Werbung|por anuncio|por anúncio|za reklamę|reklamla|contre une pub|con pubblicità
+1584|безкоштовно|free|gratis|gratis|grátis|za darmo|ücretsiz|gratuit|gratis
+1585|немає купонів|no coupons|keine Coupons|sin cupones|sem cupons|brak kuponów|kupon yok|pas de coupons|nessun coupon
+1586|Скриня за рекламу|Chest for an ad|Truhe für Werbung|Cofre por anuncio|Baú por anúncio|Skrzynia za reklamę|Reklamla sandık|Coffre contre une pub|Forziere con pubblicità
+1587|Скриня рун за рекламу|Rune chest for an ad|Runentruhe für Werbung|Cofre de runas por anuncio|Baú de runas por anúncio|Skrzynia run za reklamę|Reklamla rün sandığı|Coffre de runes contre une pub|Forziere di rune con pubblicità
+1588|Гарантія героя через|Hero guaranteed in|Held garantiert in|Héroe garantizado en|Herói garantido em|Gwarantowany bohater za|Garantili kahraman:|Héros garanti dans|Eroe garantito tra
+1589|замість рів. {}|instead of lv. {}|statt Stufe {}|en lugar de nv. {}|no lugar do nv. {}|zamiast poz. {}|sv. {} yerine|au lieu du niv. {}|invece del liv. {}
