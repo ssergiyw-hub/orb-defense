@@ -1,14 +1,16 @@
 // Orb Defense: Olympus — the ball battle. Turn based and deterministic: the same config and the same list of
 // actions (aim angles and card choices) always give the same battle. Only + - * / sqrt and fmath are used.
 import { Rng } from './rng';
-import { fsin, fcos, PI } from './fmath';
+import { fsin, fcos, fatan2, PI } from './fmath';
 import {
-  wallMaxOf, COLS, ROWS, LAUNCH_DY, BALL_V, BALL_R, VOLLEY_GAP, ENEMY_T, BallId, BALLS, BALL_FX, elemHit, runLvMul, BALL_IDS,
+  wallMaxOf, COLS, ROWS, LAUNCH_DY, STORM, BALL_V, BALL_R, VOLLEY_GAP, ENEMY_T, BallId, BALLS, BALL_FX, elemHit, runLvMul, BALL_IDS,
   EnemyId, ENEMY, ECHIDNA_ARMOR, SpiritId, spiritEvery, WallId, wallFx, stageDef, StageDef, MINIS, BASE_WALL_HP,
 } from './orbContent';
 
 export interface OrbConfig {
   seed: number; stage: number; heroId: string; heroBall: BallId;
+  /** Ш98: «Шквал шаров» — balls fly without a stop, enemies step on a timer, survival without a limit */
+  storm?: boolean;
   /** Ш70: hero stars — ★1–5: the hero's ball +15% a star (★3: it grows to level 4 in the run) */
   stars?: number;
   atk: number; hp: number; crit: number; critDmg: number; boss: number;
@@ -28,7 +30,8 @@ export interface OrbConfig {
  *  pierce — the ghost ball and the thorn bushes; wallPct — wall health */
 export type RuneFx = 'normal' | 'allBalls' | 'afflicted' | 'dur' | 'plusBall' | 'spirit' | 'impact' | 'area' | 'beamLight' | 'pierce' | 'dot' | 'wetFrozen' | 'repair' | 'gold' | 'elite' | 'wallPct';
 export type Phase = 'aim' | 'fly' | 'enemy' | 'choose' | 'win' | 'lose';
-export interface Act { aim?: number; choice?: number }
+/** at: the tick an aim was given (Ш98, storm: the aim can change any time — a replay applies it at the same tick) */
+export interface Act { aim?: number; choice?: number; at?: number }
 
 export interface Enemy {
   id: number; kind: EnemyId; c: number; r: number; w: number; h: number;
@@ -69,6 +72,8 @@ export interface OrbState {
   phase: Phase; turn: number; tick: number; phaseT: number;
   /** Ш96: hits on enemies in this volley (every touch, ray, chain, shard, splash) and the best volley of the run */
   hits?: number; bestHits?: number;
+  /** Ш98 storm: ticks since the last enemy step; the tick of the next boss */
+  stormT?: number; nextBoss?: number;
   enemies: Enemy[]; balls: Ball[]; bushes: Bush[]; nextId: number;
   queue: (BallId | 'normal')[]; launchT: number; aim: number;
   specials: { id: BallId; lv: number }[]; normals: number; power: number;
@@ -111,14 +116,16 @@ export class Orb {
   // ---------------- input ----------------
   act(a: Act): void {
     const s = this.s;
-    if (s.phase === 'aim' && a.aim !== undefined) {
+    if (s.cfg.storm && s.phase === 'fly' && a.aim !== undefined) { s.aim = clamp(a.aim / 1000, -PI + 0.12, -0.12); } // Ш98: re-aim while the stream flies
+    else if (s.phase === 'aim' && a.aim !== undefined) {
       s.aim = clamp(a.aim / 1000, -PI + 0.12, -0.12);
       s.queue = [...s.specials.map(x => x.id), ...Array.from({ length: s.normals }, () => 'normal' as const)];
       s.launchT = 0; s.phase = 'fly'; s.phaseT = 0; s.hits = 0;
     } else if (s.phase === 'choose' && a.choice !== undefined && s.cards[a.choice]) {
       this.applyCard(s.cards[a.choice]);
       s.pendingLv--; s.cards = [];
-      if (s.pendingLv > 0) this.rollCards(); else s.phase = 'aim';
+      if (s.pendingLv > 0) this.rollCards(); else s.phase = s.cfg.storm ? 'fly' : 'aim';
+      if (s.cfg.storm) this.stormRefill();
     }
     this.s.rng = this.rng.state();
   }
@@ -127,7 +134,8 @@ export class Orb {
   step(): void {
     const s = this.s; this.fx = [];
     s.tick++; s.phaseT++;
-    if (s.phase === 'fly') this.flyTick();
+    if (s.phase === 'fly' && s.cfg.storm) this.stormTick();
+    else if (s.phase === 'fly') this.flyTick();
     else if (s.phase === 'enemy') { if (s.phaseT >= ENEMY_T) this.afterEnemies(); }
     for (const e of s.enemies) if (e.flash > 0) e.flash--;
     s.rng = this.rng.state();
@@ -141,12 +149,13 @@ export class Orb {
       const k = s.queue.shift()!;
       const lv = k === 'normal' ? 0 : s.specials.find(x => x.id === k)!.lv;
       s.balls.push({ kind: k, lv, x: COLS / 2, y: ROWS + LAUNCH_DY, vx: BALL_V * fcos(s.aim), vy: BALL_V * fsin(s.aim), age: 0, alive: true, bounces: 0, hit: {} });
-      s.launchT = VOLLEY_GAP; this.fx.push({ t: 'launch' });
+      s.launchT = s.cfg.storm ? STORM.gap : VOLLEY_GAP; this.fx.push({ t: 'launch' });
     }
     s.launchT--;
     for (const b of s.balls) if (b.alive) this.moveBall(b);
+    if (s.cfg.storm) for (const b of s.balls) if (!b.alive && b.kind !== 'shard') s.queue.push(b.kind as BallId | 'normal'); // Ш98: a ball back in the queue
     s.balls = s.balls.filter(b => b.alive);
-    if (!s.queue.length && !s.balls.length) this.endVolley();
+    if (!s.cfg.storm && !s.queue.length && !s.balls.length) this.endVolley();
   }
   private moveBall(b: Ball): void {
     const s = this.s, SUB = 3;
@@ -333,6 +342,7 @@ export class Orb {
   }
   private checkEnd(): boolean {
     const s = this.s;
+    if (s.cfg.storm) { if (s.wallHp <= 0 || s.heroHp <= 0) { s.phase = 'lose'; return true; } return false; } // Ш98: no win, only how long
     if (s.bossDead && s.enemies.some(e => e.hp > 0)) { for (const e of s.enemies) if (e.hp > 0) { e.hp = 0; this.fx.push({ t: 'die', x: e.c, y: e.r, w: e.w, h: e.h, kind: e.kind }); } s.enemies = []; }
     if (s.wallHp <= 0 || s.heroHp <= 0) { s.phase = 'lose'; return true; }
     if (s.spawned >= s.sd.turns && s.bossSpawned && !s.enemies.some(e => e.hp > 0)) { s.phase = 'win'; return true; }
@@ -408,7 +418,8 @@ export class Orb {
     s.bushes = s.bushes.filter(b => b.t > 0);
     s.enemies = s.enemies.filter(e => e.hp > 0);
     // 5. new enemies at the top
-    if (s.spawned < s.sd.turns) this.spawnRow();
+    if (s.cfg.storm) { if (s.tick >= (s.nextBoss ?? STORM.boss)) { s.nextBoss = s.tick + STORM.boss; s.bossSpawned = false; this.spawnBoss(); } else this.spawnRow(); }
+    else if (s.spawned < s.sd.turns) this.spawnRow();
     else if (!s.bossSpawned) this.spawnBoss();
     else if (!s.bossDead) this.spawnEscort();
   }
@@ -479,7 +490,9 @@ export class Orb {
   private makeEnemy(kind: EnemyId, c: number, r: number): Enemy {
     const s = this.s, d = ENEMY[kind];
     const ramp = 1 + 0.1 * s.spawned;
-    const hp = Math.round(s.sd.hpUnit * d.hp * (d.tier === 'normal' ? ramp : 1 + 0.02 * s.spawned));
+    const hp = s.cfg.storm // Ш98: weaker, many, +15% every 30 s
+      ? Math.round(s.sd.hpUnit * d.hp * (d.tier === 'boss' ? STORM.bossHp : STORM.hp) * Math.pow(STORM.hpGrow, Math.floor(s.tick / STORM.wave)))
+      : Math.round(s.sd.hpUnit * d.hp * (d.tier === 'normal' ? ramp : 1 + 0.02 * s.spawned));
     const e: Enemy = {
       id: s.nextId++, kind, c, r, w: d.w, h: d.h, hp, max: hp, shield: 0, shieldMax: 0,
       burnN: 0, burnT: 0, poisonN: 0, poisonT: 0, freeze: 0, wet: 0, skipped: false, curse: 0,
@@ -493,7 +506,7 @@ export class Orb {
     s.spawned++;
     const occ = this.occ();
     const free: number[] = []; for (let c = 0; c < COLS; c++) if (!occ[c]) free.push(c);
-    if (sd.miniAt.includes(s.spawned)) {
+    if (s.cfg.storm ? s.spawned % STORM.miniEvery === 0 : sd.miniAt.includes(s.spawned)) {
       const kind = MINIS[(sd.stage * 2 + sd.miniAt.indexOf(s.spawned)) % MINIS.length];
       const w = ENEMY[kind].w;
       const starts = free.filter(c => c + w <= COLS && [...Array(w).keys()].every(k => free.includes(c + k) && !occ[COLS + c + k]));
@@ -552,6 +565,41 @@ export class Orb {
   }
 
   // ---------------- auto aim ----------------
+  // ---------------- Ш98: storm ----------------
+  /** one tick of the storm: the stream flies, enemies step every few seconds (faster every 30 s), a level-up pauses */
+  private stormTick(): void {
+    const s = this.s;
+    this.flyTick();
+    if ((s.phase as Phase) !== 'fly') return;
+    s.stormT = (s.stormT ?? 0) + 1;
+    const every = Math.max(STORM.stepMin, Math.round(STORM.step * Math.pow(STORM.stepGrow, Math.floor(s.tick / STORM.wave))));
+    if (s.stormT >= every) {
+      s.stormT = 0;
+      s.enemies = s.enemies.filter(e => e.hp > 0);
+      this.enemyTurn();
+      if (s.bossDead) { s.bossDead = false; s.bossSpawned = false; }
+      if (this.checkEnd()) return;
+    }
+    if (s.pendingLv > 0) { s.phase = 'choose'; this.rollCards(); }
+  }
+  /** the balls the run owns now, minus those in the air or in the queue — a new ball from a card joins the stream */
+  private stormRefill(): void {
+    const s = this.s, have = new Map<string, number>();
+    for (const k of [...s.queue, ...s.balls.filter(b => b.kind !== 'shard').map(b => b.kind)]) have.set(k, (have.get(k) ?? 0) + 1);
+    for (const x of s.specials) if (!have.get(x.id)) s.queue.push(x.id);
+    for (let i = have.get('normal') ?? 0; i < s.normals; i++) s.queue.push('normal');
+  }
+  /** seconds survived in the storm (the score) */
+  get stormSec(): number { return Math.floor(this.s.tick / 60); }
+  /** the storm's «Auto»: aim at the enemy closest to the wall (no copies of the battle — the stream never ends) */
+  stormAim(): number {
+    const s = this.s; let t: Enemy | undefined;
+    for (const e of s.enemies) if (e.hp > 0 && (!t || e.r + e.h > t.r + t.h)) t = e;
+    if (!t) return Math.round(-PI / 2 * 1000);
+    const a = fatan2(t.r + t.h / 2 - (ROWS + LAUNCH_DY), t.c + t.w / 2 - COLS / 2);
+    return Math.round(clamp(a, -PI + 0.12, -0.12) * 1000);
+  }
+
   /** the best of N angles: each one is played on a copy of the battle, the one with the most damage wins
    *  (front rows count more — they are about to hit the wall). Deterministic: the copy does not touch this battle */
   bestAim(n = 25): number {
@@ -582,6 +630,11 @@ export class Orb {
 /** replays a battle from its actions (for checks) */
 export function replayOrb(cfg: OrbConfig, acts: Act[]): Orb {
   const o = new Orb(cfg);
+  if (cfg.storm) { // Ш98: every act at its tick, then to the end
+    for (const a of acts) { let g = 0; if (a.choice !== undefined) while (o.s.phase !== 'choose' && o.busy && g++ < 2e6) o.step(); else while (a.at !== undefined && o.s.tick < a.at && o.busy && g++ < 2e6) o.step(); o.act(a); }
+    let g = 0; while (o.busy && g++ < 2e6) o.step();
+    return o;
+  }
   for (const a of acts) { o.act(a); let g = 0; while (o.busy && g++ < 20000) o.step(); }
   return o;
 }

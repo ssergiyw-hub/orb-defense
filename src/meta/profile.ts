@@ -485,22 +485,36 @@ export const EV_REWARDS: Record<EventId, [number, string, (p: Profile) => void][
     [10, '6K золота + 3 малые эссенции', p => { p.gold += 6000; p.essSmall += 3; }],
     [20, '2500 золота + малая эссенция', p => { p.gold += 2500; p.essSmall += 1; }],
   ],
+  // Ш98: «Шквал шаров» — the place by how long the wall held
+  storm: [
+    [1, '500💎 + легендарная руна', p => { p.crystals += 500; randomRune(p, 5); }],
+    [3, '300💎 + эпический предмет', p => { p.crystals += 300; addItem(p, pick(SLOTS), pick(ACTIVE_SETS), 2); }],
+    [10, '150💎 + 30 карт шара', p => { p.crystals += 150; stormCards(p, 30); }],
+    [20, '50💎 + 10 свитков', p => { p.crystals += 50; p.scrolls += 10; }],
+  ],
 };
+/** Ш98: cards of a random ball (the orb profile lives in orbMeta; here only its data) */
+function stormCards(p: Profile, n: number): void {
+  const o = (p as unknown as { orb?: { balls: Record<string, { cards: number }> } }).orb;
+  if (!o) return; const ids = Object.keys(o.balls); o.balls[ids[Math.floor(Math.random() * ids.length)]].cards += n;
+}
 export const evReward = (ev: EventId, place: number) => EV_REWARDS[ev].find(r => place <= r[0]) ?? EV_REWARDS[ev][EV_REWARDS[ev].length - 1];
 export const evUnlocked = (p: Profile) => p.maxMap >= 2;
 /** time until the day (and the event day) ends, ms */
 export const evDayLeft = () => 86400000 - (Date.now() % 86400000);
 const OPP_NAMES = ['Grom', 'Lisa_K', 'Тарас', 'Dima77', 'NightOwl', 'Мирослава', 'Kaiser', 'Ola_P', 'Rex', 'Святослав', 'Hana', 'Bogdan_UA', 'Luca', 'Wolfie', 'Ирина', 'Mehmet', 'Zoe', 'Pavlo', 'Sven', 'Аня', 'Kenji', 'Marta', 'Diego', 'Vova_X', 'Ella', 'Jakub', 'Nika', 'Tomás', 'Елена', 'Brick'];
 /** what a player of this power usually scores (from bot runs): kills in 5 min, damage to the bear in 3 min */
-export const evExpect = (ev: EventId, power: number) => ev === 'frags' ? 250 * Math.sqrt(power / 100) : 15000 * (power / 100);
+export const evExpect = (ev: EventId, power: number) => ev === 'frags' ? 250 * Math.sqrt(power / 100) : ev === 'storm' ? 165 * power / 100 : 15000 * (power / 100);
 function evGroup(p: Profile, ev: EventId, day: number): EvOpp[] {
-  let h = (day * 2654435761 + (ev === 'boss' ? 97 : 13)) >>> 0;
+  let h = (day * 2654435761 + (ev === 'boss' ? 97 : ev === 'storm' ? 41 : 13)) >>> 0;
   const r = () => { h = Math.imul(h ^ (h >>> 15), 2246822507) >>> 0; h = Math.imul(h ^ (h >>> 13), 3266489909) >>> 0; return (h >>> 0) / 4294967296; };
   const me = powerScore(p), names = [...OPP_NAMES], out: EvOpp[] = [];
   for (let i = 0; i < EVENT.group - 1; i++) {
     const name = names.splice(Math.floor(r() * names.length), 1)[0];
     const power = Math.round(me * (0.7 + r() * 0.6));
-    out.push({ name, hero: HEROES[Math.floor(r() * HEROES.length)].id, power, score: Math.round(evExpect(ev, power) * (0.45 + r() * 1.15)) });
+    // Ш98: the storm's enemies grow with the player's own best stage, so a rival's time depends on power relative to the player
+    const exp = ev === 'storm' ? 165 * power / Math.max(1, me) : evExpect(ev, power);
+    out.push({ name, hero: HEROES[Math.floor(r() * HEROES.length)].id, power, score: Math.round(exp * (0.45 + r() * 1.15)) });
   }
   return out;
 }

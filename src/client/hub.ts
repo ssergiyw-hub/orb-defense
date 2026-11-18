@@ -250,7 +250,7 @@ export class Hub {
   /** a crystal purchase waiting for "Купить" (79) */
   private confirm: { a: string; v: string; cost: number; what: string; icon: string; never?: boolean } | null = null;
   private confirmed = false;
-  private panel: 'tasks' | 'market' | 'idle' | 'bp' | 'passes' | 'wall' | 'rating' | 'ev' | 'evrate' | 'mail' | null = null;
+  private panel: 'tasks' | 'market' | 'idle' | 'bp' | 'passes' | 'wall' | 'rating' | 'ev' | 'evrate' | 'mail' | 'energy' | null = null;
   /** Orb Defense: the open window of a ball, the spirit tavern or the walls */
   private om: { kind: 'ball' | 'spirits' | 'walls'; id?: string } | null = null;
   /** правки 125, 126: which event window is open */
@@ -535,7 +535,7 @@ export class Hub {
         case 'o:wlUse': return this.act(() => { OM.orb(p).wall = v as WallId; });
       }
     }
-    if (a === 'go') { if (v === 'jewel' && p && !P.unlocked(p, 'jewel')) return this.toast(P.unlockText('jewel')); if (v === 'events') return this.toast('События появятся в следующих обновлениях'); return this.go(v as Screen); }
+    if (a === 'go') { if (v === 'jewel' && p && !P.unlocked(p, 'jewel')) return this.toast(P.unlockText('jewel')); if (v === 'events' && p && !P.evUnlocked(p)) return this.toast('События откроются после этапа 2'); /* Ш98: «Шквал шаров» is open */ return this.go(v as Screen); }
     // правка 165: закрытый раздел — подсказка, когда откроется
     if (p) { const gate = ({ wheel: 'wheel', market: 'market', bp: 'bp', passes: 'passes' } as Record<string, P.Feature>)[a] ?? (a === 'sub' && v === 'runes' ? 'runes' : undefined);
       if (gate && !P.unlocked(p, gate)) return this.toast(P.unlockText(gate)); }
@@ -564,7 +564,7 @@ export class Hub {
     }
     switch (a) {
       case 'battle': {
-        if (p.energy < ENERGY.run) return this.act(() => { P.startRun(p, this.sel.map); });
+        if (p.energy < ENERGY.run) { this.panel = 'energy'; return this.render(); } // Ш99: no energy — the energy window, not a toast
         const art = this.root.querySelector('.hubart') as HTMLElement | null;
         if (art) { if (art.classList.contains('launch')) return; art.classList.add('launch'); window.setTimeout(() => { art.classList.remove('launch'); const f = document.createElement('i'); f.dataset.a = 'battleGo'; this.click({ target: f } as unknown as Event); }, 420); return; }
       }
@@ -588,6 +588,7 @@ export class Hub {
         const st = P.evState(p, this.evSel); if (st.last && !st.last.seen) { st.last.seen = true; P.save(p); this.sel.evLast = st.last; } else this.sel.evLast = undefined;
         return this.render();
       }
+      case 'energyOpen': this.panel = 'energy'; return this.render(); // Ш99
       case 'evRate': this.panel = 'evrate'; this.sel.evChest = undefined; return this.render();
       case 'evChest': this.sel.evChest = v ? +v : undefined; return this.render();
       case 'evGo': return this.act(() => {
@@ -928,7 +929,7 @@ export class Hub {
       <div class="side left"><button class="setbtn" data-a="go" data-v="settings" aria-label="Настройки">⚙<small class="sbl">Настройки</small></button><button class="setbtn" id="hLot" data-a="wheel" aria-label="Колесо удачи">🎡<small class="sbl">Колесо</small></button><button class="setbtn bpbtn" id="hBp" data-a="bp" aria-label="Батл пасс">${BP_ICON}<small class="sbl">Батл пасс</small></button><button class="setbtn passbtn" id="hPass" data-a="passes" aria-label="Пропуски">${PASS_ICON}<small class="sbl">Пропуски</small></button></div>
       <div class="side right"><button class="setbtn" id="hMail" data-a="mail" aria-label="Почта" hidden>${MAIL_ICON}<small class="sbl">Почта</small></button><button class="setbtn" id="hTask" data-a="tasks" aria-label="Задания">📋<small class="sbl">Задания</small></button><button class="setbtn" id="hMkt" data-a="market" aria-label="Чёрный рынок">${MARKET_ICON}<small class="sbl">Рынок</small></button></div>
       <div class="res"><span id="hGold"></span><span id="hCr"></span></div>
-      <div class="corner right" id="hEn">
+      <div class="corner right" id="hEn" data-a="energyOpen" role="button" aria-label="Энергия">
         <svg class="ering" viewBox="0 0 100 100"><defs><clipPath id="eClip"><circle cx="50" cy="50" r="45"/></clipPath>
           <linearGradient id="eLiq" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#b8ffd0"/><stop offset=".5" stop-color="#2fd07a"/><stop offset="1" stop-color="#0b6a3a"/></linearGradient></defs>
           <circle cx="50" cy="50" r="46" fill="#06241ae6"/>
@@ -1457,13 +1458,30 @@ export class Hub {
 
   // ================= events =================
   /** правки 129, 130: events as big cards — picture of the event, stone plate with the name, time left, tries, the prize for place 1, lava «Играть» */
+  /** Ш99: the energy window — opened from the energy sphere in the header (and by «В бой» without energy) */
+  private vEnergy(p: P.Profile): string {
+    const emax = P.energyMax(p), t = P.energyNext(p), full = p.energy >= emax;
+    const toFull = full ? 0 : Math.max(0, (emax - p.energy - 1) * ENERGY.regenSec + t);
+    const mmss = (x: number) => `${Math.floor(x / 60)}:${String(x % 60).padStart(2, '0')}`;
+    const adLeft = P.adLeft(p, 'energy'), bought = p.energyBuys.day === new Date().toISOString().slice(0, 10) ? p.energyBuys.n : 0;
+    return `<div class="modal" data-a="close"><div class="mbox lvpanel enpanel">
+      <div class="lvtabs"><b class="wtitle">Энергия</b><button class="lvsq x" data-a="close">✕</button></div>
+      <div class="panelbox" data-k="energy">
+        <div class="enorb"><span class="enball">${resImg('energy', 'rbig')}</span><b>${p.energy} / ${emax}</b>
+          <small>${full ? 'Энергия полная' : `+1 через ${mmss(t)} · полная через ${Math.ceil(toFull / 60)} мин`}</small></div>
+        <button class="lvbtn wide" data-a="ad" data-v="energy"${adLeft ? '' : ' disabled'}><b>${adLeft ? `▶ За рекламу +${P.AD_ENERGY}` : 'Завтра'}</b><small>${P.adUsed(p, 'energy')}/${P.AD_LIMIT.energy} сегодня</small></button>
+        <button class="lvbtn wide gold enbuy" data-a="buy" data-v="energy"${bought >= 3 ? ' disabled' : ''}><b>+30 за ${PRICE.energy30} ${GEM_ICON}</b><small>${bought}/3 сегодня</small></button>
+        <p class="muted small ennote">Бой — ${ENERGY.run} энергии. Событие «Шквал шаров» — 2 раза в день бесплатно.</p>
+      </div></div></div>`;
+  }
+
   private vEvents(p: P.Profile): string {
     const open = P.evUnlocked(p), ms = P.evDayLeft(), hh = Math.floor(ms / 3600000), mm = Math.floor(ms / 60000) % 60;
     const card = (art: string, name: string, desc: string, prize: string, a: string, v: string, left: number, max: number, ok: boolean) => {
       const dots = Array.from({ length: max }, (_, i) => `<i class="${i < left ? 'on' : ''}"></i>`).join('');
       const att = ok && P.evAttention(p, (v || 'wall') as EventId | 'wall'); // правка 142
       return `<div class="evc${ok ? '' : ' locked'}">
-        <div class="evart" style="background-image:url(ev/${art}.webp)">
+        <div class="evart" style="background-image:url(${art === 'storm' ? 'orb/bg/lightning.webp' : `ev/${art}.webp`})">
           <span class="evtime">⏳ ${ok ? `конец дня через ${hh}ч ${mm}м` : '🔒 этап 2'}</span>
           ${ok ? `<span class="evtries">${dots}</span>` : ''}
         </div>
@@ -1472,20 +1490,18 @@ export class Hub {
           <button class="lvbtn evgo" data-a="${a}"${v ? ` data-v="${v}"` : ''}${ok ? '' : ' disabled'}><b>Играть</b><small>${ok ? `${left}/${max}` : '🔒'}</small></button>${att ? '<i class="dotr"></i>' : ''}</div>
       </div>`;
     };
-    const wallOpen = P.wallUnlocked(p);
+    // Ш98: one event for the ball game — «Шквал шаров» (the old Archero events are off)
     return this.title('События') + `<p class="muted small evnote">Рейтинг — в группах по 20 игроков, награды по месту в конце дня.</p>` +
-      card('card_boss', 'Убийство босса', 'Медведь не умирает: за 3 минуты набей как можно больше урона, уклоняясь от его ударов', P.EV_REWARDS.boss[0][1], 'evOpen', 'boss', open ? P.evFreeLeft(p, 'boss') : 0, EVENT.freePerDay, open) +
-      card('card_frags', 'Фраги', '5 минут, волны по 30 врагов — набей как можно больше убийств', P.EV_REWARDS.frags[0][1], 'evOpen', 'frags', open ? P.evFreeLeft(p, 'frags') : 0, EVENT.freePerDay, open) +
-      card('card_wall', 'Защита стены', 'Удержать стену против волн', P.WALL_CHESTS[2].label, 'wallOpen', '', wallOpen ? P.wallFreeLeft(p) : 0, WALL.freePerDay, wallOpen);
+      card('storm', 'Шквал шаров', 'Шары летят без остановки, враги идут без пауз — продержись как можно дольше', P.EV_REWARDS.storm[0][1], 'evOpen', 'storm', open ? P.evFreeLeft(p, 'storm') : 0, EVENT.freePerDay, open);
   }
 
   /** правки 125, 126: the window of an event — arena of the day, tries, best of the day, place, rewards by place */
   private vEvent(p: P.Profile): string {
     const ev = this.evSel, st = P.evState(p, ev), idx = P.wallMapToday(), map = WALL_MAPS[idx], left = P.evFreeLeft(p, ev), ms = P.evDayLeft();
     const hh = Math.floor(ms / 3600000), mm = Math.floor(ms / 60000) % 60;
-    const boss = ev === 'boss', name = boss ? 'Убийство босса' : 'Фраги';
+    const boss = ev === 'boss', storm = ev === 'storm', name = storm ? 'Шквал шаров' : boss ? 'Убийство босса' : 'Фраги';
     const place = st.used > 0 ? P.evPlace(st, st.best) : 0;
-    const desc = boss
+    const desc = storm ? 'Держи палец на экране — шары летят без остановки туда, куда целишься. Враги идут без пауз и каждые 30 секунд становятся быстрее и крепче, каждые 3 минуты — босс. Очки — сколько продержалась стена.' : boss
       ? 'Медведь не умирает. За 3 минуты набей как можно больше урона. Перед ударом на земле красная зона — уходи из неё. Навык — каждые 15 секунд.'
       : 'Шестигранная арена, 5 минут. Волна из 30 врагов, следующая — как только погиб последний. С каждой волной враги крепче.';
     const go = left > 0
@@ -1495,8 +1511,9 @@ export class Hub {
     return `<div class="modal" data-a="close"><div class="mbox lvpanel wallpanel evpanel">
       <div class="lvtabs"><b class="wtitle">${name}</b><button class="lvsq x" data-a="close">✕</button></div>
       <div class="panelbox" data-k="ev-${ev}">
-        <div class="evmap ${boss ? 'evround' : 'evhex'}"><span style="background-image:url(ev/card_${ev}.webp)"></span><div class="wmname"><small>Арена дня</small><b>${map.name}</b><em>конец дня через ${hh}ч ${mm}м</em></div></div>
-        <div class="welrow">${this.elBadge(map.strong, true)}${this.elBadge(map.weak, false)}</div>
+        ${storm ? `<div class="evmap evstorm"><span style="background-image:url(orb/bg/lightning.webp)"></span><div class="wmname"><small>Событие дня</small><b>Шквал шаров</b><em>конец дня через ${hh}ч ${mm}м</em></div></div>`
+          : `<div class="evmap ${boss ? 'evround' : 'evhex'}"><span style="background-image:url(ev/card_${ev}.webp)"></span><div class="wmname"><small>Арена дня</small><b>${map.name}</b><em>конец дня через ${hh}ч ${mm}м</em></div></div>
+        <div class="welrow">${this.elBadge(map.strong, true)}${this.elBadge(map.weak, false)}</div>`}
         ${last ? `<div class="evlast">Вчера: <b>${last.place} место</b> · ${this.evScore(ev, last.score)} — получено: ${last.label}</div>` : ''}
         <div class="lvsub">${desc}</div>
         <div class="wrec"><span><small>Лучший сегодня</small><b>${this.evScore(ev, st.best)}</b></span><span><small>Место</small><b>${place ? `${place}/${EVENT.group}` : '—'}</b></span><span><small>Попыток</small><b>${st.used}</b></span></div>
@@ -1504,7 +1521,7 @@ export class Hub {
         <button class="lvbtn wide alt" data-a="evRate"><b>Рейтинг</b><small>награды — в сундуках</small></button>
       </div></div></div>`;
   }
-  private evScore(ev: EventId, n: number): string { return ev === 'boss' ? fmt(n) : String(n); }
+  private evScore(ev: EventId, n: number): string { if (ev === 'storm') { const t = Math.floor(n); return `${Math.floor(t / 60)}:${String(t % 60).padStart(2, '0')}`; } return ev === 'boss' ? fmt(n) : String(n); } // Ш98: mm:ss
   /** правки 125, 126: the group of 20. Until the server the other 19 are test players (marked «тест») */
   private vEvRating(p: P.Profile): string {
     const ev = this.evSel, st = P.evState(p, ev), played = st.used > 0;
@@ -1515,7 +1532,7 @@ export class Hub {
     const body = rows.map((r, i) => { const h = hero(r.hero), place = i + 1, none = r.me && !played;
       const band = P.EV_REWARDS[ev].findIndex(([to]) => place <= to), q = 3 - band;
       const chest = none ? '<span class="rchest none"></span>' : `<button class="rchest q${q}" data-a="evChest" data-v="${place}" aria-label="Награда">${chestSvg(1, 40)}</button>`;
-      return `<div class="rrow${r.me ? ' me' : ''}"><span class="rpos">${none ? '—' : place}</span><span class="rava" style="--c:${EL_HEX[h.element]}">${this.heroSvg(h.id)}</span><div class="grow"><b>${r.me ? 'Ты' : `<span translate="no">${r.name}</span>`}</b><small>${h.name} · сила ${r.power}${r.me ? '' : ' · тест'}</small></div><span class="rwave"><b>${none ? '—' : this.evScore(ev, r.score)}</b><small>${ev === 'boss' ? 'урон' : 'убийств'}</small></span>${chest}</div>`; }).join('');
+      return `<div class="rrow${r.me ? ' me' : ''}"><span class="rpos">${none ? '—' : place}</span><span class="rava" style="--c:${EL_HEX[h.element]}">${this.heroSvg(h.id)}</span><div class="grow"><b>${r.me ? 'Ты' : `<span translate="no">${r.name}</span>`}</b><small>${h.name} · сила ${r.power}${r.me ? '' : ' · тест'}</small></div><span class="rwave"><b>${none ? '—' : this.evScore(ev, r.score)}</b><small>${ev === 'storm' ? 'стена' : ev === 'boss' ? 'урон' : 'убийств'}</small></span>${chest}</div>`; }).join('');
     const cp = this.sel.evChest;
     let pop = '';
     if (cp) {
@@ -1524,7 +1541,7 @@ export class Hub {
       pop = `<div class="evcpop" data-a="evChest" data-v=""><div class="evcbox q${3 - band}"><span class="rchest q${3 - band} big">${chestSvg(2, 110)}</span><b>${QN[3 - band]}</b><small>${from === to ? `${to} место` : `${from}–${to} места`}</small><div class="evcrw">${rw[band][1]}</div><em>Выдаётся в конце дня</em></div></div>`;
     }
     return `<div class="modal" data-a="close"><div class="mbox lvpanel ratepanel">
-      <div class="lvtabs"><b class="wtitle">${ev === 'boss' ? 'Убийство босса' : 'Фраги'}</b><button class="lvsq x" data-a="close">✕</button></div>
+      <div class="lvtabs"><b class="wtitle">${ev === 'storm' ? 'Шквал шаров' : ev === 'boss' ? 'Убийство босса' : 'Фраги'}</b><button class="lvsq x" data-a="close">✕</button></div>
       <div class="panelbox" data-k="evrate">${this.lvBanner('Рейтинг дня', 'sm')}<div class="evrows">${body}</div>
         <div class="rsoon"><small>Нажми на сундук, чтобы увидеть награду за место.</small><small>Соперники с пометкой «тест» — до сервера (этап 2). Твой лучший забег дня сохранён с записью боя — сервер проверит его повтором.</small></div>
         <button class="lvbtn wide alt" data-a="evOpen" data-v="${ev}"><b>Назад</b></button></div>${pop}</div></div>`;
@@ -1566,6 +1583,7 @@ export class Hub {
     if (this.panel === 'idle') return this.vIdle(p);
     if (this.panel === 'wall') return this.vWall(p);
     if (this.panel === 'rating') return this.vRating(p);
+    if (this.panel === 'energy') return this.vEnergy(p); // Ш99
     if (this.panel === 'ev') return this.vEvent(p);
     if (this.panel === 'evrate') return this.vEvRating(p);
     if (this.sel.heroInfo && this.screen === 'hero' && this.heroInfoHtml) return this.heroInfoHtml;
@@ -1820,8 +1838,7 @@ export class Hub {
       ${tile(this.prizeIcon('🪙'), '100 000 золота', 'buy', 'gold', `${PRICE.gold100k}💎`)}
       ${tile(this.prizeIcon('💠'), 'Большая эссенция', 'buy', 'essBig', `${PRICE.essBig}💎`)}
       ${tile(this.prizeIcon('✨'), 'Малая эссенция', 'buy', 'essSmall', `${PRICE.essSmall}💎`)}
-      ${tile(this.prizeIcon('⚡'), `30 энергии · ${p.energyBuys.day === new Date().toISOString().slice(0, 10) ? p.energyBuys.n : 0}/3`, 'buy', 'energy', `${PRICE.energy30}💎`)}
-      ${tile(this.prizeIcon('⚡'), `${P.AD_ENERGY} энергии · ${P.adUsed(p, 'energy')}/${P.AD_LIMIT.energy}`, 'ad', 'energy', P.adLeft(p, 'energy') ? '▶ Реклама' : 'Завтра')}</div>`;
+      </div>`;
     } else {
       const monthly = tab === 'month', list = monthly ? P.MONTH_OFFERS : P.WEEK_OFFERS;
       const cyc = (a: string, label: string) => `<button class="cyc2" data-a="${a}"><i>◀</i><span>${label}</span><i>▶</i></button>`;

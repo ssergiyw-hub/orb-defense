@@ -8,6 +8,9 @@ export const BALL_V = 0.15;     // cells per tick (Ш74: was 0.3 — twice slowe
 /** Ш95: the balls fly out of the circle between the hero's feet, this far below the wall line — a corridor under the
  *  bottom row: a low aim runs along the wall and hits the side enemies of the bottom row */
 export const LAUNCH_DY = 1.4;
+/** Ш98 «Шквал шаров»: a ball every 15 ticks (0.25 s); enemies step every 3.5 s, 8% faster every 30 s (not under 1.5 s);
+ *  enemy health ×0.5 of the stage (the boss ×0.6), +20% every 30 s; a miniboss every 15 rows, a boss every 3 minutes */
+export const STORM = { gap: 15, step: 210, stepGrow: 0.92, stepMin: 90, wave: 1800, hp: 0.5, bossHp: 0.6, hpGrow: 1.2, miniEvery: 15, boss: 10800 };
 export const BALL_R = 0.15;     // ball radius in cells
 export const VOLLEY_GAP = 10;   // ticks between two balls of a volley (Ш74: ×2 — the same gap in cells)
 export const ENEMY_T = 26;      // ticks of the enemy step animation

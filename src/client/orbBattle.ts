@@ -22,7 +22,7 @@ export class OrbBattle {
   private speed = 1; private turnT = 0; private fast = 1; private auto = false; private paused = false; private quit = false; private done = false;
   private acc = 0; private last = 0; private looping = false;
   private aiming = false; private shownCards = ''; private sling: boolean | null = null;
-  private hintShown = false;
+  private hintShown = false; private stormAimT = 0; private lastStormAim = 0;
   constructor(private cv: HTMLCanvasElement, private onEnd: (o: Orb, cfg: OrbConfig, acts: Act[], quit: boolean) => void) {
     this.r = new OrbRenderer(cv);
     window.addEventListener('resize', () => this.r.resize());
@@ -50,8 +50,8 @@ export class OrbBattle {
     this.r.dprCap = dprCap; this.r.resize();
     $('ohud').hidden = false; $('oCards').hidden = true; $('oPauseMenu').hidden = true;
     const sd = this.o.s.sd;
-    $('oTitle').textContent = `${tr('Этап')} ${cfg.stage} · ${tr(BIOME_NAME[sd.biome])}`;
-    this.banner(`${tr(BIOME_NAME[sd.biome])}: ${tr('защити стену')}`);
+    if (cfg.storm) { $('oTitle').textContent = tr('Шквал шаров'); this.banner(tr('Продержись как можно дольше')); this.stormAimT = 0; } // Ш98
+    else { $('oTitle').textContent = `${tr('Этап')} ${cfg.stage} · ${tr(BIOME_NAME[sd.biome])}`; this.banner(`${tr(BIOME_NAME[sd.biome])}: ${tr('защити стену')}`); }
     this.hintShown = false;
     this.hud(true);
     if (!this.looping) { this.looping = true; this.last = 0; requestAnimationFrame(t => this.frame(t)); }
@@ -72,12 +72,27 @@ export class OrbBattle {
     return Math.max(HI, Math.min(LO, a));
   }
   private down(e: PointerEvent): void {
-    if (!this.o || this.paused || this.o.s.phase !== 'aim' || this.auto) return;
+    const storm = !!this.o?.s.cfg.storm && (this.o.s.phase === 'aim' || this.o.s.phase === 'fly');
+    if (!this.o || this.paused || this.auto || (this.o.s.phase !== 'aim' && !storm)) return;
     this.aiming = true; this.sling = null; this.cv.setPointerCapture(e.pointerId);
     this.r.aimAt = this.angleTo(e);
+    if (storm && this.r.aimAt !== null) this.stormAim(this.r.aimAt); // Ш98: the stream starts (or turns) at the touch
   }
-  private move(e: PointerEvent): void { if (this.aiming) this.r.aimAt = this.angleTo(e) ?? this.r.aimAt; }
+  private move(e: PointerEvent): void {
+    if (!this.aiming) return;
+    this.r.aimAt = this.angleTo(e) ?? this.r.aimAt;
+    if (this.o?.s.cfg.storm && this.r.aimAt !== null) this.stormAim(this.r.aimAt);
+  }
+  /** Ш98: the storm takes the aim any time; each change is an act with its tick (for the replay), small ones skipped */
+  private stormAim(a: number): void {
+    const o = this.o; if (!o || o.s.cfg.storm !== true) return;
+    const v = Math.round(a * 1000);
+    if (o.s.phase === 'aim') { this.fire(v); this.lastStormAim = v; return; }
+    if (o.s.phase !== 'fly' || Math.abs(v - this.lastStormAim) < 15) return;
+    const act = { aim: v, at: o.s.tick }; this.acts.push(act); o.act(act); this.lastStormAim = v;
+  }
   private up(e: PointerEvent): void {
+    if (this.aiming && this.o?.s.cfg.storm) { this.aiming = false; this.r.aimAt = null; this.sling = null; return; }
     if (!this.aiming || !this.o) return;
     this.aiming = false;
     const a = this.angleTo(e) ?? this.r.aimAt;
@@ -88,7 +103,7 @@ export class OrbBattle {
   private fire(aim: number): void {
     this.turnT = 0; this.fast = 1; $('oFast').hidden = true; // Ш88: a new turn starts at the chosen speed
     if (!this.o) return;
-    const a = { aim }; this.acts.push(a); this.o.act(a); this.r.cast();
+    const a: Act = this.o.s.cfg.storm ? { aim, at: this.o.s.tick } : { aim }; this.acts.push(a); this.o.act(a); this.r.cast();
     this.o.s.aim = aim / 1000;
     sfx.play('shot'); $('oHint').hidden = true; this.hintShown = true;
   }
@@ -111,13 +126,17 @@ export class OrbBattle {
     const o = this.o;
     if (o && !this.paused && !this.done) {
       const s = o.s;
-      if (s.phase === 'aim') {
+      if (s.cfg.storm && this.auto && (s.phase === 'aim' || s.phase === 'fly')) { // Ш98: the storm's auto re-aims once a second
+        this.stormAimT -= dt; if (this.stormAimT <= 0 || s.phase === 'aim') { this.stormAimT = 1; this.stormAim(o.stormAim() / 1000); }
+      }
+      if (s.phase === 'aim' && s.cfg.storm) { if (!this.hintShown) $('oHint').hidden = false; }
+      else if (s.phase === 'aim') {
         if (this.auto) { this.acc += dt; if (this.acc > 0.35 / this.speed) { this.acc = 0; this.fire(o.bestAim()); } }
         else if (!this.hintShown) $('oHint').hidden = false;
       } else if (s.phase === 'choose') this.cards();
       else if (o.busy) {
         // Ш88: a long turn speeds itself up — after 5 s of flight ×2, after 10 s ×3 (never slower than the chosen speed)
-        this.turnT += dt; const f = this.turnT > 10 ? 3 : this.turnT > 5 ? 2 : 1;
+        this.turnT += dt; const f = s.cfg.storm ? 1 : this.turnT > 10 ? 3 : this.turnT > 5 ? 2 : 1; // Ш98: no speed-up in the storm
         if (f !== this.fast) { this.fast = f; const b = $('oFast'); b.hidden = f <= this.speed; b.textContent = '⏩ ×' + f; }
         this.acc += dt * 60 * Math.max(this.speed, this.fast);
         let n = 0;
@@ -160,12 +179,19 @@ export class OrbBattle {
     this.set('oSpeed', '×' + this.speed);
     // Ш96: hits in this volley — shown while the balls fly and until the next aim
     const hn = s.hits ?? 0, hb = $('oHits');
-    if (hn > 0 && s.phase !== 'aim') { hb.hidden = false; if (this.set('oHitsN', String(hn))) { hb.classList.remove('bump'); void hb.offsetWidth; hb.classList.add('bump'); }
+    if (s.cfg.storm) hb.hidden = true;
+    else if (hn > 0 && s.phase !== 'aim') { hb.hidden = false; if (this.set('oHitsN', String(hn))) { hb.classList.remove('bump'); void hb.offsetWidth; hb.classList.add('bump'); }
       hb.classList.toggle('gold', hn >= 20); hb.classList.toggle('hot', hn >= 50); }
     else if (s.phase === 'aim') hb.hidden = true;
     $('oAuto').classList.toggle('on', this.auto);
-    ($('oProgFill') as HTMLElement).style.width = (100 * o.progress).toFixed(1) + '%';
-    this.set('oProgTxt', s.bossSpawned ? tr('БОСС') : Math.round(100 * o.progress) + '%');
+    if (s.cfg.storm) { // Ш98: the time held; the bar fills to the next «stronger» wave every 30 s
+      const sec = o.stormSec;
+      ($('oProgFill') as HTMLElement).style.width = (100 * (s.tick % 1800) / 1800).toFixed(1) + '%';
+      this.set('oProgTxt', `⏱ ${Math.floor(sec / 60)}:${String(sec % 60).padStart(2, '0')}`);
+    } else {
+      ($('oProgFill') as HTMLElement).style.width = (100 * o.progress).toFixed(1) + '%';
+      this.set('oProgTxt', s.bossSpawned ? tr('БОСС') : Math.round(100 * o.progress) + '%');
+    }
     if (this.cache.get('oLvl') && this.cache.get('oLvl') !== String(s.level)) { const b = $('oXpBar'); b.classList.remove('flash'); void b.offsetWidth; b.classList.add('flash'); } // Ш60
     this.set('oLvl', String(s.level));
     ($('oXpFill') as HTMLElement).style.width = (100 * s.xp / s.xpNext).toFixed(1) + '%';

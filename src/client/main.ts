@@ -89,7 +89,7 @@ function readInput(): Input {
 }
 
 // ---------------- hub ----------------
-const hub = new Hub($('ui'), (map, _mods, heroId) => startOrbBattle(map, heroId));
+const hub = new Hub($('ui'), (map, _mods, heroId, _wm, ev) => startOrbBattle(map, heroId, ev === 'storm'));
 void startBattle;
 startI18n(); // правка 121: translate the page into the chosen language
 (window as unknown as { __hub: Hub }).__hub = hub; // screenshot scripts open windows directly
@@ -503,15 +503,25 @@ requestAnimationFrame(frame);
 
 // ================= Orb Defense: the ball battle =================
 const orbBattle = new OrbBattle(canvas, (o, cfg, acts, quit) => orbDone(o, cfg, acts, quit));
-function startOrbBattle(stage: number, heroId: string): void {
+function startOrbBattle(stage: number, heroId: string, storm = false): void {
   if (!hub.p) return;
   const cfg = OM.makeConfig(hub.p, stage, heroId, (Math.random() * 2 ** 31) >>> 0);
+  if (storm) cfg.storm = true; // Ш98: «Шквал шаров» — the player's best stage, the stream, survival
   if (location.hash.includes('god')) cfg.god = true;
   const g = P.GFX[hub.p.gfx ?? 'mid'];
   orbBattle.start(cfg, g.dpr);
 }
 function orbDone(o: Orb, cfg: OrbConfig, acts: Act[], quit: boolean): void {
   if (!hub.p) return;
+  if (cfg.storm) { // Ш98: the time held, the place in today's group, a little gold and hero xp
+    const before = hub.snap(), r = OM.finishStorm(hub.p, o, acts), items = hub.diff(before);
+    const mmss = (t: number) => `${Math.floor(t / 60)}:${String(t % 60).padStart(2, '0')}`;
+    const st = (k: string, v: string) => `<span><small>${k}</small><b>${v}</b></span>`;
+    const note = `<div class="rstats">${st('Продержался', mmss(r.sec))}${st('Лучший сегодня', mmss(r.best))}${st('Место', r.place + '/20')}${st('Убито', String(o.s.kills))}</div>`;
+    hub.show('events');
+    hub.showReward(r.record ? 'Новый рекорд дня!' : 'Шквал шаров', items, note);
+    return;
+  }
   void acts;
   const win = o.s.phase === 'win';
   const before = hub.snap();

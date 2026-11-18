@@ -1,0 +1,38 @@
+# Ш98–Ш99: «Шквал шаров» and the energy window — new keys → keys.json + src/tr19.txt
+import json, re
+KJ = 'tools/i18n/keys.json'
+keys = json.load(open(KJ, encoding='utf8'))
+LET = 'A-Za-zА-Яа-яЁёІіЇїЄєÀ-ÿ'
+CORE = re.compile(rf'^([^{LET}{{}}\d]*)([\s\S]*?)([^{LET}{{}}\d]*)$')
+def key(t):
+    b = re.sub(r'\s+', ' ', CORE.match(t).group(2)).strip()
+    return re.sub(r'\d+(?:[.,]\d+)?', '{}', b)
+T = [
+ ('Шквал шаров', ["Шквал куль", "Orb Storm", "Kugelsturm", "Tormenta de orbes", "Tempestade de orbes", "Nawałnica kul", "Küre Fırtınası", "Tempête d'orbes", "Tempesta di sfere"]),
+ ('Продержись как можно дольше', ["Протримайся якомога довше", "Hold out as long as you can", "Halte so lange durch wie möglich", "Aguanta todo lo que puedas", "Resista o máximo que puder", "Wytrwaj jak najdłużej", "Olabildiğince uzun dayan", "Tiens le plus longtemps possible", "Resisti il più a lungo possibile"]),
+ ('Шары летят без остановки, враги идут без пауз — продержись как можно дольше', ["Кулі летять без зупинки, вороги йдуть без пауз — протримайся якомога довше", "Orbs fly non-stop, enemies march without pause — hold out as long as you can", "Kugeln fliegen ohne Pause, Gegner rücken ohne Halt vor — halte so lange durch wie möglich", "Los orbes vuelan sin parar, los enemigos avanzan sin pausa: aguanta todo lo que puedas", "Os orbes voam sem parar, os inimigos avançam sem pausa — resista o máximo que puder", "Kule lecą bez przerwy, wrogowie idą bez pauz — wytrwaj jak najdłużej", "Küreler durmadan uçar, düşmanlar ara vermeden ilerler — olabildiğince uzun dayan", "Les orbes volent sans arrêt, les ennemis avancent sans pause : tiens le plus longtemps possible", "Le sfere volano senza sosta, i nemici avanzano senza pause: resisti il più a lungo possibile"]),
+ ('Держи палец на экране — шары летят без остановки туда, куда целишься. Враги идут без пауз и каждые 30 секунд становятся быстрее и крепче, каждые 3 минуты — босс. Очки — сколько продержалась стена.', ["Тримай палець на екрані — кулі летять без зупинки туди, куди цілишся. Вороги йдуть без пауз і кожні {} секунд стають швидшими й міцнішими, кожні {} хвилини — бос. Очки — скільки протрималася стіна", "Keep your finger on the screen — orbs fly non-stop where you aim. Enemies march without pause and get faster and tougher every {} seconds, a boss every {} minutes. Score — how long the wall held", "Halte den Finger auf dem Bildschirm — die Kugeln fliegen ohne Pause, wohin du zielst. Gegner rücken ohne Halt vor und werden alle {} Sekunden schneller und stärker, alle {} Minuten ein Boss. Punkte — wie lange die Mauer hielt", "Mantén el dedo en la pantalla: los orbes vuelan sin parar hacia donde apuntas. Los enemigos avanzan sin pausa y cada {} segundos son más rápidos y duros, cada {} minutos un jefe. Puntos: cuánto aguantó el muro", "Mantenha o dedo na tela — os orbes voam sem parar para onde você mira. Os inimigos avançam sem pausa e a cada {} segundos ficam mais rápidos e fortes, a cada {} minutos um chefe. Pontos — quanto tempo a muralha resistiu", "Trzymaj palec na ekranie — kule lecą bez przerwy tam, gdzie celujesz. Wrogowie idą bez pauz i co {} sekund są szybsi i silniejsi, co {} minuty bos. Punkty — jak długo wytrzymał mur", "Parmağını ekranda tut — küreler nişan aldığın yere durmadan uçar. Düşmanlar ara vermeden ilerler, her {} saniyede hızlanır ve güçlenir, her {} dakikada bir patron gelir. Puan — surun ne kadar dayandığı", "Garde le doigt sur l'écran : les orbes volent sans arrêt là où tu vises. Les ennemis avancent sans pause et deviennent plus rapides et coriaces toutes les {} secondes, un boss toutes les {} minutes. Score : combien de temps le mur a tenu", "Tieni il dito sullo schermo: le sfere volano senza sosta dove miri. I nemici avanzano senza pause e ogni {} secondi diventano più veloci e forti, ogni {} minuti un boss. Punti: quanto hanno resistito le mura"]),
+ ('Событие дня', ["Подія дня", "Event of the day", "Event des Tages", "Evento del día", "Evento do dia", "Wydarzenie dnia", "Günün etkinliği", "Événement du jour", "Evento del giorno"]),
+ ('Продержался', ["Протримався", "Held out", "Durchgehalten", "Aguantaste", "Resistiu", "Wytrwałeś", "Dayandın", "Tenu", "Resistito"]),
+ ('Лучший сегодня', ["Найкращий сьогодні", "Best today", "Bester heute", "Mejor hoy", "Melhor hoje", "Najlepszy dziś", "Bugünün en iyisi", "Meilleur aujourd'hui", "Migliore oggi"]),
+ ('Новый рекорд дня!', ["Новий рекорд дня", "New best of the day", "Neuer Tagesrekord", "Nuevo récord del día", "Novo recorde do dia", "Nowy rekord dnia", "Günün yeni rekoru", "Nouveau record du jour", "Nuovo record del giorno"]),
+ ('150💎 + 30 карт шара', ["{}💎 + {} карт кулі", "{}💎 + {} orb cards", "{}💎 + {} Kugelkarten", "{}💎 + {} cartas de orbe", "{}💎 + {} cartas de orbe", "{}💎 + {} kart kuli", "{}💎 + {} küre kartı", "{}💎 + {} cartes d'orbe", "{}💎 + {} carte sfera"]),
+ ('50💎 + 10 свитков', ["{}💎 + {} сувоїв", "{}💎 + {} scrolls", "{}💎 + {} Schriftrollen", "{}💎 + {} pergaminos", "{}💎 + {} pergaminhos", "{}💎 + {} zwojów", "{}💎 + {} parşömen", "{}💎 + {} parchemins", "{}💎 + {} pergamene"]),
+ ('300💎 + эпический предмет', ["{}💎 + епічний предмет", "{}💎 + epic item", "{}💎 + epischer Gegenstand", "{}💎 + objeto épico", "{}💎 + item épico", "{}💎 + epicki przedmiot", "{}💎 + destansı eşya", "{}💎 + objet épique", "{}💎 + oggetto epico"]),
+ ('500💎 + легендарная руна', ["{}💎 + легендарна руна", "{}💎 + legendary rune", "{}💎 + legendäre Rune", "{}💎 + runa legendaria", "{}💎 + runa lendária", "{}💎 + legendarna runa", "{}💎 + efsanevi rün", "{}💎 + rune légendaire", "{}💎 + runa leggendaria"]),
+ ('Энергия полная', ["Енергія повна", "Energy full", "Energie voll", "Energía llena", "Energia cheia", "Energia pełna", "Enerji dolu", "Énergie pleine", "Energia piena"]),
+ ('+1 через 4:12 · полная через 36 мин', ["+{} через {}:{} · повна через {} хв", "+{} in {}:{} · full in {} min", "+{} in {}:{} · voll in {} Min", "+{} en {}:{} · llena en {} min", "+{} em {}:{} · cheia em {} min", "+{} za {}:{} · pełna za {} min", "{}:{} sonra +{} · {} dk sonra dolu", "+{} dans {}:{} · pleine dans {} min", "+{} tra {}:{} · piena tra {} min"]),
+ ('За рекламу +10', ["За рекламу +{}", "Watch an ad +{}", "Für Werbung +{}", "Por anuncio +{}", "Por anúncio +{}", "Za reklamę +{}", "Reklamla +{}", "Pub +{}", "Con pubblicità +{}"]),
+ ('0/3 сегодня', ["{}/{} сьогодні", "{}/{} today", "{}/{} heute", "{}/{} hoy", "{}/{} hoje", "{}/{} dziś", "bugün {}/{}", "{}/{} aujourd'hui", "{}/{} oggi"]),
+ ('+30 за 50', ["+{} за {}", "+{} for {}", "+{} für {}", "+{} por {}", "+{} por {}", "+{} za {}", "{} karşılığında +{}", "+{} pour {}", "+{} per {}"]),
+ ('Бой — 5 энергии. Событие «Шквал шаров» — 2 раза в день бесплатно.', ["Бій — {} енергії. Подія «Шквал куль» — {} рази на день безкоштовно", "A battle — {} energy. The «Orb Storm» event — {} times a day free", "Kampf — {} Energie. Event «Kugelsturm» — {}-mal täglich gratis", "Batalla: {} de energía. Evento «Tormenta de orbes»: {} veces al día gratis", "Batalha — {} de energia. Evento «Tempestade de orbes» — {} vezes por dia grátis", "Walka — {} energii. Wydarzenie «Nawałnica kul» — {} razy dziennie za darmo", "Savaş — {} enerji. «Küre Fırtınası» etkinliği — günde {} kez ücretsiz", "Combat : {} énergie. Événement «Tempête d'orbes» : {} fois par jour gratuit", "Battaglia: {} energia. Evento «Tempesta di sfere»: {} volte al giorno gratis"]),
+]
+have = set(keys); out = []
+for ru, v in T:
+    k = key(ru)
+    if k in have: continue
+    keys.append(k); have.add(k); out.append('|'.join([str(len(keys) - 1)] + v))
+json.dump(keys, open(KJ, 'w', encoding='utf8'), ensure_ascii=False, indent=0)
+with open('tools/i18n/src/tr19.txt', 'a', encoding='utf8') as o:
+    for r in out: o.write(r + '\n')
+print('added', len(out))

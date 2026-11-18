@@ -154,3 +154,26 @@ export function finishOrb(p: P.Profile, m: Orb, stage: number, quit: boolean): O
   void stageDef;
   return { lines, gold, chest, levelUp, cards, spiritShards, stones, scrolls, shards };
 }
+
+// ---------------- Ш98: «Шквал шаров» ----------------
+export interface StormResult { sec: number; best: number; record: boolean; place: number; gold: number; xp: number; lvUp: boolean }
+/** after a storm run: the score is the seconds the wall held (damage breaks a tie as a fraction), a little gold and
+ *  hero xp every run; the real reward is the place in the group of 20 when the day ends (profile.ts, evState) */
+export function finishStorm(p: P.Profile, o: Orb, acts: unknown[]): StormResult {
+  const st = P.evState(p, 'storm'), sec = o.stormSec;
+  const score = sec + Math.min(0.999, o.s.dealt / 1e10);
+  p.runs++;
+  P.taskAdd(p, 'kills', o.s.kills);
+  const stage = Math.max(1, p.maxMap);
+  const gold = Math.round((150 + 30 * stage) * Math.min(1.5, sec / 180));
+  p.gold += gold;
+  const xp = 10 + o.s.level, lvUp = !!P.addHeroXp(p, p.active, xp);
+  const record = score > st.best;
+  if (record) {
+    st.best = score; st.bestTime = sec;
+    // kept for the server check later (stage В of the release plan): the config and the aims with their ticks
+    try { localStorage.setItem('mw-run-storm', JSON.stringify({ day: st.day, sec, cfg: o.s.cfg, acts })); } catch { /* no storage */ }
+  }
+  P.save(p);
+  return { sec, best: Math.floor(st.best), record, place: P.evPlace(st, st.best), gold, xp, lvUp };
+}

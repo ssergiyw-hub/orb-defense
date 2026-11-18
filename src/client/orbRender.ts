@@ -125,14 +125,14 @@ export class OrbRenderer {
     // thorn bushes
     for (const b of s.bushes) this.drawBush(b.c, b.r, b.t);
     // enemies (interpolated during the enemy step)
-    const k = s.phase === 'enemy' ? ease(Math.min(1, s.phaseT / (ENEMY_T * 0.8))) : 1;
+    const k = s.cfg.storm ? ease(Math.min(1, (s.stormT ?? 0) / (ENEMY_T * 0.8))) : s.phase === 'enemy' ? ease(Math.min(1, s.phaseT / (ENEMY_T * 0.8))) : 1; // Ш98: the storm slides after each step
     const ens = [...s.enemies].sort((a, b) => (a.r + a.h) - (b.r + b.h));
     for (const e of ens) if (e.hp > 0) this.drawEnemy(o, e, k);
     this.drawWall(o);
     this.drawSpirit(o);
     this.drawHero(o);
     // the aim line
-    if (s.phase === 'aim' && this.aimAt !== null) this.drawAim(o, this.aimAt);
+    if ((s.phase === 'aim' || (s.cfg.storm && s.phase === 'fly')) && this.aimAt !== null) this.drawAim(o, this.aimAt); // Ш98: the storm aims while flying
     for (const b of s.balls) this.drawBall(b);
     // waiting balls on the walkway: a small counter at the hero's feet
     if (s.phase === 'fly' && s.queue.length) {
@@ -199,7 +199,7 @@ export class OrbRenderer {
     const c = this.c, C = this.cell, set = BIOME_SET[o.s.sd.biome];
     const d = ENEMY[e.kind];
     const r = e.pr + (e.r - e.pr) * k, q = e.pc + (e.c - e.pc) * k;
-    const born = e.pr === e.r && e.r === 0 && o.s.phase === 'enemy' ? k : 1;
+    const born = e.pr === e.r && e.r === 0 && (o.s.phase === 'enemy' || o.s.cfg.storm) ? k : 1;
     const x0 = this.px(q), y0 = this.py(r), w = e.w * C, h = e.h * C;
     const key = `${set}_${d.art}`;
     const im = orbImg(`orb/en/${key}.webp`);
