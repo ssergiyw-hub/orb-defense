@@ -127,6 +127,18 @@ def clean(path, purge_purple=True):
     return Image.fromarray(a.astype(np.uint8), 'RGBA')
 
 
+def green_button():
+    """Ш114: the rounded button in the gold rim with an emerald middle — the same shape as the stone and gold ones"""
+    im = Image.open(os.path.join(OUT, 'm_btn_gold.webp')).convert('RGBA'); a = np.asarray(im).astype(np.float32)
+    inner = ndimage.binary_erosion(a[..., 3] > 128, iterations=22)
+    inner = ndimage.gaussian_filter(inner.astype(np.float32), 2.0)[..., None]
+    lum = (0.3 * a[..., 0] + 0.59 * a[..., 1] + 0.11 * a[..., 2])[..., None] / 255
+    l2 = np.clip((lum - 0.6) * 3.0, 0, 1); emer = np.concatenate([14 + 60 * l2, 96 + 92 * l2, 54 + 56 * l2], axis=2)  # light at the top, deep at the bottom (from the gold shading)
+    a[..., :3] = a[..., :3] * (1 - inner) + emer * inner
+    Image.fromarray(np.clip(a, 0, 255).astype(np.uint8), 'RGBA').save(os.path.join(OUT, 'm_btn_green.webp'), quality=95, method=6)
+    print('m_btn_green')
+
+
 def new_sheets():
     """Ш108: what is cleaner on the transparent sheets 2552 / 2553 replaces the purple-keyed cut (diamonds without a dark halo,
     the item frame and the gem ring empty inside, the medals, the green chest, ×, i, the lock, buttons). The rows, the ribbon and the
@@ -143,6 +155,7 @@ def new_sheets():
                       'm_x2': (855, 333, 995, 473), 'm_lock': (878, 492, 960, 590), 'm_dia_blue': (96, 620, 224, 750), 'm_dia_violet': (318, 620, 445, 750),
                       'm_dia_gold': (555, 620, 682, 750), 'm_dia_red': (788, 620, 914, 750), 'm_btn_gold': (28, 756, 506, 966), 'm_btn_stone': (516, 756, 998, 966)}.items():
         save(s2, box, name)
+    green_button()
     lock = Image.open(os.path.join(OUT, 'm_sock_lock.webp')).convert('RGBA'); w, h = lock.size
     erase(lock, (int(w * 0.3), int(h * 0.27), int(w * 0.7), int(h * 0.7))).save(os.path.join(OUT, 'm_sock.webp'), quality=95, method=6)
 

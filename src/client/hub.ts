@@ -1469,13 +1469,13 @@ export class Hub {
     const toFull = full ? 0 : Math.max(0, (emax - p.energy - 1) * ENERGY.regenSec + t);
     const mmss = (x: number) => `${Math.floor(x / 60)}:${String(x % 60).padStart(2, '0')}`;
     const adLeft = P.adLeft(p, 'energy'), bought = p.energyBuys.day === new Date().toISOString().slice(0, 10) ? p.energyBuys.n : 0;
-    return `<div class="modal" data-a="close"><div class="mbox lvpanel enpanel">
+    return `<div class="modal" data-a="close"><div class="mbox lvpanel enpanel mpan">
       <div class="lvtabs"><b class="wtitle">Энергия</b><button class="lvsq x" data-a="close">✕</button></div>
       <div class="panelbox" data-k="energy">
-        <div class="enorb"><span class="enball">${resImg('energy', 'rbig')}</span><b>${p.energy} / ${emax}</b>
+        <div class="enorb"><span class="enball" style="--f:${Math.min(100, Math.round(100 * p.energy / emax))}%"><i class="ensph"></i>${resImg('energy', 'rbig')}</span><b>${p.energy} / ${emax}</b>
           <small>${full ? 'Энергия полная' : `+1 через ${mmss(t)} · полная через ${Math.ceil(toFull / 60)} мин`}</small></div>
-        <button class="lvbtn wide" data-a="ad" data-v="energy"${adLeft ? '' : ' disabled'}><b>${adLeft ? `▶ За рекламу +${P.AD_ENERGY}` : 'Завтра'}</b><small>${P.adUsed(p, 'energy')}/${P.AD_LIMIT.energy} сегодня</small></button>
-        <button class="lvbtn wide gold enbuy" data-a="buy" data-v="energy"${bought >= 3 ? ' disabled' : ''}><b>+30 за ${PRICE.energy30} ${GEM_ICON}</b><small>${bought}/3 сегодня</small></button>
+        <button class="mbtn green wide" data-a="ad" data-v="energy"${adLeft ? '' : ' disabled'}><b>${adLeft ? `▶ За рекламу +${P.AD_ENERGY}` : 'Завтра'}</b><small>${P.adUsed(p, 'energy')}/${P.AD_LIMIT.energy} сегодня</small></button>
+        <button class="mbtn gold wide enbuy" data-a="buy" data-v="energy"${bought >= 3 ? ' disabled' : ''}><b>+30 за ${PRICE.energy30} ${GEM_ICON}</b><small>${bought}/3 сегодня</small></button>
         <p class="muted small ennote">Бой — ${ENERGY.run} энергии. Событие «Шквал шаров» — 2 раза в день бесплатно.</p>
       </div></div></div>`;
   }
@@ -1546,8 +1546,9 @@ export class Hub {
     let pop = '';
     if (cp) {
       const rw = P.EV_REWARDS[ev], band = rw.findIndex(([to]) => cp <= to), from = band ? rw[band - 1][0] + 1 : 1, to = rw[band][0];
-      const QN = ['Серый сундук', 'Синий сундук', 'Фиолетовый сундук', 'Золотой сундук'];
-      pop = `<div class="evcpop" data-a="evChest" data-v=""><div class="evcbox q${3 - band}"><span class="rchest q${3 - band} big">${chestSvg(2, 110)}</span><b>${QN[3 - band]}</b><small>${from === to ? `${to} место` : `${from}–${to} места`}</small><div class="evcrw">${rw[band][1]}</div><em>Выдаётся в конце дня</em></div></div>`;
+      const QN = ['Серый сундук', 'Синий сундук', 'Фиолетовый сундук', 'Золотой сундук'], q = 3 - band;
+      // Ш113: the same chest as in the row, inside the box above the title (it used to stick out over the text)
+      pop = `<div class="evcpop" data-a="evChest" data-v=""><div class="evcbox mr q${q}"><span class="rchest q${q} big"><img src="orb/ui/m_chest${q >= 3 ? 1 : q === 2 ? 2 : 3}.webp" alt=""></span><b>${QN[q]}</b><small>${from === to ? `${to} место` : `${from}–${to} места`}</small><div class="evcrw">${rw[band][1]}</div><em>Выдаётся в конце дня</em></div></div>`;
     }
     return `<div class="modal" data-a="close"><div class="mbox lvpanel ratepanel mrate">
       <div class="lvtabs"><b class="wtitle">${ev === 'bossorb' ? 'Атака на босса' : ev === 'storm' ? 'Шквал шаров' : ev === 'boss' ? 'Убийство босса' : 'Фраги'}</b><button class="lvsq x" data-a="close">✕</button></div>
@@ -1645,7 +1646,7 @@ export class Hub {
     const rows = Array.from({ length: P.BP.levels }, (_, k) => k + 1).map(i =>
       `<div class="bprow2${i <= L ? ' on' : ''}${i === L + 1 ? ' next' : ''}${i === L ? ' cur' : ''}">${cell(false, i)}<span class="bhex"><b>${i}</b></span>${cell(true, i)}</div>`).join('');
     const can = cf.length + cp.length;
-    return `<div class="bpscreen">
+    return `<div class="bpscreen mbp">
       <div class="bptop"><i class="torch l"><i></i></i><i class="torch r"><i></i></i>
         <div class="bpshelf"><span class="c1">${chestSvg(1, 54)}</span><span class="c2">${chestSvg(2, 78)}</span><span class="c3">${chestSvg(1, 54)}</span></div>
         <button class="x" data-a="close">✕</button>
@@ -1654,12 +1655,12 @@ export class Hub {
       <div class="bplvl2"><span class="bshield"><b>${L}</b></span>
         <div class="bptrough"><i style="width:${(100 * inLvl / P.BP.perLevel).toFixed(0)}%"></i><em>${max ? 'максимум' : `${inLvl}/${P.BP.perLevel}`}</em></div>
         <span class="bshield nx"><b>${max ? '★' : L + 1}</b></span></div>
-      <div class="bphint">Очки — за ежедневные и еженедельные задания · ${P.BP.perLevel} очков = уровень</div>
+      <div class="bphint"><span>Очки — за ежедневные и еженедельные задания</span> · <span>${P.BP.perLevel} очков = уровень</span></div>
       <div class="bpcols2"><span class="cfree"><b>Бесплатно</b></span><span></span><span class="cpaid"><b>Пропуск${b.bought ? ' ✓' : ''}</b></span></div>
       <div class="bplist2 panelbox" data-k="bp">${rows}
         ${b.bought ? '' : '<div class="bpnote">Пропуск: 1 300💎, эпическая книга, средние купоны, осколки рун и гем ★4 на 30-м уровне. Награды за пройденные уровни выдаются сразу после покупки.</div>'}</div>
-      <div class="bpfoot2"><button class="stonebtn" data-a="bpAll" ${can ? '' : 'disabled'}><b>Получить всё</b><small>${can ? `наград: ${can}` : 'пока нечего'}</small></button>
-        ${b.bought ? '<button class="goldbtn" disabled><b>Пропуск куплен</b><small>сезон ${b.season + 1}</small></button>' : `<button class="goldbtn" data-a="bpBuy"><b>Купить пропуск</b><small>${P.BP.usd}${P.payTest(p) ? ' · тест' : ' · скоро'}</small></button>`}</div>
+      <div class="bpfoot2"><button class="mbtn green" data-a="bpAll" ${can ? '' : 'disabled'}><b>Получить всё</b><small>${can ? `наград: ${can}` : 'пока нечего'}</small></button>
+        ${b.bought ? '<button class="mbtn gold" disabled><b>Пропуск куплен</b><small>сезон ${b.season + 1}</small></button>' : `<button class="mbtn gold" data-a="bpBuy"><b>Купить пропуск</b><small>${P.BP.usd}${P.payTest(p) ? ' · тест' : ' · скоро'}</small></button>`}</div>
     </div>`;
   }
 
@@ -1673,8 +1674,8 @@ export class Hub {
       const on = P.passActive(p, d.id), pend = P.passPending(p, d.id);
       const status = d.id === 'perm' ? (on ? 'Куплена навсегда' : 'Навсегда') : on ? `Осталось ${P.passDaysLeft(p, d.id as 'month')} дн.` : '30 дней привилегий';
       const btn = on
-        ? `<button class="gbtn" data-a="passClaim" data-v="${d.id}" ${pend ? '' : 'disabled'}>${pend ? `Получить${pend > 1 ? `<br><small>(накоплено ${pend} д.)</small>` : ''}` : 'Завтра снова'}</button>`
-        : `<button class="gbtn" data-a="passBuy" data-v="${d.id}">${d.usd}<small>${P.payTest(p) ? ' · тест' : ' · скоро'}</small></button>`;
+        ? `<button class="mbtn green" data-a="passClaim" data-v="${d.id}" ${pend ? '' : 'disabled'}>${pend ? `Получить${pend > 1 ? `<br><small>(накоплено ${pend} д.)</small>` : ''}` : 'Завтра снова'}</button>`
+        : `<button class="mbtn gold" data-a="passBuy" data-v="${d.id}">${d.usd}<small>${P.payTest(p) ? ' · тест' : ' · скоро'}</small></button>`;
       return `<div class="pcard ${cls}" style="--pbg:url(ev/pass_${d.id}.webp)">
         <div class="ptop"><h3>${d.name}</h3>${ticketSvg(c1, c2, mark)}</div>
         <div class="pnow">Купите и получите мгновенно <b>${GEM_ICON}${d.now}</b></div>
@@ -1684,10 +1685,10 @@ export class Hub {
     }).join('');
     const any = P.passAttention(p);
     // правка 152: head and «Получить всё» stand still, the cards scroll and fade under them; each card has its own picture
-    return `<div class="modal" data-a="close"><div class="mbox passbox">
+    return `<div class="modal" data-a="close"><div class="mbox passbox mpass">
       <div class="bphead"><div><b>Пропуски</b><small>Кристаллы каждый день и постоянные бонусы</small></div><button class="x" data-a="close">✕</button><i class="mktrim"></i></div>
       <div class="pscroll" data-k="passes">${cards}</div>
-      <div class="pfoot"><button class="gbtn" data-a="passClaim" data-v="" ${any ? '' : 'disabled'}>Получить всё${any ? '<i class="rdot"></i>' : ''}</button></div>
+      <div class="pfoot"><button class="mbtn green" data-a="passClaim" data-v="" ${any ? '' : 'disabled'}>Получить всё${any ? '<i class="rdot"></i>' : ''}</button></div>
     </div></div>`;
   }
 
@@ -1789,23 +1790,22 @@ export class Hub {
 
   private vIdle(p: P.Profile): string {
     const hrs = P.idleHours(p), r = P.idlePreview(p), per = P.idlePreview(p, 1), f = P.fastIdleState(p), F = P.FAST_IDLE;
-    const st = hrs < IDLE.capH / 2 ? 0 : hrs < IDLE.capH ? 1 : 2;
-    const fast = (v: string, cls: string, top: string, left: string, ok: boolean) =>
-      `<button class="lvfast ${cls}" data-a="idleFast" data-v="${v}" ${ok ? '' : 'disabled'}><i class="lvgem"></i><b>${top}</b><small>${ok ? left : '<i>✓</i> Завтра'}</small></button>`; // Ш64: a spent one says so
-    // правки 146, 147: the head (plate, «?», «✕») stands still, the rest scrolls under it; «?» and «✕» sit in the frame corners
-    return `<div class="modal" data-a="close"><div class="mbox lvpanel idle2">
-      <div class="lvhead fixhead">${this.lvBanner('Сундук накопления', 'fit')}<button class="lvsq q" data-a="idleInfo">?</button><button class="lvsq x" data-a="close">✕</button></div>
-      <div class="lvscroll" data-k="idle">
-      <div class="ichest2 st${st}"><div class="icglow"></div>${chestSvg(st, 190)}${st === 2 ? sparksHtml(1, '#ffcf4a') : ''}</div>
-      ${this.idleInfo ? `<div class="iinfo lvinfo"><div class="iline"><span>За час на этапе ${Math.max(1, p.maxMap)}:</span> <span class="ires">${resImg('gold')} ${fmt(per.gold)}</span> <span class="ires">${resImg('scrolls')} ${per.scrolls}</span> <span class="ires"><img class="gmix" src="ev/gems_mix.webp" alt=""> ${Math.round(IDLE.gemChanceH * 100)}%</span></div>
+    const st = hrs < IDLE.capH / 2 ? 0 : hrs < IDLE.capH ? 1 : 2, fill = Math.min(1, hrs / IDLE.capH), can = hrs >= 1 / 60;
+    // Ш115: three equal cards for the quick collect (like the coupon cards): free / energy — emerald, crystals — gold, spent — stone
+    const card = (v: string, icon: string, name: string, cls: string, ok: boolean, sub: string) =>
+      `<div class="cpc"><span class="cpi">${icon}</span><b class="cpn">${name}</b><button class="cpb ${ok ? cls : 'off'}" data-a="idleFast" data-v="${v}" ${ok ? '' : 'disabled'}><b>${ok ? 'Забрать' : 'Завтра'}</b><small>${sub}</small></button></div>`;
+    const cell = (icon: string, n: string, name: string) => `<div class="icell"><span class="ictile">${icon}<b class="rq">${n}</b></span><small>${name}</small></div>`;
+    return `<div class="modal" data-a="close"><div class="mbox lvpanel mrate midle">
+      <div class="lvtabs"><button class="lvsq q" data-a="idleInfo">?</button><b class="wtitle">Сундук накопления</b><button class="lvsq x" data-a="close">✕</button></div>
+      <div class="panelbox" data-k="idle">
+      <button class="ichest3 st${st}" data-a="idle" style="--fill:${fill.toFixed(2)}" ${can ? '' : 'disabled'}><i class="iped"></i><i class="ilight"></i><span class="ichimg">${chestSvg(st, 150)}</span>${st === 2 ? sparksHtml(1, '#ffcf4a') : ''}</button>
+      ${this.idleInfo ? `<div class="iinfo"><div class="iline"><span>За час на этапе ${Math.max(1, p.maxMap)}:</span> <span class="ires">${resImg('gold')} ${fmt(per.gold)}</span> <span class="ires">${resImg('scrolls')} ${per.scrolls}</span> <span class="ires"><img class="gmix" src="ev/gems_mix.webp" alt=""> ${Math.round(IDLE.gemChanceH * 100)}%</span></div>
         <div>Копится до ${IDLE.capH} часов, дальше сундук не наполняется.</div><div>Быстрый сбор сразу даёт награду за ${IDLE.fastH} часа и не обнуляет сундук.</div></div>` : ''}
-      <div class="lvrow">${this.lvTile(resImg('gold'), fmt(r.gold), 'Золото', '#ffcf4a')}${this.lvTile(resImg('scrolls'), String(r.scrolls), 'Свитки', '#e8b070')}${this.lvTile('<img class="gmix" src="ev/gems_mix.webp" alt="">', Math.round(r.gemChance * 100) + '%', 'Шанс гема', '#c070ff')}</div>
-      ${this.lvBar(hrs / IDLE.capH, `${Math.floor(hrs)}ч ${Math.floor((hrs % 1) * 60)}м из ${IDLE.capH}ч`)}
-      <button class="lvbtn wide" data-a="idle" ${hrs < 1 / 60 ? 'disabled' : ''}><b>Забрать</b></button>
-      <div class="lvsub">Быстрый сбор · награда за ${IDLE.fastH} часа</div>
-      <div class="lvfasts">${fast('free', 'g', 'Бесплатно', `${f.free}/${F.free}`, f.free > 0)}
-        ${fast('energy', 'v', `⚡${F.energyCost}`, `${f.energy}/${F.energy}`, f.energy > 0 && p.energy >= F.energyCost)}
-        ${fast('crystals', 'r', `💎${f.price}`, P.passActive(p, 'hunter') ? '∞' : `${f.crystals}/${F.crystals}`, f.crystals > 0)}</div>
+      <div class="irow3">${cell(resImg('gold'), fmt(r.gold), 'Золото')}${cell(resImg('scrolls'), String(r.scrolls), 'Свитки')}${cell('<img class="gmix" src="ev/gems_mix.webp" alt="">', Math.round(r.gemChance * 100) + '%', 'Шанс гема')}</div>
+      <div class="itime"><small>${Math.floor(hrs)}ч ${Math.floor((hrs % 1) * 60)}м из ${IDLE.capH}ч</small><div class="itrough"><i style="width:${(100 * fill).toFixed(1)}%"></i></div></div>
+      <button class="mbtn green wide" data-a="idle" ${can ? '' : 'disabled'}><b>Забрать</b></button>
+      <div class="evsub">Быстрый сбор · награда за ${IDLE.fastH} часа</div>
+      <div class="cpcards">${card('free', '<span class="iqi">🎁</span>', 'Бесплатно', 'emer', f.free > 0, `${f.free}/${F.free}`)}${card('energy', `<span class="iqi">${resImg('energy')}</span>`, `${F.energyCost}`, 'emer', f.energy > 0 && p.energy >= F.energyCost, `${f.energy}/${F.energy}`)}${card('crystals', '<span class="iqi">💎</span>', `${f.price}`, 'gold', f.crystals > 0, P.passActive(p, 'hunter') ? '∞' : `${f.crystals}/${F.crystals}`)}</div>
       </div>
     </div></div>`;
   }
@@ -2071,8 +2071,9 @@ export class Hub {
   private stageChestHtml(r: Reward, tile: (it: RewardItem, k: number) => string): string {
     const c = r.chest; if (!c) return '';
     const gold = c.kind === 'gold', name = gold ? 'Золотой сундук — первое прохождение' : 'Сундук этапа';
-    if (!c.open) return `<button class="stchest ${c.kind}" data-a="stageChest"><span class="stimg">${chestSvg(1, 92)}</span><b>${name}</b><small>Нажми, чтобы открыть</small></button>`;
-    return `<div class="stchest ${c.kind} open"><span class="stimg">${chestSvg(2, 92)}</span><b>${name}</b><div class="stprize">${c.items.map(tile).join('')}</div></div>`;
+    // Ш112: the chest on the left, a small page with its prizes on the right, the title on a hex plaque
+    if (!c.open) return `<button class="stchest ${c.kind} mr" data-a="stageChest"><div class="sthead"><span>${name}</span></div><span class="stimg">${chestSvg(1, 96)}</span><small>Нажми, чтобы открыть</small></button>`;
+    return `<div class="stchest ${c.kind} open mr"><div class="sthead"><span>${name}</span></div><div class="stbody"><span class="stimg">${chestSvg(2, 84)}</span><div class="stprize">${c.items.map(tile).join('')}</div></div></div>`;
   }
   private adDoubleHtml(r: Reward): string {
     const p = this.p;
@@ -2102,14 +2103,15 @@ export class Hub {
         <small class="rname">${it.name}</small>${it.xp && it.count ? `<span class="rxp">${it.count}</span>` : ''}${it.sub ? `<em class="rsub">${it.sub}</em>` : ''}${it.detail && r.items.length <= 2 ? `<span class="rdet">${it.detail}</span>` : ''}</div>`;
     };
     const tiles = r.items.map(tile).join('');
-    const again = r.again?.length ? `<div class="ragain">${r.again.map(g => `<button class="stonebtn" data-a="${g.a}" data-v="${g.v}" ${g.off ? 'disabled' : ''}><b>${g.label}</b><small>${g.sub}</small></button>`).join('')}</div>` : '';
-    return `<div class="rewardov ${many ? 'grid' : 'band'} t${top}" style="--rc:${rc}">${sparksHtml(top, rc)}
-      <div class="rwin">
+    // Ш116: «Ещё ×N» — gold when it costs crystals, emerald when it opens what you have
+    const again = r.again?.length ? `<div class="ragain">${r.again.map(g => `<button class="stonebtn ${g.sub.includes('💎') ? 'mgold' : 'mgreen'}" data-a="${g.a}" data-v="${g.v}" ${g.off ? 'disabled' : ''}><b>${g.label}</b><small>${g.sub}</small></button>`).join('')}</div>` : '';
+    // Ш112: the content scrolls when it is taller than the screen, OK stays at the bottom
+    return `<div class="rewardov mrw ${many ? 'grid' : 'band'} t${top}" style="--rc:${rc}">${sparksHtml(top, rc)}
+      <div class="rwin"><div class="rscroll">
         <div class="rbanner${tr(r.title).length > 20 ? ' l2' : tr(r.title).length > 13 ? ' l1' : ''}"><div class="rbrays"></div><span>${r.title}</span></div>
         ${r.items.length ? '<div class="rlabel"><span>Получены награды</span></div>' : ''}
         ${many ? `<div class="rgrid">${tiles}</div>` : `<div class="rband"><div class="rrays"></div><div class="rflash"></div><div class="rrow n${r.items.length}">${tiles}</div></div>`}
         ${r.note ? `<div class="rnote">${r.note}</div>` : ''}${this.stageChestHtml(r, tile)}${again}${this.adDoubleHtml(r)}
-        <button class="lvbtn rok" data-a="rewardOk"><b>OK</b></button>
-      </div></div>`;
+      </div></div><div class="rfoot"><button class="lvbtn rok" data-a="rewardOk"><b>OK</b></button></div></div>`;
   }
 }

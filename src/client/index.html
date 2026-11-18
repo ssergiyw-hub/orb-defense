@@ -3178,6 +3178,191 @@ div.rstats span{flex:1 1 auto;min-width:0}div.rstats small{letter-spacing:0;line
 .oroll{flex:1 1 0;max-width:none;min-width:0;height:56px}
 .oroll.ad{border-width:11px 20px;border-image-width:11px 20px}
 .mrate>.lvtabs .wtitle{padding:14px 40px 6px}
+
+/* ---- Ш112, Ш116: the reward window — scrolls, OK pinned at the bottom, gold frames, plain labels, laurel title ---- */
+.rewardov.mrw{flex-direction:column;align-items:stretch;justify-content:flex-start;padding:0!important;overflow:hidden}
+.mrw .rwin{flex:1 1 auto;min-height:0;max-width:none;width:100%;overflow-y:auto;overscroll-behavior:contain;-webkit-overflow-scrolling:touch;display:flex;flex-direction:column;padding:10px 0 6px}
+.mrw .rscroll{margin:auto;width:100%;max-width:440px;padding:14px 12px 4px;box-sizing:border-box}
+.mrw .rfoot{flex:none;display:flex;justify-content:center;padding:8px 0 calc(12px + env(safe-area-inset-bottom,0px));background:linear-gradient(rgba(4,12,8,0),rgba(4,12,8,.85) 35%);position:relative;z-index:3}
+.mrw .rfoot .rok{width:190px;margin:0}
+.mrw .rbanner{width:300px!important;height:86px;margin:0 auto 4px!important;display:flex;align-items:center;justify-content:center;padding:6px 44px 14px!important;border:0!important;border-image:none!important;background:url(orb/ui/m_laurel.webp) center/100% 100% no-repeat!important}
+.mrw .rbanner::after{display:none!important}
+.mrw .rbanner span{color:#4a2c12!important;font:900 19px/1.1 Georgia,serif!important;text-transform:none;text-shadow:0 1px 0 #fff8!important;white-space:normal;text-align:center}
+.mrw .rbanner.l1 span{font-size:17px!important}.mrw .rbanner.l2 span{font-size:14px!important}
+.mrw .rlabel::before,.mrw .rlabel::after{display:none}
+.mrw .rlabel span{padding:6px 0 7px!important;min-width:200px;text-align:center;border-style:solid;border-width:0 24px;border-image:url(orb/ui/m_hex.webp) 0 100 fill / 0 24px stretch;background:none!important;box-shadow:none!important;color:#4a2c12!important;text-shadow:0 1px 0 #fff8!important}
+.mrw .rband,.mrw .rgrid{border-image-repeat:round!important}
+.mrw.band .rband::after{background:radial-gradient(circle,rgba(255,214,110,.55),rgba(255,214,110,.12) 45%,transparent 70%)!important;opacity:.9!important;animation:none!important;filter:none!important}
+.mrw .rtile{background:radial-gradient(circle at 50% 40%,color-mix(in srgb,var(--c) 30%,#fffaf0),color-mix(in srgb,var(--c) 45%,#cdb98c) 85%)!important;background-clip:padding-box!important;border:10px solid transparent!important;border-image:url(orb/ui/m_frame.webp) 44 / 13px stretch!important;box-shadow:none!important;filter:drop-shadow(0 2px 2px #0005)!important;animation:none!important}
+.mrw .rtile::before{display:none}
+.mrw .rtile.t1{filter:drop-shadow(0 0 5px #4aa8ff) drop-shadow(0 2px 2px #0005)!important}.mrw .rtile.t2{filter:drop-shadow(0 0 6px #b45cff) drop-shadow(0 2px 2px #0005)!important}
+.mrw .rtile.t3{filter:drop-shadow(0 0 7px #ffcf4a) drop-shadow(0 2px 2px #0005)!important}.mrw .rtile.t4{filter:drop-shadow(0 0 7px #ff5a4a) drop-shadow(0 2px 2px #0005)!important}
+.mrw .rtile.alt{background:none!important;border:0!important;border-image:none!important}
+.mrw .rname{display:block;margin:4px auto 0;padding:0!important;border:0!important;border-image:none!important;background:none!important;color:#3a2412!important;font:800 11.5px/1.15 system-ui,sans-serif!important;text-shadow:none!important;-webkit-text-stroke:0!important;white-space:normal!important;max-width:96px;min-height:2.3em}
+.mrw .rband .rname{font-size:12px!important}
+.mrw .rxp{margin-top:0;font-size:11px}
+.mrw .rcell .rsub{display:inline-block;margin-top:2px;padding:2px 10px;border-radius:9px;background:color-mix(in srgb,var(--c) 75%,#2a1a0a);color:#fff!important;-webkit-text-stroke:0!important;text-shadow:0 1px 0 #0006!important;font:900 10px/1.2 system-ui,sans-serif;letter-spacing:.5px;box-shadow:0 0 0 1.5px #d9a83a}
+.mrw .ragain{gap:10px}
+.mrw .ragain .stonebtn{border-style:solid!important;border-color:transparent!important;border-width:11px 13px!important;border-radius:0!important;background:none!important;box-shadow:none!important;filter:drop-shadow(0 3px 3px #0006)}
+.mrw .ragain .stonebtn.mgold{border-image:url(orb/ui/m_btn_gold.webp) 56 fill / 13px stretch!important}
+.mrw .ragain .stonebtn.mgreen{border-image:url(orb/ui/m_btn_green.webp) 56 fill / 13px stretch!important}
+.mrw .ragain .stonebtn b{-webkit-text-stroke:0!important;font:900 16px/1 Georgia,serif!important}
+.mrw .ragain .stonebtn.mgold b,.mrw .ragain .stonebtn.mgold small{color:#4a2a06!important;text-shadow:0 1px 0 #fff6a0!important}
+.mrw .ragain .stonebtn.mgreen b,.mrw .ragain .stonebtn.mgreen small{color:#fff3c0!important;text-shadow:0 1px 1px #0a3018!important}
+.mrw .ragain .stonebtn[disabled]{border-image-source:url(orb/ui/m_btn_stone.webp)!important}
+.mrw .ragain .stonebtn[disabled] b,.mrw .ragain .stonebtn[disabled] small{color:#6a5a4a!important;text-shadow:none!important}
+/* the stage chest: the chest on the left, its prizes on a small page on the right */
+.mrw .stchest.mr{display:block;width:100%;margin:12px 0 4px;padding:0;background:none;border:0;box-shadow:none}
+.mrw .stchest .sthead{display:flex;justify-content:center;margin-bottom:6px}
+.mrw .stchest .sthead span{padding:6px 0 7px;min-width:220px;text-align:center;border-style:solid;border-width:0 24px;border-image:url(orb/ui/m_hex.webp) 0 100 fill / 0 24px stretch;color:#4a2c12;font:900 13.5px/1.1 Georgia,serif;text-shadow:0 1px 0 #fff8}
+.mrw .stchest .stbody{display:flex;align-items:center;gap:6px}
+.mrw .stchest .stimg{flex:none;width:96px;display:flex;justify-content:center}
+.mrw .stchest .stimg img,.mrw .stchest .stimg svg{width:90px!important;height:auto!important}
+.mrw .stchest .stprize{flex:1;display:flex;flex-wrap:wrap;justify-content:center;gap:6px 4px;padding:8px 6px;border:16px solid transparent;border-image:url(orb/ui/m_panel.webp) 66 fill / 16px stretch}
+.mrw .stchest .stprize .rcell{width:auto}
+.mrw .stchest .stprize .rtile{width:66px;height:66px}
+.mrw .stchest:not(.open){display:flex;flex-direction:column;align-items:center}
+.mrw .stchest:not(.open) small{color:#ffe8b0}
+.mrw .rband::after,.mrw .rgrid::after{box-shadow:none!important;border:0!important;border-radius:50%!important}
+.mrw .rband::before{display:none!important}
+/* the page: the frame from parch9, the middle is plain warm parchment (the stretched centre of parch9 showed vertical streaks) */
+.mrw .rband,.mrw .rgrid{border-image:url(orb/ui/parch9.webp) 130 100 200 100 / 52px 36px 80px 36px stretch!important;background:radial-gradient(ellipse at 50% 45%,#f6ead0,#ead9b4 75%)!important;background-clip:padding-box!important}
+.mrw .ragain .stonebtn[disabled]{opacity:1!important;filter:none!important}
+.mrw .ragain .stonebtn[disabled] b,.mrw .ragain .stonebtn[disabled] small{color:#7a6a58!important}
+.mrw .ragain .stonebtn::before,.mrw .ragain .stonebtn::after{display:none!important}
+
+/* ---- Ш113: the place reward box in the rating — light marble, the row's own chest inside the box ---- */
+.evcbox.mr{width:270px;padding:4px 6px 6px;border:22px solid transparent;border-radius:0;border-image:url(orb/ui/m_panel.webp) 66 fill / 22px stretch;background:none;box-shadow:none;filter:drop-shadow(0 10px 20px #000c);gap:6px}
+.evcbox.mr .rchest.big{position:static;width:auto;height:auto;margin:0;transform:none}
+.evcbox.mr .rchest.big img{width:96px!important;filter:drop-shadow(0 4px 4px #0006)!important}
+.evcbox.mr .rchest.q0 img{filter:grayscale(1) drop-shadow(0 4px 4px #0006)!important}
+.evcbox.mr b{padding:6px 0 7px;min-width:190px;text-align:center;border-style:solid;border-width:0 22px;border-image:url(orb/ui/m_hex.webp) 0 100 fill / 0 22px stretch;color:#4a2c12;font:900 16px/1.1 Georgia,serif;text-shadow:0 1px 0 #fff8}
+.evcbox.mr small{color:#6a5640;font-weight:700}
+.evcbox.mr .evcrw{width:100%;padding:0 4px;border:10px solid transparent;border-image:url(orb/ui/m_plate.webp) 40 fill / 10px stretch;background:none!important;color:#3a2412!important;font-weight:900;text-align:center}
+.evcbox.mr em{color:#7a6650}
+/* ---- Ш114: the tasks — no glow, one button shape, a plain plate, the medallion in its own block, plain points ---- */
+.tasks2 .task2{border-image:url(orb/ui/m_plate.webp) 40 fill / 10px stretch!important;border-width:10px!important;padding:0 4px 0 2px!important;gap:10px!important;align-items:center!important;filter:drop-shadow(0 2px 2px #0004)!important}
+.tasks2 .task2.ready{filter:drop-shadow(0 2px 2px #0004)!important}
+.tasks2 .tmed{width:54px!important;height:54px!important;flex:0 0 54px!important;background:none!important;display:flex;align-items:center;justify-content:center}
+.tasks2 .tmed::before{content:"";position:absolute;inset:8px;border-radius:50%;background:radial-gradient(circle,#2a3a30,#0e1612)}
+.tasks2 .tmed img{width:28px!important;height:28px!important;margin:0!important;position:relative;z-index:1}
+.tasks2 .tmed::after{inset:0!important}
+.tasks2 .task2 .grow{min-width:0;flex:1}
+.tasks2 .tpts2{width:auto!important;height:auto!important;min-width:30px;background:none!important;padding:0!important}
+.tasks2 .tpts2::before{font:900 15px/1 Georgia,serif!important;color:#3a2412!important}
+.tasks2 .tclaim,.tasks2 .tclaim.on{width:84px!important;height:42px!important;border-style:solid!important;border-color:transparent!important;border-width:10px 12px!important;border-image:url(orb/ui/m_btn_stone.webp) 56 fill / 10px 12px stretch!important;filter:none!important;font:900 13px/1 Georgia,serif!important;color:#7a6a5a!important;-webkit-text-stroke:0!important;text-shadow:0 1px 0 #fff8!important}
+.tasks2 .tclaim.on{border-image-source:url(orb/ui/m_btn_green.webp)!important;color:#fff3c0!important;text-shadow:0 1px 1px #0a3018!important}
+
+/* ---- one rounded button for the whole marble kit: green — free / your own, gold — crystals, stone — can't ---- */
+.mbtn{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:1px;height:56px;padding:0;border:12px solid transparent;border-radius:0;background:none;box-shadow:none;border-image:url(orb/ui/m_btn_stone.webp) 56 fill / 14px stretch;filter:drop-shadow(0 3px 3px #0006);color:#6a5a4a}
+.mbtn.wide{width:100%;max-width:300px;margin:8px auto 4px}
+.mbtn b{font:900 19px/1 Georgia,serif;white-space:nowrap}.mbtn small{font-size:11px;font-weight:800;white-space:nowrap}
+.mbtn.green{border-image-source:url(orb/ui/m_btn_green.webp);color:#fff3c0;text-shadow:0 1px 1px #0a3018}
+.mbtn.gold{border-image-source:url(orb/ui/m_btn_gold.webp);color:#4a2a06;text-shadow:0 1px 0 #fff6a0}
+.mbtn[disabled]{border-image-source:url(orb/ui/m_btn_stone.webp);color:#8a7a68;text-shadow:none;opacity:.8}
+.mbtn:active{transform:translateY(2px)}
+.cpb.emer{border-width:9px;border-image:url(orb/ui/m_btn_green.webp) 56 fill / 10px stretch}.cpb.emer b{color:#fff3c0;-webkit-text-stroke:0;text-shadow:0 1px 1px #0a3018}.cpb.emer small{color:#e8ffe0}
+/* ---- Ш115: the idle chest window in the marble hall ---- */
+.mrate>.lvtabs .lvsq.q{position:absolute;left:-8px;top:-4px;width:34px;height:34px;background:url(orb/ui/m_info.webp) center/contain no-repeat!important;font-size:0!important;color:transparent!important;border:0!important;box-shadow:none!important}
+.midle .panelbox{padding:0 2px 4px}
+.ichest3{position:relative;display:block;width:100%;height:190px;margin:-6px 0 0;padding:0;border:0;background:none}
+.ichest3 .iped{position:absolute;left:50%;bottom:6px;width:210px;height:46px;transform:translateX(-50%);border-radius:50%;background:radial-gradient(ellipse at 50% 35%,#f2ece0,#c8bca6 60%,#8a7c66);box-shadow:0 0 0 3px #c99a3a,0 0 0 5px #6a4a1a,0 10px 14px #0007}
+.ichest3 .ilight{position:absolute;left:50%;top:40%;width:240px;height:200px;transform:translate(-50%,-50%);border-radius:50%;background:radial-gradient(circle,rgba(255,220,130,calc(.15 + .55 * var(--fill))),transparent 65%);pointer-events:none}
+.ichest3 .ichimg{position:absolute;left:50%;bottom:22px;transform:translateX(-50%);line-height:0;filter:drop-shadow(0 8px 6px #0006)}
+.ichest3 .ichimg img,.ichest3 .ichimg svg{width:150px!important;height:auto!important}
+.ichest3.st2 .ichimg{animation:ichbob 2.4s ease-in-out infinite}
+@keyframes ichbob{50%{transform:translateX(-50%) translateY(-3px)}}
+.ichest3[disabled]{cursor:default}
+.midle .iinfo{margin:0 0 8px;padding:0 6px;border:10px solid transparent;border-image:url(orb/ui/m_plate.webp) 40 fill / 10px stretch;color:#3a2a1a;font-size:12px}
+.irow3{display:flex;justify-content:center;gap:16px;margin:2px 0 6px}
+.icell{display:flex;flex-direction:column;align-items:center;gap:4px;width:84px}
+.ictile{position:relative;width:76px;height:76px;display:flex;align-items:center;justify-content:center;border:10px solid transparent;border-image:url(orb/ui/m_frame.webp) 44 / 13px stretch;background:radial-gradient(circle at 50% 40%,#fffaf0,#d8c6a0 85%);background-clip:padding-box;filter:drop-shadow(0 2px 2px #0005)}
+.ictile .ri,.ictile img{width:44px!important;height:44px!important}
+.ictile .rq{position:absolute;right:-12px;bottom:-12px}
+.icell small{font:800 12px/1.15 system-ui,sans-serif;color:#3a2412;text-align:center}
+.itime{margin:6px 6px 0}.itime small{display:block;text-align:center;font:800 12.5px/1 system-ui,sans-serif;color:#3a2412;margin-bottom:5px}
+.itrough{height:12px;border-radius:7px;background:#2a2018;box-shadow:0 0 0 2px #c99a3a,0 0 0 3.5px #6a4a1a,inset 0 2px 3px #0008;overflow:hidden}
+.itrough i{display:block;height:100%;border-radius:7px;background:linear-gradient(#7ff0a8,#22a85a 60%,#147a3e)}
+.midle .evsub{margin:8px 0 2px}
+.midle .cpcards{margin-top:6px}
+.midle .iqi{display:flex;align-items:center;justify-content:center;height:34px;font-size:26px;line-height:1}.midle .iqi .ri{width:30px;height:30px}
+
+/* Ш116: energy window, battle pass, passes — marble kit */
+.modal .mbox.lvpanel.mpan{max-width:360px;padding:4px 6px 8px;border:24px solid transparent;border-radius:0;border-image:url(orb/ui/m_panel.webp) 66 fill / 24px stretch!important;background:none!important;box-shadow:none!important;filter:drop-shadow(0 10px 24px #000c);color:#3a2a1a}
+.modal:has(.mpan),.modal:has(.mpass){backdrop-filter:blur(3px);-webkit-backdrop-filter:blur(3px)}
+.mpan>.lvtabs{position:relative;justify-content:center;margin:-6px 0 4px;background:none!important;border:0!important;box-shadow:none!important}
+.mpan>.lvtabs .wtitle{flex:none;width:220px;padding:9px 0 10px;border-style:solid;border-width:0 26px;border-image:url(orb/ui/m_hex.webp) 0 100 fill / 0 26px stretch;font:900 17px/1 Georgia,serif;letter-spacing:1.5px;text-transform:uppercase;color:#4a2c12;text-shadow:0 1px 0 #fff8}
+.mpan>.lvtabs .lvsq.x{position:absolute;right:-26px;top:-30px;width:36px;height:36px;border:0!important;background:url(orb/ui/m_x.webp) center/contain no-repeat!important;font-size:0!important;color:transparent!important;box-shadow:none!important}
+.mpan .panelbox{padding:0;background:none!important;border:0!important;box-shadow:none!important}
+.mpan .enorb{margin:14px 0 10px}
+.mpan .enball{position:relative;width:104px;height:104px;margin-bottom:10px;border-radius:50%;overflow:visible;
+  background:linear-gradient(to top,#0b6a3a,#2fd07a calc(var(--f) - 8%),#b8ffd0 var(--f),#06241a var(--f));box-shadow:inset 0 0 14px #000a,0 0 18px #2fd07a66!important}
+.mpan .enball::after{content:"";position:absolute;inset:-22%;background:url(orb/ui/wreath.webp) center/100% 100% no-repeat;pointer-events:none}
+.mpan .enball .ensph{position:absolute;left:20%;top:12%;width:34%;height:18%;border-radius:50%;background:#ffffff38;transform:rotate(-30deg)}
+.mpan .enball img{position:relative;z-index:1;width:54px;height:54px;filter:drop-shadow(0 2px 2px #0008)}
+.mpan .enorb b{font:900 28px/1 Georgia,serif;color:#3a2410;-webkit-text-stroke:0;text-shadow:0 1px 0 #fff8}
+.mpan .enorb small,.mpan .ennote{color:#5a4028!important;font-weight:700;text-shadow:none}
+.mpan .mbtn.wide{max-width:280px;height:60px}
+
+/* battle pass */
+.bpscreen.mbp{background:linear-gradient(rgba(16,12,8,.5),rgba(10,8,6,.82)),url(orb/ui/temple.webp) center/cover!important}
+.mbp .torch{display:none}
+.mbp .bptop{height:168px;background:none}
+.mbp .bptop>.x{width:38px;height:38px;border:0;background:url(orb/ui/m_x.webp) center/contain no-repeat!important;font-size:0;color:transparent;box-shadow:none}
+.mbp .bpshelf::after{background:url(orb/ui/m_plate.webp) center/100% 100%;box-shadow:none;border:0}
+.mbp .bptitle{width:270px;height:66px;padding:6px 40px 12px;display:flex;align-items:center;justify-content:center;background:url(orb/ui/m_laurel.webp) center/100% 100% no-repeat}
+.mbp .bptitle::before,.mbp .bptitle::after{display:none}
+.mbp .bptitle span{font:900 20px/1 Georgia,serif;background:none;-webkit-text-fill-color:#4a2c12;color:#4a2c12;-webkit-text-stroke:0;text-shadow:0 1px 0 #fff8;filter:none}
+.mbp .bpseason{clip-path:none;padding:4px 12px;border:0;border-radius:10px;background:#f4ead4e6;box-shadow:0 2px 4px #0006;color:#3a2410}
+.mbp .bplvl2{margin:8px 10px 0;padding:6px 8px;border:12px solid transparent;border-image:url(orb/ui/m_plate.webp) 40 fill / 12px stretch}
+.mbp .bshield{clip-path:none;width:40px;height:52px;background:url(orb/ui/m_place.webp) center/contain no-repeat!important;filter:drop-shadow(0 2px 2px #0005)}
+.mbp .bshield b,.mbp .bshield.nx b{color:#3a2a1a;text-shadow:0 1px 0 #fff8;font-size:19px}
+.mbp .bshield.nx{opacity:.7}
+.mbp .bptrough{height:16px;border-radius:9px;background:#2a2018;box-shadow:0 0 0 2px #c99a3a,0 0 0 3.5px #6a4a1a,inset 0 2px 3px #0008}
+.mbp .bptrough>i{border-radius:9px;background:linear-gradient(#7ff0a8,#22a85a 60%,#147a3e)!important;box-shadow:none;animation:none}
+.mbp .bptrough>em{font-size:11px;color:#fff6d8;text-shadow:0 1px 1px #000,0 0 3px #000}
+.mbp .bphint{color:#f0e2c4;text-shadow:0 1px 2px #000}
+.mbp .bpcols2 b{clip-path:none!important;padding:7px 4px 8px;min-width:130px;border-style:solid;border-width:0 20px;border-image:url(orb/ui/m_hex.webp) 0 100 fill / 0 20px stretch;background:none!important;box-shadow:none;filter:none;font:900 13px/1 Georgia,serif;letter-spacing:.5px;text-transform:uppercase;color:#4a2c12!important;text-shadow:0 1px 0 #fff8!important}
+.mbp .cpaid b{filter:drop-shadow(0 0 5px #ffcf4a)!important}
+.mbp .bprow2::before{width:6px;margin-left:-3px;background:linear-gradient(90deg,#6a4a1a,#c99a3a,#6a4a1a)}
+.mbp .bprow2.on::before{background:linear-gradient(90deg,#147a3e,#7ff0a8,#147a3e);box-shadow:0 0 8px #2fd07a}
+.mbp .bhex{clip-path:none;width:36px;height:50px;background:url(orb/ui/m_place.webp) center/contain no-repeat!important;filter:drop-shadow(0 2px 2px #0006) grayscale(.5) brightness(.8)}
+.mbp .bhex b{color:#3a2a1a;text-shadow:0 1px 0 #fff8}
+.mbp .bprow2.on .bhex{background:url(orb/ui/m_place.webp) center/contain no-repeat!important;filter:drop-shadow(0 2px 2px #0006)}
+.mbp .bprow2.on .bhex b{color:#3a2a1a}
+.mbp .bc{min-height:76px;padding:2px 4px;border:12px solid transparent;border-radius:0;border-image:url(orb/ui/m_plate.webp) 40 fill / 12px stretch;background:none!important;box-shadow:none!important;filter:drop-shadow(0 2px 3px #0007)}
+.mbp .bc small{color:#3a2412;text-shadow:none;font-size:11.5px}
+.mbp .bct{width:56px;height:56px;border:8px solid transparent;border-radius:0;border-image:url(orb/ui/m_frame.webp) 44 / 10px stretch;background:radial-gradient(circle at 50% 40%,#fffaf0,#d8c6a0 85%)!important;background-clip:padding-box!important;box-shadow:none!important}
+.mbp .bc.paid .bct{background:radial-gradient(circle at 50% 40%,#fff4d0,#e0b860 85%)!important;background-clip:padding-box!important}
+.mbp .bci svg,.mbp .bci img{width:38px;height:38px}.mbp .bci .ri{width:38px;height:38px}.mbp .bci .rstone{--s:36px!important}
+.mbp .bq{right:-10px;bottom:-10px}
+.mbp .bc.ready{animation:none;filter:drop-shadow(0 0 5px #2fe080) drop-shadow(0 0 2px #2fe080)}
+.mbp .bc.best .bct{box-shadow:none!important}
+.mbp .bc.far{filter:drop-shadow(0 2px 3px #0007) brightness(.72) saturate(.7)}
+.mbp .bc.got .bct{filter:saturate(.4) brightness(.8)}.mbp .bc.got small{color:#7a6a58}
+.mbp .bpnote{margin:10px 6px 0;padding:4px 6px;border:12px solid transparent;border-image:url(orb/ui/m_plate.webp) 40 fill / 12px stretch;color:#3a2412;font-weight:700}
+.mbp .bpfoot2{background:linear-gradient(transparent,rgba(0,0,0,.55))}
+.mbp .bpfoot2 .mbtn{min-width:160px;padding:0 8px}
+
+/* passes */
+.modal .mbox.passbox.mpass{max-width:380px;padding:4px 6px 0;border:24px solid transparent;border-radius:0;border-image:url(orb/ui/m_panel.webp) 66 fill / 24px stretch!important;background:none!important;box-shadow:none!important;filter:drop-shadow(0 10px 24px #000c);color:#3a2a1a}
+.mpass .bphead{margin:-8px -6px 0;padding:0 6px 8px;background:none!important;justify-content:center;text-align:center}
+.mpass .bphead>div{align-items:center}
+.mpass .bphead b{padding:9px 30px 10px;border-style:solid;border-width:0 26px;border-image:url(orb/ui/m_hex.webp) 0 100 fill / 0 26px stretch;font:900 17px/1 Georgia,serif;letter-spacing:1.5px;text-transform:uppercase;color:#4a2c12;text-shadow:0 1px 0 #fff8}
+.mpass .bphead small{margin-top:5px;color:#5a4028;font-weight:700}
+.mpass .bphead .x{position:absolute;right:-4px;top:-2px;z-index:3;width:36px;height:36px;border:0;background:url(orb/ui/m_x.webp) center/contain no-repeat!important;font-size:0;color:transparent;box-shadow:none}
+.mpass .mktrim{display:none}
+.mpass .pscroll{margin:0 -6px;padding:8px 2px 10px;-webkit-mask-image:linear-gradient(transparent,#000 12px,#000 calc(100% - 12px),transparent);mask-image:linear-gradient(transparent,#000 12px,#000 calc(100% - 12px),transparent)}
+.mpass .pcard{border:12px solid transparent;border-radius:0;border-image:url(orb/ui/m_frame.webp) 44 / 14px stretch;padding:10px;background-clip:padding-box!important;box-shadow:none;filter:drop-shadow(0 3px 4px #0006)}
+.mpass .pnow{margin:0 -10px 8px}
+.mpass .pfoot{padding:8px 0 10px}
+.mpass .pfoot .mbtn{width:100%;max-width:280px;margin:0 auto}
+.mpass .pbuy .mbtn{width:100%;height:54px;font:900 18px/1 Georgia,serif}.mpass .pbuy .mbtn small{font:800 11px/1.1 system-ui,sans-serif}
+.tasks2 .tpts2{min-width:46px!important;margin-right:6px!important;overflow:visible!important;position:relative;z-index:2}
+.tasks2 .tpts2::before{font:900 16px/1 system-ui,sans-serif!important;font-variant-numeric:lining-nums!important;white-space:nowrap}
+.tasks2 .tpts2{clip-path:none!important}
+.mbox.tasks2 .task2 .tclaim,.mbox.tasks2 .task2 .tclaim.on{box-shadow:none!important;outline:0!important;animation:none!important;background:none!important}
+.tasks2 .tclaim::before,.tasks2 .tclaim::after{display:none!important}
 </style>
 </head>
 <body>
