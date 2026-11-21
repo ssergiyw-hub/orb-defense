@@ -181,7 +181,7 @@ function ticketSvg(c1: string, c2: string, mark: string): string {
 /** item pictures drawn as SVG: the weapon depends on the set, the rest is tinted by the set colour */
 export function itemSvg(slot: Slot, set: SetId | null, size = 34, rarity = 0): string {
   const pics = ITEM_IMG[set ?? 'guard']?.[slot];
-  if (pics) return `<img class="itemimg r${rarity}" src="${pics[Math.min(3, rarity)]}" width="${size}" height="${size}" alt="" draggable="false">`;
+  if (pics) return `<img class="itemimg r${R_TIER[rarity]}" src="${pics[Math.min(3, rarity)]}" width="${size}" height="${size}" alt="" draggable="false">`;
   return itemSvgDrawn(slot, set, size);
 }
 function itemSvgDrawn(slot: Slot, set: SetId | null, size = 34): string {
@@ -217,7 +217,7 @@ export function gemSvg(type: GemType, size = 46, stars = 3): string {
 
 /** one thing in a reward: icon, name, the number in the corner (count), a coloured caption under it (sub),
  *  rarity tier 0..4 (frame glow and sparks), a ribbon (badge), one more line for single rewards (detail) */
-export interface RewardItem { icon: string; name: string; count?: string; sub?: string; color?: string; tier?: number; badge?: string; detail?: string; altar?: boolean; xp?: boolean }
+export interface RewardItem { icon: string; name: string; count?: string; sub?: string; color?: string; tier?: number; badge?: string; detail?: string; altar?: boolean; xp?: boolean; lvl?: number }
 /** again: buttons to repeat what gave the reward (hero search, chests); reveal: new heroes shown one by one first */
 interface Reward { title: string; items: RewardItem[]; note?: string; chest?: { kind: P.StageChest; items: RewardItem[]; open: boolean }; again?: { label: string; sub: string; a: string; v: string; off?: boolean }[]; reveal?: string[];
   /** правка 172: «удвоить награду за бой» за рекламу — what the fight gave, and whether it is already doubled */
@@ -354,7 +354,7 @@ export class Hub {
       if (hb.level > ha.level || hb.xp > ha.xp) {
         const at = (h: { level: number; xp: number }) => h.level + Math.min(1, h.xp / heroXpFor(h.level));
         const g = Math.max(0.1, Math.round((at(hb) - at(ha)) * 10) / 10), up = hb.level > ha.level;
-        out.push({ icon: this.heroSvg(id), name: hero(id).name, xp: true, count: `+${Number.isInteger(g) ? g : g.toFixed(1)} ур.`, sub: up ? 'новый уровень' : undefined, color: up ? '#5cd68c' : EL_HEX[hero(id).element], tier: up ? 2 : 1 });
+        out.push({ icon: this.heroSvg(id), name: hero(id).name, xp: true, count: `+${Number.isInteger(g) ? g : g.toFixed(1)} ур.`, color: up ? '#ffcf4a' : EL_HEX[hero(id).element], tier: up ? 3 : 1, lvl: up ? hb.level : undefined }); // Ш120: everything on the avatar
       }
     }
     for (const id of Object.keys(b.heroes)) { // particles of one hero summed into one tile
@@ -931,10 +931,10 @@ export class Hub {
       <div class="res"><span id="hGold"></span><span id="hCr"></span></div>
       <div class="corner right" id="hEn" data-a="energyOpen" role="button" aria-label="Энергия">
         <svg class="ering" viewBox="0 0 100 100"><defs><clipPath id="eClip"><circle cx="50" cy="50" r="45"/></clipPath>
-          <linearGradient id="eLiq" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#b8ffd0"/><stop offset=".5" stop-color="#2fd07a"/><stop offset="1" stop-color="#0b6a3a"/></linearGradient></defs>
-          <circle cx="50" cy="50" r="46" fill="#06241ae6"/>
+          <linearGradient id="eLiq" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#c8ecff"/><stop offset=".5" stop-color="#2ea6ff"/><stop offset="1" stop-color="#0a4a9a"/></linearGradient></defs>
+          <circle cx="50" cy="50" r="46" fill="#061a33e6"/>
           <g clip-path="url(#eClip)"><g id="hLiq">
-            <path class="wv w2" d="M0,2 Q12.5,-3 25,2 T50,2 T75,2 T100,2 T125,2 T150,2 T175,2 T200,2 V120 H0 Z" fill="#2fd07a" opacity=".45"/>
+            <path class="wv w2" d="M0,2 Q12.5,-3 25,2 T50,2 T75,2 T100,2 T125,2 T150,2 T175,2 T200,2 V120 H0 Z" fill="#2ea6ff" opacity=".45"/>
             <path class="wv w1" d="M0,0 Q12.5,-5 25,0 T50,0 T75,0 T100,0 T125,0 T150,0 T175,0 T200,0 V120 H0 Z" fill="url(#eLiq)"/>
             <circle class="bub b1" cx="34" cy="70" r="2.2"/><circle class="bub b2" cx="58" cy="80" r="1.6"/><circle class="bub b3" cx="46" cy="76" r="2.6"/></g></g>
           <ellipse cx="34" cy="28" rx="16" ry="8" fill="#ffffff22" transform="rotate(-30 34 28)"/>
@@ -2099,8 +2099,8 @@ export class Hub {
     const tile = (it: RewardItem, k: number) => {
       const t = it.tier ?? 0, c = it.color ?? (t ? RC[t] : '#c9a24a');
       return `<div class="rcell" style="--c:${c};--i:${k}">
-        <div class="rtile t${t}${it.altar && r.items.length === 1 ? ' alt' : ''}">${it.altar && r.items.length === 1 ? PEDESTAL : ''}<span class="rti">${it.icon}</span>${it.count && !it.xp ? `<b class="rq${it.count.length > 5 ? ' sm' : ''}">${it.count}</b>` : ''}${it.badge ? `<i class="rnew">${it.badge}</i>` : ''}</div>
-        <small class="rname">${it.name}</small>${it.xp && it.count ? `<span class="rxp">${it.count}</span>` : ''}${it.sub ? `<em class="rsub">${it.sub}</em>` : ''}${it.detail && r.items.length <= 2 ? `<span class="rdet">${it.detail}</span>` : ''}</div>`;
+        <div class="rtile t${t}${it.altar && r.items.length === 1 ? ' alt' : ''}">${it.altar && r.items.length === 1 ? PEDESTAL : ''}<span class="rti">${it.icon}</span>${it.count && !it.xp ? `<b class="rq${it.count.length > 5 ? ' sm' : ''}">${it.count}</b>` : ''}${it.xp && it.count ? `<b class="rq rqxp">${it.count}</b>` : ''}${it.lvl ? `<i class="rlvup"><s>▲</s>Ур. ${it.lvl}</i>` : ''}${it.badge ? `<i class="rnew">${it.badge}</i>` : ''}</div>
+        <small class="rname">${it.name}</small>${it.sub ? `<em class="rsub">${it.sub}</em>` : ''}${it.detail && r.items.length <= 2 ? `<span class="rdet">${it.detail}</span>` : ''}</div>`;
     };
     const tiles = r.items.map(tile).join('');
     // Ш116: «Ещё ×N» — gold when it costs crystals, emerald when it opens what you have
@@ -2108,10 +2108,10 @@ export class Hub {
     // Ш112: the content scrolls when it is taller than the screen, OK stays at the bottom
     return `<div class="rewardov mrw ${many ? 'grid' : 'band'} t${top}" style="--rc:${rc}">${sparksHtml(top, rc)}
       <div class="rwin"><div class="rscroll">
-        <div class="rbanner${tr(r.title).length > 20 ? ' l2' : tr(r.title).length > 13 ? ' l1' : ''}"><div class="rbrays"></div><span>${r.title}</span></div>
+        <div class="rbanner" style="--fs:${Math.max(12, Math.min(19, Math.floor(222 / (tr(r.title).length * 0.52))))}px"><div class="rbrays"></div><span>${r.title}</span></div>
         ${r.items.length ? '<div class="rlabel"><span>Получены награды</span></div>' : ''}
         ${many ? `<div class="rgrid">${tiles}</div>` : `<div class="rband"><div class="rrays"></div><div class="rflash"></div><div class="rrow n${r.items.length}">${tiles}</div></div>`}
-        ${r.note ? `<div class="rnote">${r.note}</div>` : ''}${this.stageChestHtml(r, tile)}${again}${this.adDoubleHtml(r)}
-      </div></div><div class="rfoot"><button class="lvbtn rok" data-a="rewardOk"><b>OK</b></button></div></div>`;
+        ${r.note ? `<div class="rnote">${r.note}</div>` : ''}${this.stageChestHtml(r, tile)}${this.adDoubleHtml(r)}
+      </div></div><div class="rfoot">${again /* Ш123: «Ещё ×N» pinned above OK */}<button class="lvbtn rok" data-a="rewardOk"><b>OK</b></button></div></div>`;
   }
 }

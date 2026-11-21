@@ -3226,7 +3226,9 @@ div.rstats span{flex:1 1 auto;min-width:0}div.rstats small{letter-spacing:0;line
 .mrw .rband::after,.mrw .rgrid::after{box-shadow:none!important;border:0!important;border-radius:50%!important}
 .mrw .rband::before{display:none!important}
 /* the page: the frame from parch9, the middle is plain warm parchment (the stretched centre of parch9 showed vertical streaks) */
-.mrw .rband,.mrw .rgrid{border-image:url(orb/ui/parch9.webp) 130 100 200 100 / 52px 36px 80px 36px stretch!important;background:radial-gradient(ellipse at 50% 45%,#f6ead0,#ead9b4 75%)!important;background-clip:padding-box!important}
+/* Ш117: the middle is the page's own paper (fill) — a separate gradient had another tone and showed as a light stripe */
+.mrw .rband,.mrw .rgrid{border-image:url(orb/ui/parch9.webp) 130 100 200 100 fill / 52px 36px 80px 36px stretch!important;background:#ecdbb8 padding-box!important}
+/* the same flat tone under the padding box: Chrome leaves a hairline gap between 9-slice parts; the paper colour behind hides it */
 .mrw .ragain .stonebtn[disabled]{opacity:1!important;filter:none!important}
 .mrw .ragain .stonebtn[disabled] b,.mrw .ragain .stonebtn[disabled] small{color:#7a6a58!important}
 .mrw .ragain .stonebtn::before,.mrw .ragain .stonebtn::after{display:none!important}
@@ -3363,6 +3365,58 @@ div.rstats span{flex:1 1 auto;min-width:0}div.rstats small{letter-spacing:0;line
 .tasks2 .tpts2{clip-path:none!important}
 .mbox.tasks2 .task2 .tclaim,.mbox.tasks2 .task2 .tclaim.on{box-shadow:none!important;outline:0!important;animation:none!important;background:none!important}
 .tasks2 .tclaim::before,.tasks2 .tclaim::after{display:none!important}
+
+/* ---- Ш118: gear doesn't pulse; only mythic has a steady red glow (the item picture took its class from the rarity
+   step, not the tier: «Эпическое +2» = r4 got the mythic pulse) ---- */
+.itemimg,.icard,.gslotcard,.icard *,.gslotcard *{animation:none!important}
+.itemimg.r3{filter:drop-shadow(0 2px 2px #000c) drop-shadow(0 0 1px #000)!important}
+.itemimg.r4{filter:drop-shadow(0 2px 2px #000c) drop-shadow(0 0 5px #ff5470)!important}
+#view.herofix .igrid .icard.t4,.stagebox.gearhall .gslotcard.t4:not(.empty):not(.glock){filter:drop-shadow(0 0 4px #ff3d52) drop-shadow(0 0 9px #ff3d52aa) drop-shadow(0 2px 3px rgba(0,0,0,.35))!important}
+
+/* ---- Ш119: the avatar and the energy sit inside the laurel ring and fully on the screen; energy is blue.
+   The wreath picture (273 × 263) has its hole centred at (136, 107), radius 91 → it is scaled so the hole = the ring. ---- */
+.hdr.mini .corner{width:52px!important;height:52px!important;top:calc(5px + env(safe-area-inset-top,0px))!important}
+.hdr.mini .corner.left{left:15px!important}.hdr.mini .corner.right{right:15px!important}
+.hdr .corner.left::after,.hdr .corner.right::after{inset:auto!important;left:-25.8%!important;top:-9.7%!important;width:152%!important;height:146.7%!important;z-index:2;pointer-events:none}
+.hdr .corner.left .ring{overflow:hidden!important;border:0!important;border-radius:50%!important;box-shadow:inset 0 0 6px #0008!important}
+.hdr .corner.left .ring>*{width:100%!important;height:100%!important;margin:0!important;border-radius:50%;object-fit:cover}
+.hdr.mini .corner.left .lvl{z-index:3!important;right:-9px!important;bottom:-4px!important;min-width:20px;height:20px;line-height:17px;font-size:11px}
+.hdr .corner.right{box-shadow:none!important;border-radius:50%;overflow:visible!important}
+.hdr .corner.right .ering{inset:0!important}
+.hdr.mini .eval{padding:0!important;z-index:3}.hdr.mini .eval b{font-size:14px!important}
+.hdr .corner.right.full #hRim{stroke:#5cc8ff!important;filter:drop-shadow(0 0 4px #5cc8ff)!important}
+#ui.onhub .hdr.mini .side{top:calc(86px + env(safe-area-inset-top,0px))!important}
+#ui.onhub .hdr.mini .eval small{top:calc(100% + 8px)!important;right:50%!important;transform:translateX(50%)}
+#ui.onhero .stagebox.gearhall .gcol{top:calc(40px + var(--ht))!important;gap:3px!important}
+/* ---- Ш120: the hero's experience is on the avatar — «+0,7 ур.» at the bottom, a gold «▲ Ур. 9» on top ---- */
+.rq.rqxp{left:50%!important;right:auto!important;transform:translateX(-50%);bottom:-6px!important;white-space:nowrap;font-size:11px!important;line-height:16px;padding:0 5px}
+.rlvup{position:absolute;left:50%;top:-9px;transform:translateX(-50%);z-index:3;white-space:nowrap;font:900 10.5px/16px system-ui,sans-serif;font-style:normal;color:#3a2406;padding:0 6px;border-radius:7px;
+  background:linear-gradient(#fff0a8,#ffc83a 55%,#d99a1a);border:1.5px solid #7a4a0a;box-shadow:0 2px 3px #0006}
+.rlvup s{text-decoration:none;margin-right:2px;font-size:9px}
+/* ---- Ш121: the text sits in the middle of the laurel plate's white field (the field is 30/86 from the top and 19/86
+   from the bottom, 44 px from the left and 35 px from the right of a 300 px plate); long titles shrink (--fs) ---- */
+.mrw .rbanner{padding:29px 35px 19px 43px!important;box-sizing:border-box}
+.mrw .rbanner span{font-size:var(--fs,19px)!important;line-height:1.05!important}
+.mbp .bptitle{padding:22px 29px 13px 37px!important;box-sizing:border-box}
+/* ---- Ш122: battle pass — the chests above the plate, not on the title; numbers inside the cell on a dark plate ---- */
+.mbp .bpshelf{top:-4px!important;transform:translateX(-50%) scale(.7)!important;transform-origin:50% 0}
+.mbp .bptop{height:150px!important}
+.mbp .bq{right:-3px!important;bottom:-3px!important;z-index:2;padding:0 4px;border-radius:6px;background:rgba(10,14,12,.88);border:1.5px solid #d9b25a;
+  font:900 11px/15px system-ui,sans-serif!important;color:#fff;-webkit-text-stroke:0!important;text-shadow:none!important}
+.mbp .bpshelf::after{display:none!important}
+/* ---- Ш123: rarity ribbons no wider than the cell; «Ещё ×1 · 740💎» pinned above OK in one line ---- */
+.mrw .rcell .rsub{max-width:100%;box-sizing:border-box;padding:2px 6px!important;letter-spacing:0!important;font-size:9.5px!important;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.mrw .rfoot{flex-direction:column;align-items:center;gap:8px}
+.mrw .rfoot .ragain{margin:0;gap:10px;width:100%;max-width:380px;padding:0 10px;box-sizing:border-box}
+.mrw .rfoot .ragain .stonebtn{flex:1 1 0;min-width:0;height:48px;display:flex!important;flex-direction:row!important;align-items:center;justify-content:center;gap:5px;padding:0 4px!important;box-shadow:none!important;white-space:nowrap}
+.mrw .rfoot .ragain .stonebtn b{font-size:16px!important}
+.mrw .rfoot .ragain .stonebtn small{font:800 13px/1 system-ui,sans-serif!important;margin:0!important}
+.mrw .rfoot .ragain .stonebtn small::before{content:"· "}
+/* the energy window: the same blue sphere, the wreath on its hole */
+.mpan .enball{background:linear-gradient(to top,#0a4a9a,#2ea6ff calc(var(--f) - 8%),#c8ecff var(--f),#061a33 var(--f))!important;box-shadow:inset 0 0 14px #000a,0 0 18px #2ea6ff66!important}
+.mpan .enball{margin-bottom:24px!important}
+.mpan .enball::after{inset:auto!important;left:-25.8%!important;top:-9.7%!important;width:152%!important;height:146.7%!important}
+.enpanel .enball{background:radial-gradient(circle at 40% 35%,#c8ecff,#2ea6ff 45%,#0a4a9a)!important;box-shadow:0 0 0 3px #d9b25a,0 0 24px rgba(46,166,255,.7)!important}
 </style>
 </head>
 <body>

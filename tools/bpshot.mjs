@@ -5,10 +5,11 @@ const p = await b.newPage({ viewport: { width: 390, height: 844 }, deviceScaleFa
 const errs = []; p.on('pageerror', e => errs.push(String(e))); p.on('console', m => { if (m.type() === 'error') errs.push(m.text()); });
 const click = sel => p.evaluate(s => document.querySelector(s)?.click(), sel);
 await p.addInitScript(l => localStorage.setItem('mw-lang', l), process.env.OLANG ?? 'uk');
-await p.goto('file://' + process.cwd() + '/dist/index.html'); await p.waitForSelector('[data-a="startPick"]', { timeout: 30000, state: 'attached' }); await p.waitForTimeout(4500);
-for (let i = 0; i < 40 && !(await p.evaluate(() => !!localStorage.getItem('mw-profile-v1'))); i++) { await click('[data-a="startPick"][data-v="apollo"]'); await p.waitForTimeout(150); await click('[data-a="startGo"]'); await p.waitForTimeout(350); }
-await p.evaluate(() => { const s = JSON.parse(localStorage.getItem('mw-profile-v1')); s.seen = ['hub','chars','gear','jewel','shop','runes','settings']; s.maxMap = 6; s.crystals = 910; s.energy = 28; localStorage.setItem('mw-profile-v1', JSON.stringify(s)); });
-await p.reload(); await p.waitForSelector('[data-a="go"]', { timeout: 30000, state: 'attached' }); await p.waitForTimeout(4500);
+await p.goto('file://' + process.cwd() + '/dist/index.html'); await p.waitForTimeout(5000);
+for (let i = 0; i < 120 && !(await p.evaluate(() => !!localStorage.getItem('mw-profile-v1'))); i++) { await click('[data-a="startPick"][data-v="apollo"]'); await p.waitForTimeout(300); await click('[data-a="startGo"]'); await p.waitForTimeout(700); }
+await p.waitForTimeout(3000);
+await p.evaluate(() => { const s = window.__hub.p; s.seen = ['hub','chars','gear','jewel','shop','runes','settings']; s.maxMap = 6; s.crystals = 910; s.energy = 28;  });
+await p.evaluate(()=>window.__hub.render()); await p.waitForTimeout(800);
 const panel = async (name, tag, prep) => { await p.evaluate(([n, prep]) => { const h = window.__hub; if (prep) eval(prep); h.panel = n; h.render(); }, [name, prep ?? '']); await p.waitForTimeout(700); await p.screenshot({ path: `shots/x-${tag}.png` }); await p.evaluate(() => { const h = window.__hub; h.panel = null; h.render(); }); await p.waitForTimeout(200); };
 await panel('energy', 'energy');
 await panel('bp', 'bp', 'h.p.bp = h.p.bp || {}; ');
